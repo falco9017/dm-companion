@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -15,18 +17,18 @@ export default function Home() {
           <div className="text-lg text-slate-300">
             For Dungeon Masters & Players
           </div>
-          <div className="text-sm text-slate-400">
-            Coming soon...
-          </div>
         </div>
 
         <div className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-lg border border-purple-500/30 max-w-md">
-          <p className="text-white/90">
-            Hello World! 🎲
+          <p className="text-white/90 mb-4">
+            Upload audio from your sessions, auto-transcribe with AI, and create a searchable campaign wiki
           </p>
-          <p className="text-sm text-slate-300 mt-2">
-            Infrastructure setup in progress
-          </p>
+          <Link
+            href="/signin"
+            className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+          >
+            Get Started
+          </Link>
         </div>
       </main>
     </div>
