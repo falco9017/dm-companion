@@ -1,4 +1,4 @@
-import { geminiFlash } from './client'
+import { getGeminiFlash } from './client'
 import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
 
@@ -89,7 +89,7 @@ ${transcription.slice(0, 20000)}
 
 JSON Array:`
 
-  const result = await geminiFlash.generateContent(prompt)
+  const result = await getGeminiFlash().generateContent(prompt)
   const responseText = result.response.text()
 
   try {

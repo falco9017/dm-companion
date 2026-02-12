@@ -1,4 +1,4 @@
-import { geminiFlash } from './client'
+import { getGeminiFlash } from './client'
 import { prisma } from '@/lib/db'
 
 export async function buildChatContext(
@@ -73,7 +73,7 @@ ${context}`
   })
 
   // Generate response
-  const chat = geminiFlash.startChat({
+  const chat = getGeminiFlash().startChat({
     history: messages.slice(0, -1),
   })
 

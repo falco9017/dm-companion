@@ -1,4 +1,4 @@
-import { geminiPro, geminiFlash } from './client'
+import { getGeminiPro, getGeminiFlash } from './client'
 
 export async function transcribeAudio(audioUrl: string): Promise<string> {
   try {
@@ -14,7 +14,7 @@ export async function transcribeAudio(audioUrl: string): Promise<string> {
     else if (audioUrl.includes('.ogg')) mimeType = 'audio/ogg'
 
     // Transcribe using Gemini Pro
-    const result = await geminiPro.generateContent([
+    const result = await getGeminiPro().generateContent([
       {
         inlineData: {
           mimeType,
@@ -39,7 +39,7 @@ Be thorough and capture all important details, character names, locations, event
 
 export async function generateSummary(transcript: string): Promise<string> {
   try {
-    const result = await geminiFlash.generateContent(`
+    const result = await getGeminiFlash().generateContent(`
 You are summarizing a tabletop RPG session transcript. Create a concise summary (2-3 paragraphs) that captures:
 - Main story beats and plot developments
 - Important character actions and decisions
