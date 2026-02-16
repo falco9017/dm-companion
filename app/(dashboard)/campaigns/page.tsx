@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { getCampaigns } from '@/actions/campaigns'
 import Link from 'next/link'
+import CampaignCard from '@/components/campaign/CampaignCard'
 
 export default async function CampaignsPage() {
   const session = await auth()
@@ -31,24 +32,11 @@ export default async function CampaignsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((campaign) => (
-            <Link
+            <CampaignCard
               key={campaign.id}
-              href={`/campaigns/${campaign.id}`}
-              className="bg-gray-800/50 rounded-lg border border-gray-700 p-6 hover:bg-gray-800 transition-colors"
-            >
-              <h2 className="text-xl font-bold text-white mb-2">
-                {campaign.name}
-              </h2>
-              {campaign.description && (
-                <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                  {campaign.description}
-                </p>
-              )}
-              <div className="flex gap-4 text-sm text-gray-500">
-                <span>{campaign._count.audioFiles} audio files</span>
-                <span>{campaign._count.wikiEntries} wiki entries</span>
-              </div>
-            </Link>
+              campaign={campaign}
+              userId={session!.user.id}
+            />
           ))}
         </div>
       )}

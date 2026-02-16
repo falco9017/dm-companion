@@ -12,7 +12,12 @@ export function getGeminiPro() {
   return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' })
 }
 
-// Gemini 2.5 Flash for chat and quick tasks
+// Gemini 2.5 Flash for wiki generation
 export function getGeminiFlash() {
   return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' })
+}
+
+// Gemini 2.5 Flash-Lite for chat (fastest, lowest latency)
+export function getGeminiFlashLite() {
+  return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 }

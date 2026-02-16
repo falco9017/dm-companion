@@ -1,4 +1,4 @@
-import { getGeminiFlash } from './client'
+import { getGeminiFlashLite } from './client'
 import { prisma } from '@/lib/db'
 
 export async function buildChatContext(
@@ -42,24 +42,18 @@ export async function getChatCompletion(
 ) {
   const { getLanguageLabel } = await import('./audio-processor')
   const langLabel = getLanguageLabel(language)
-  const systemPrompt = `You are a helpful AI assistant for a tabletop RPG campaign management tool.
-You have access to the campaign's wiki which contains information about characters, locations, events, NPCs, items, quests, and session recaps.
+  const systemPrompt = `You are DM Companion, a concise assistant for a tabletop RPG campaign.
+Give short, direct answers. No fluff, no filler. Only answer what is asked.
+Use the campaign wiki context below. If the info isn't there, say so briefly.
+Always respond in ${langLabel}.
 
-When answering questions:
-- Use the provided context from the campaign wiki
-- Be specific and reference the information you have
-- If information isn't in the context, say so
-- Help the user recall details from their sessions
-- Be conversational and enthusiastic about their campaign
-- IMPORTANT: Always respond in ${langLabel}
-
-Context from campaign wiki:
+Campaign wiki context:
 ${context}`
 
   // Build messages for the chat
   const messages = [
     { role: 'user', parts: [{ text: systemPrompt }] },
-    { role: 'model', parts: [{ text: 'Understood! I\'m ready to help with your campaign.' }] },
+    { role: 'model', parts: [{ text: 'Ready.' }] },
   ]
 
   // Add conversation history
@@ -77,7 +71,7 @@ ${context}`
   })
 
   // Generate response
-  const chat = getGeminiFlash().startChat({
+  const chat = getGeminiFlashLite().startChat({
     history: messages.slice(0, -1),
   })
 

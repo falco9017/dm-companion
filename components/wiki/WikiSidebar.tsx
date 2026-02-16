@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { WikiEntryType } from '@prisma/client'
 
@@ -73,6 +73,20 @@ export default function WikiSidebar({
   onUpdateWikiClick,
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   // Split entries into recaps and wiki
   const recaps = entries
@@ -107,13 +121,33 @@ export default function WikiSidebar({
           <h2 className="text-sm font-bold text-white truncate flex-1">
             {campaignName}
           </h2>
-          <button
-            onClick={onSettingsClick}
-            className="text-gray-400 hover:text-white ml-2 text-lg"
-            title="Campaign Settings"
-          >
-            &#9881;&#65039;
-          </button>
+          <div className="relative ml-2" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-800 transition-colors"
+              title="Campaign options"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <circle cx="8" cy="3" r="1.5" />
+                <circle cx="8" cy="8" r="1.5" />
+                <circle cx="8" cy="13" r="1.5" />
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-1 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 py-1">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onSettingsClick()
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                >
+                  Settings
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
