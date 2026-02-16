@@ -121,7 +121,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
                 }`}
               >
                 <p className="text-sm font-semibold mb-1">
-                  {message.role === 'user' ? 'You' : 'AI Assistant'}
+                  {message.role === 'user' ? 'You' : 'DM Companion'}
                 </p>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>

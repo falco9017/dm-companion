@@ -16,7 +16,7 @@ export default function ChatPopup({ campaignId }: ChatPopupProps) {
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center justify-center text-2xl transition-colors"
-        title="AI Chat"
+        title="DM Companion"
       >
         &#128172;
       </button>
@@ -31,7 +31,7 @@ export default function ChatPopup({ campaignId }: ChatPopupProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0 rounded-t-xl bg-gray-800/50">
-        <span className="text-sm font-semibold text-white">AI Chat</span>
+        <span className="text-sm font-semibold text-white">DM Companion</span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setMinimized(!minimized)}
