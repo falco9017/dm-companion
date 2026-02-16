@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateCampaign, deleteCampaign } from '@/actions/campaigns'
+import { MoreVertical, Music, BookOpen } from 'lucide-react'
 
 interface CampaignCardProps {
   campaign: {
@@ -76,7 +77,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
   }
 
   return (
-    <div className="relative bg-gray-800/50 rounded-lg border border-gray-700 p-6 hover:bg-gray-800 transition-colors">
+    <div className="relative glass-card rounded-xl p-5 sm:p-6 hover-glow transition-all group">
       {/* Three-dot menu */}
       <div className="absolute top-3 right-3" ref={menuRef}>
         <button
@@ -85,18 +86,14 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
             e.stopPropagation()
             setMenuOpen(!menuOpen)
           }}
-          className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+          className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
           title="Campaign options"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <circle cx="8" cy="3" r="1.5" />
-            <circle cx="8" cy="8" r="1.5" />
-            <circle cx="8" cy="13" r="1.5" />
-          </svg>
+          <MoreVertical className="w-4 h-4" />
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 mt-1 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 py-1">
+          <div className="absolute right-0 mt-1 w-40 glass-card-elevated bg-surface-elevated rounded-lg shadow-xl z-10 py-1 border border-border-theme">
             <button
               onClick={(e) => {
                 e.preventDefault()
@@ -104,7 +101,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
                 setMenuOpen(false)
                 setEditing(true)
               }}
-              className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-colors"
             >
               Rename
             </button>
@@ -114,7 +111,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
                 e.stopPropagation()
                 handleDelete()
               }}
-              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors"
+              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5 hover:text-red-300 transition-colors"
             >
               Delete
             </button>
@@ -139,22 +136,28 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
               }}
               onBlur={handleRename}
               disabled={saving}
-              className="text-xl font-bold text-white mb-2 bg-gray-700 border border-gray-600 rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-lg sm:text-xl font-bold text-text-primary mb-2 input-dark rounded-lg px-2 py-1 w-full"
             />
           </div>
         ) : (
-          <h2 className="text-xl font-bold text-white mb-2 pr-8">
+          <h2 className="text-lg sm:text-xl font-bold text-text-primary mb-2 pr-8 group-hover:text-accent-purple-light transition-colors">
             {campaign.name}
           </h2>
         )}
         {campaign.description && (
-          <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+          <p className="text-text-muted text-sm mb-4 line-clamp-2">
             {campaign.description}
           </p>
         )}
-        <div className="flex gap-4 text-sm text-gray-500">
-          <span>{campaign._count.audioFiles} audio files</span>
-          <span>{campaign._count.wikiEntries} wiki entries</span>
+        <div className="flex gap-4 text-xs text-text-muted">
+          <span className="flex items-center gap-1">
+            <Music className="w-3 h-3" />
+            {campaign._count.audioFiles} audio
+          </span>
+          <span className="flex items-center gap-1">
+            <BookOpen className="w-3 h-3" />
+            {campaign._count.wikiEntries} wiki
+          </span>
         </div>
       </Link>
     </div>

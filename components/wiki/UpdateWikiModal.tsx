@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { RefreshCw, Loader2 } from 'lucide-react'
 
 interface UpdateWikiModalProps {
   campaignId: string
@@ -61,45 +62,50 @@ export default function UpdateWikiModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
-      <div className="relative bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          <h2 className="text-xl font-bold text-white">Update Wiki</h2>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      <div className="relative glass-card-elevated bg-surface rounded-xl w-full max-w-lg mx-3">
+        <div className="flex items-center justify-between p-6 border-b border-border-theme">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-accent-purple-light" />
+            </div>
+            <h2 className="text-lg font-bold text-text-primary">Update Wiki</h2>
+          </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-white text-xl"
+            className="text-text-muted hover:text-text-primary text-xl transition-colors"
           >
             &times;
           </button>
         </div>
 
         <div className="p-6 space-y-4">
-          <p className="text-gray-400 text-sm">
+          <p className="text-text-muted text-sm">
             Analyze all session recaps and create or update wiki entries for characters, locations, items, and more.
           </p>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Additional instructions (optional)
             </label>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="e.g. Focus on the new NPCs from the latest session"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm resize-none focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2.5 rounded-lg input-dark text-sm resize-none"
               rows={3}
               disabled={loading}
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-300 text-sm">
+            <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
 
           {result && (
-            <div className="p-3 bg-green-900/30 border border-green-800 rounded-lg text-green-300 text-sm">
+            <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-sm">
               Done! Created {result.created} and updated {result.updated} entries.
             </div>
           )}
@@ -107,7 +113,7 @@ export default function UpdateWikiModal({
           <div className="flex justify-end gap-3">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm rounded-lg text-gray-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors"
               disabled={loading}
             >
               {result ? 'Close' : 'Cancel'}
@@ -116,13 +122,12 @@ export default function UpdateWikiModal({
               <button
                 onClick={handleGenerate}
                 disabled={loading}
-                className="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="btn-primary px-4 py-2 text-sm rounded-lg flex items-center gap-2"
               >
-                {loading && (
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
                 )}
                 {loading ? 'Analyzing sessions...' : 'Generate Wiki'}
               </button>

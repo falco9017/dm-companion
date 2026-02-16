@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { MessageCircle, Minus, X } from 'lucide-react'
 import ChatInterface from './ChatInterface'
 
 interface ChatPopupProps {
@@ -15,37 +16,43 @@ export default function ChatPopup({ campaignId }: ChatPopupProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center justify-center text-2xl transition-colors"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 rounded-full btn-primary flex items-center justify-center shadow-lg"
         title="DM Companion"
       >
-        &#128172;
+        <MessageCircle className="w-6 h-6" />
       </button>
     )
   }
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 w-96 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl flex flex-col transition-all ${
-        minimized ? 'h-12' : 'h-[500px]'
-      }`}
+      className={`fixed z-50 flex flex-col transition-all duration-200
+        bottom-0 right-0 md:bottom-6 md:right-6
+        w-full md:w-96 md:rounded-xl
+        glass-card-elevated bg-surface shadow-2xl
+        ${minimized ? 'h-12 md:rounded-xl rounded-none' : 'h-[80vh] md:h-[500px]'}
+      `}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-800 flex-shrink-0 rounded-t-xl bg-gray-800/50">
-        <span className="text-sm font-semibold text-white">DM Companion</span>
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-theme flex-shrink-0 md:rounded-t-xl">
+        <span className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <MessageCircle className="w-4 h-4 text-accent-purple-light" />
+          DM Companion
+        </span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setMinimized(!minimized)}
-            className="text-gray-400 hover:text-white px-1 text-lg"
+            className="text-text-muted hover:text-text-primary p-1 transition-colors"
             title={minimized ? 'Expand' : 'Minimize'}
           >
-            {minimized ? '\u25B2' : '\u25BC'}
+            <Minus className="w-4 h-4" />
           </button>
           <button
             onClick={() => { setOpen(false); setMinimized(false) }}
-            className="text-gray-400 hover:text-white px-1 text-lg"
+            className="text-text-muted hover:text-text-primary p-1 transition-colors"
             title="Close"
           >
-            &times;
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>

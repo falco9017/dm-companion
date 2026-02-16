@@ -1,15 +1,19 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
+import { Scroll } from 'lucide-react'
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950">
+    <div className="flex min-h-screen items-center justify-center bg-radial-glow px-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 p-8 shadow-2xl">
+        <div className="glass-card-elevated rounded-2xl p-6 sm:p-8 shadow-2xl bg-surface">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">DM Companion</h1>
-            <p className="text-gray-400">Sign in to manage your campaigns</p>
+            <div className="w-12 h-12 rounded-xl bg-accent-purple/20 flex items-center justify-center mx-auto mb-4">
+              <Scroll className="w-6 h-6 text-accent-purple-light" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">DM Companion</h1>
+            <p className="text-text-muted">Sign in to manage your campaigns</p>
           </div>
 
           <button
@@ -37,7 +41,7 @@ export default function SignInPage() {
             Sign in with Google
           </button>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-text-muted mt-6">
             Manage campaigns, upload audio, and chat with your AI assistant
           </p>
         </div>

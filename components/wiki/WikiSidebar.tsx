@@ -3,18 +3,23 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { WikiEntryType } from '@prisma/client'
+import {
+  ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
+  BookOpen, Target, FileText, ChevronRight, ChevronDown,
+  Upload, Plus, RefreshCw, ArrowLeft, X, MoreVertical, Settings,
+} from 'lucide-react'
 
-const typeIcons: Record<WikiEntryType, string> = {
-  SESSION_RECAP: '\u{1F4DC}',
-  CHARACTER: '\u{1F464}',
-  LOCATION: '\u{1F5FA}\uFE0F',
-  EVENT: '\u{2694}\uFE0F',
-  ITEM: '\u{1F48E}',
-  NPC: '\u{1F3AD}',
-  FACTION: '\u{1F3F0}',
-  LORE: '\u{1F4DA}',
-  QUEST: '\u{1F3AF}',
-  OTHER: '\u{1F4DD}',
+const typeIcons: Record<WikiEntryType, React.ReactNode> = {
+  SESSION_RECAP: <ScrollText className="w-3.5 h-3.5" />,
+  CHARACTER: <User className="w-3.5 h-3.5" />,
+  LOCATION: <MapPin className="w-3.5 h-3.5" />,
+  EVENT: <Swords className="w-3.5 h-3.5" />,
+  ITEM: <Gem className="w-3.5 h-3.5" />,
+  NPC: <Drama className="w-3.5 h-3.5" />,
+  FACTION: <Castle className="w-3.5 h-3.5" />,
+  LORE: <BookOpen className="w-3.5 h-3.5" />,
+  QUEST: <Target className="w-3.5 h-3.5" />,
+  OTHER: <FileText className="w-3.5 h-3.5" />,
 }
 
 const typeLabels: Record<WikiEntryType, string> = {
@@ -31,15 +36,8 @@ const typeLabels: Record<WikiEntryType, string> = {
 }
 
 const wikiTypeOrder: WikiEntryType[] = [
-  'CHARACTER',
-  'NPC',
-  'LOCATION',
-  'FACTION',
-  'QUEST',
-  'EVENT',
-  'ITEM',
-  'LORE',
-  'OTHER',
+  'CHARACTER', 'NPC', 'LOCATION', 'FACTION', 'QUEST',
+  'EVENT', 'ITEM', 'LORE', 'OTHER',
 ]
 
 interface WikiSidebarEntry {
@@ -60,6 +58,8 @@ interface WikiSidebarProps {
   onUploadClick: () => void
   onCreateClick: () => void
   onUpdateWikiClick: () => void
+  isOpen: boolean
+  onClose: () => void
 }
 
 export default function WikiSidebar({
@@ -71,6 +71,8 @@ export default function WikiSidebar({
   onUploadClick,
   onCreateClick,
   onUpdateWikiClick,
+  isOpen,
+  onClose,
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [menuOpen, setMenuOpen] = useState(false)
@@ -88,14 +90,12 @@ export default function WikiSidebar({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
 
-  // Split entries into recaps and wiki
   const recaps = entries
     .filter((e) => e.type === 'SESSION_RECAP')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const wikiEntries = entries.filter((e) => e.type !== 'SESSION_RECAP')
 
-  // Group wiki entries by type
   const grouped = new Map<WikiEntryType, WikiSidebarEntry[]>()
   for (const entry of wikiEntries) {
     const list = grouped.get(entry.type) || []
@@ -107,42 +107,49 @@ export default function WikiSidebar({
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  return (
-    <aside className="w-64 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col h-full overflow-hidden">
+  const sidebarContent = (
+    <>
       {/* Header */}
-      <div className="p-4 border-b border-gray-800">
-        <Link
-          href="/campaigns"
-          className="text-xs text-gray-500 hover:text-gray-400 mb-1 block"
-        >
-          &larr; All Campaigns
-        </Link>
+      <div className="p-4 border-b border-border-theme">
+        <div className="flex items-center justify-between mb-1">
+          <Link
+            href="/campaigns"
+            className="text-xs text-text-muted hover:text-text-secondary flex items-center gap-1 transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            All Campaigns
+          </Link>
+          {/* Mobile close button */}
+          <button
+            onClick={onClose}
+            className="md:hidden text-text-muted hover:text-text-primary p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white truncate flex-1">
+          <h2 className="text-sm font-bold text-text-primary truncate flex-1">
             {campaignName}
           </h2>
           <div className="relative ml-2" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-800 transition-colors"
+              className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
               title="Campaign options"
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="8" cy="3" r="1.5" />
-                <circle cx="8" cy="8" r="1.5" />
-                <circle cx="8" cy="13" r="1.5" />
-              </svg>
+              <MoreVertical className="w-4 h-4" />
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-1 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 py-1">
+              <div className="absolute right-0 mt-1 w-40 glass-card-elevated bg-surface-elevated rounded-lg shadow-xl z-10 py-1 border border-border-theme">
                 <button
                   onClick={() => {
                     setMenuOpen(false)
                     onSettingsClick()
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-colors flex items-center gap-2"
                 >
+                  <Settings className="w-3.5 h-3.5" />
                   Settings
                 </button>
               </div>
@@ -152,46 +159,49 @@ export default function WikiSidebar({
       </div>
 
       {/* Action buttons */}
-      <div className="p-3 border-b border-gray-800 flex gap-2">
+      <div className="p-3 border-b border-border-theme flex gap-2">
         <button
           onClick={onUploadClick}
-          className="flex-1 text-xs px-2 py-1.5 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+          className="flex-1 text-xs px-2 py-2 rounded-lg glass-card text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center justify-center gap-1"
         >
-          Upload Audio
+          <Upload className="w-3 h-3" />
+          Upload
         </button>
         <button
           onClick={onCreateClick}
-          className="flex-1 text-xs px-2 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          className="flex-1 text-xs px-2 py-2 rounded-lg btn-primary flex items-center justify-center gap-1"
         >
+          <Plus className="w-3 h-3" />
           New Page
         </button>
         <button
           onClick={onUpdateWikiClick}
-          className="flex-1 text-xs px-2 py-1.5 rounded bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+          className="flex-1 text-xs px-2 py-2 rounded-lg bg-accent-purple/20 text-accent-purple-light hover:bg-accent-purple/30 transition-colors flex items-center justify-center gap-1"
         >
-          Update Wiki
+          <RefreshCw className="w-3 h-3" />
+          Update
         </button>
       </div>
 
       {/* Entries */}
       <nav className="flex-1 overflow-y-auto p-2">
         {entries.length === 0 ? (
-          <p className="text-gray-500 text-xs text-center py-4">
+          <p className="text-text-muted text-xs text-center py-4">
             No entries yet
           </p>
         ) : (
           <>
-            {/* Session Recaps section */}
+            {/* Session Recaps */}
             {recaps.length > 0 && (
               <div className="mb-2">
                 <button
                   onClick={() => toggleGroup('_recaps')}
-                  className="w-full flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-400 hover:text-gray-300 uppercase tracking-wider"
+                  className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-text-secondary hover:text-text-primary uppercase tracking-wider transition-colors"
                 >
-                  <span className="text-[10px]">{collapsed['_recaps'] ? '\u25B6' : '\u25BC'}</span>
-                  <span>{typeIcons.SESSION_RECAP}</span>
+                  {collapsed['_recaps'] ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  {typeIcons.SESSION_RECAP}
                   <span>Session Recaps</span>
-                  <span className="text-gray-600 ml-auto">{recaps.length}</span>
+                  <span className="text-text-muted ml-auto text-[10px]">{recaps.length}</span>
                 </button>
 
                 {!collapsed['_recaps'] && (
@@ -200,10 +210,11 @@ export default function WikiSidebar({
                       <Link
                         key={entry.id}
                         href={`/campaigns/${campaignId}?entry=${entry.id}`}
-                        className={`block px-2 py-1 text-sm rounded truncate transition-colors ${
+                        onClick={onClose}
+                        className={`block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
                           entry.id === activeEntryId
-                            ? 'bg-blue-600/20 text-blue-300'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                            ? 'sidebar-active text-accent-purple-light font-medium'
+                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                         }`}
                       >
                         {entry.title}
@@ -214,17 +225,17 @@ export default function WikiSidebar({
               </div>
             )}
 
-            {/* Campaign Wiki section */}
+            {/* Campaign Wiki */}
             {wikiEntries.length > 0 && (
               <div className="mb-1">
                 <button
                   onClick={() => toggleGroup('_wiki')}
-                  className="w-full flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-400 hover:text-gray-300 uppercase tracking-wider"
+                  className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-text-secondary hover:text-text-primary uppercase tracking-wider transition-colors"
                 >
-                  <span className="text-[10px]">{collapsed['_wiki'] ? '\u25B6' : '\u25BC'}</span>
-                  <span>{typeIcons.LORE}</span>
+                  {collapsed['_wiki'] ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <BookOpen className="w-3.5 h-3.5" />
                   <span>Campaign Wiki</span>
-                  <span className="text-gray-600 ml-auto">{wikiEntries.length}</span>
+                  <span className="text-text-muted ml-auto text-[10px]">{wikiEntries.length}</span>
                 </button>
 
                 {!collapsed['_wiki'] && (
@@ -239,24 +250,25 @@ export default function WikiSidebar({
                           <div key={type} className="mb-1">
                             <button
                               onClick={() => toggleGroup(type)}
-                              className="w-full flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-400"
+                              className="w-full flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-text-muted hover:text-text-secondary transition-colors"
                             >
-                              <span className="text-[10px]">{isCollapsed ? '\u25B6' : '\u25BC'}</span>
-                              <span>{typeIcons[type]}</span>
+                              {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              {typeIcons[type]}
                               <span>{typeLabels[type]}</span>
-                              <span className="text-gray-600 ml-auto">{items.length}</span>
+                              <span className="text-text-muted ml-auto text-[10px]">{items.length}</span>
                             </button>
 
                             {!isCollapsed && (
-                              <div className="ml-4">
+                              <div className="ml-5">
                                 {items.map((entry) => (
                                   <Link
                                     key={entry.id}
                                     href={`/campaigns/${campaignId}?entry=${entry.id}`}
-                                    className={`block px-2 py-1 text-sm rounded truncate transition-colors ${
+                                    onClick={onClose}
+                                    className={`block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
                                       entry.id === activeEntryId
-                                        ? 'bg-blue-600/20 text-blue-300'
-                                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                        ? 'sidebar-active text-accent-purple-light font-medium'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                                     }`}
                                   >
                                     {entry.title}
@@ -274,6 +286,32 @@ export default function WikiSidebar({
           </>
         )}
       </nav>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed md:relative inset-y-0 left-0 z-40
+          w-72 md:w-64 flex-shrink-0
+          bg-surface border-r border-border-theme
+          flex flex-col h-full overflow-hidden
+          transform transition-transform duration-200 ease-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

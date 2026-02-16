@@ -2,6 +2,7 @@ import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
 import { redirect } from 'next/navigation'
 import ProfileForm from './ProfileForm'
+import { LogOut } from 'lucide-react'
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -13,23 +14,23 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-white">Profile</h1>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">Profile</h1>
 
       {/* Profile card */}
-      <div className="bg-gray-800/50 rounded-lg border border-gray-700 p-8">
+      <div className="glass-card rounded-xl p-6 sm:p-8 bg-surface">
         <div className="flex items-center gap-4 mb-6">
           {profile.image && (
             <img
               src={profile.image}
               alt=""
-              className="w-16 h-16 rounded-full"
+              className="w-16 h-16 rounded-full ring-2 ring-accent-purple/30"
             />
           )}
           <div>
-            <p className="text-lg font-semibold text-white">{profile.name || 'No name set'}</p>
-            <p className="text-sm text-gray-400">{profile.email}</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-lg font-semibold text-text-primary">{profile.name || 'No name set'}</p>
+            <p className="text-sm text-text-secondary">{profile.email}</p>
+            <p className="text-xs text-text-muted mt-1">
               Member since {new Date(profile.createdAt).toLocaleDateString()}
             </p>
           </div>
@@ -46,8 +47,9 @@ export default async function ProfilePage() {
       <form action={handleSignOut}>
         <button
           type="submit"
-          className="w-full px-6 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+          className="w-full px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
         >
+          <LogOut className="w-4 h-4" />
           Sign Out
         </button>
       </form>

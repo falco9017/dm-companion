@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { Send, Loader2 } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -34,11 +35,8 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
     setInput('')
     setIsLoading(true)
 
-    // Add user message
     const newMessages = [...messages, { role: 'user' as const, content: userMessage }]
     setMessages(newMessages)
-
-    // Add empty assistant message
     setMessages((prev) => [...prev, { role: 'assistant' as const, content: '' }])
 
     try {
@@ -97,14 +95,14 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-800/50 rounded-lg border border-gray-700">
+    <div className="flex flex-col h-full">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-lg mb-2">Ask me anything about your campaign!</p>
+          <div className="text-center text-text-muted mt-8">
+            <p className="text-base mb-2">Ask me anything about your campaign!</p>
             <p className="text-sm">
-              I can help you recall characters, locations, events, and more from your sessions.
+              I can help you recall characters, locations, events, and more.
             </p>
           </div>
         ) : (
@@ -114,13 +112,13 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-900 text-gray-200'
+                    ? 'btn-primary rounded-br-sm'
+                    : 'glass-card text-text-secondary rounded-bl-sm'
                 }`}
               >
-                <p className="text-sm font-semibold mb-1">
+                <p className="text-xs font-medium mb-1 opacity-70">
                   {message.role === 'user' ? 'You' : 'DM Companion'}
                 </p>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -132,7 +130,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-700">
+      <form onSubmit={handleSubmit} className="p-3 border-t border-border-theme">
         <div className="flex gap-2">
           <input
             type="text"
@@ -140,14 +138,18 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
             placeholder="Ask about your campaign..."
-            className="flex-1 px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+            className="btn-primary px-4 py-2.5 rounded-lg flex items-center justify-center"
           >
-            {isLoading ? 'Sending...' : 'Send'}
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </button>
         </div>
       </form>

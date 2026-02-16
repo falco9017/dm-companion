@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createWikiEntry } from '@/actions/wiki'
+import { Save } from 'lucide-react'
 
 const ENTRY_TYPES = [
   { value: 'CHARACTER', label: 'Character' },
@@ -60,7 +61,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="title" className="block text-sm font-medium text-text-secondary mb-1">
             Title *
           </label>
           <input
@@ -68,19 +69,19 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
             id="title"
             name="title"
             required
-            className="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
             placeholder="e.g. Eldrin the Wise"
           />
         </div>
         <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="type" className="block text-sm font-medium text-text-secondary mb-1">
             Type *
           </label>
           <select
             id="type"
             name="type"
             required
-            className="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           >
             {ENTRY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -92,7 +93,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
       </div>
 
       <div>
-        <label htmlFor="content" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="content" className="block text-sm font-medium text-text-secondary mb-1">
           Content *
         </label>
         <textarea
@@ -100,20 +101,20 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
           name="content"
           required
           rows={5}
-          className="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           placeholder="Write the wiki entry content..."
         />
       </div>
 
       <div>
-        <label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="tags" className="block text-sm font-medium text-text-secondary mb-1">
           Tags (comma-separated)
         </label>
         <input
           type="text"
           id="tags"
           name="tags"
-          className="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           placeholder="e.g. wizard, ally, magic"
         />
       </div>
@@ -126,15 +127,16 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
         <button
           type="submit"
           disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold px-5 py-2 rounded-lg transition-colors"
+          className="btn-primary px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm"
         >
+          <Save className="w-4 h-4" />
           {saving ? 'Saving...' : 'Create Entry'}
         </button>
         {onDone && (
           <button
             type="button"
             onClick={onDone}
-            className="px-5 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
+            className="px-5 py-2.5 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors text-sm"
           >
             Cancel
           </button>

@@ -36,7 +36,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1">
           Display Name
         </label>
         <input
@@ -44,20 +44,20 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 rounded-lg input-dark"
           placeholder="Your name"
         />
       </div>
 
       <div>
-        <label htmlFor="uiLanguage" className="block text-sm font-medium text-gray-300 mb-1">
+        <label htmlFor="uiLanguage" className="block text-sm font-medium text-text-secondary mb-1">
           UI Language
         </label>
         <select
           id="uiLanguage"
           value={uiLanguage}
           onChange={(e) => setUiLanguage(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 rounded-lg input-dark"
         >
           <option value="en">English</option>
           <option value="it">Italian</option>
@@ -67,7 +67,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
       <button
         type="submit"
         disabled={saving}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+        className="w-full btn-primary px-6 py-3 rounded-lg"
       >
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
       </button>

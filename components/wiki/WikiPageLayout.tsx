@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { WikiEntryType } from '@prisma/client'
+import { Menu, Upload, Plus } from 'lucide-react'
 import WikiSidebar from './WikiSidebar'
 import WikiEntryEditor from './WikiEntryEditor'
 import SettingsModal from './SettingsModal'
@@ -55,9 +56,18 @@ export default function WikiPageLayout({
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      {/* Mobile sidebar toggle */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-[4.5rem] left-3 z-30 md:hidden p-2 rounded-lg glass-card-elevated text-text-secondary hover:text-text-primary transition-colors"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       <WikiSidebar
         campaignId={campaignId}
         campaignName={campaign.name}
@@ -67,6 +77,8 @@ export default function WikiPageLayout({
         onUploadClick={() => setUploadOpen(true)}
         onCreateClick={() => setCreateOpen(true)}
         onUpdateWikiClick={() => setUpdateWikiOpen(true)}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main content */}
@@ -77,27 +89,34 @@ export default function WikiPageLayout({
           entry={activeEntry}
         />
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
-            <p className="text-gray-400 text-lg mb-2">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent-purple/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <p className="text-text-secondary text-lg mb-2">
               {wikiTree.length === 0
                 ? 'No wiki entries yet'
                 : 'Select an entry from the sidebar'}
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-text-muted text-sm mb-6">
               Upload audio to generate entries automatically, or create one manually
             </p>
-            <div className="mt-4 flex justify-center gap-3">
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() => setUploadOpen(true)}
-                className="text-sm px-4 py-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                className="text-sm px-4 py-2.5 rounded-lg glass-card text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center gap-2"
               >
+                <Upload className="w-4 h-4" />
                 Upload Audio
               </button>
               <button
                 onClick={() => setCreateOpen(true)}
-                className="text-sm px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                className="text-sm px-4 py-2.5 rounded-lg btn-primary flex items-center gap-2"
               >
+                <Plus className="w-4 h-4" />
                 New Page
               </button>
             </div>
@@ -132,13 +151,13 @@ export default function WikiPageLayout({
       {/* Create entry modal */}
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setCreateOpen(false)} />
-          <div className="relative bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4">
-            <div className="flex items-center justify-between p-6 border-b border-gray-800">
-              <h2 className="text-xl font-bold text-white">Create Wiki Entry</h2>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setCreateOpen(false)} />
+          <div className="relative glass-card-elevated rounded-xl w-full max-w-lg mx-3 bg-surface">
+            <div className="flex items-center justify-between p-6 border-b border-border-theme">
+              <h2 className="text-xl font-bold text-text-primary">Create Wiki Entry</h2>
               <button
                 onClick={() => setCreateOpen(false)}
-                className="text-gray-400 hover:text-white text-xl"
+                className="text-text-muted hover:text-text-primary text-xl transition-colors"
               >
                 &times;
               </button>
