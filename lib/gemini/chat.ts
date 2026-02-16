@@ -37,8 +37,11 @@ export async function buildChatContext(
 export async function getChatCompletion(
   context: string,
   userMessage: string,
-  conversationHistory: Array<{ role: string; content: string }> = []
+  conversationHistory: Array<{ role: string; content: string }> = [],
+  language = 'en'
 ) {
+  const { getLanguageLabel } = await import('./audio-processor')
+  const langLabel = getLanguageLabel(language)
   const systemPrompt = `You are a helpful AI assistant for a tabletop RPG campaign management tool.
 You have access to the campaign's wiki which contains information about characters, locations, events, NPCs, items, quests, and session recaps.
 
@@ -48,6 +51,7 @@ When answering questions:
 - If information isn't in the context, say so
 - Help the user recall details from their sessions
 - Be conversational and enthusiastic about their campaign
+- IMPORTANT: Always respond in ${langLabel}
 
 Context from campaign wiki:
 ${context}`

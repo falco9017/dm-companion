@@ -11,7 +11,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          prompt: "consent",
           access_type: "offline",
           response_type: "code"
         }
@@ -42,6 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   trustHost: true,
   debug: process.env.NODE_ENV === 'development',

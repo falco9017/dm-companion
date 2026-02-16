@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { buildChatContext, getChatCompletion, saveChatMessage } from '@/lib/gemini/chat'
 
 export async function POST(request: NextRequest) {
@@ -15,6 +16,16 @@ export async function POST(request: NextRequest) {
       return new Response('Missing message or campaignId', { status: 400 })
     }
 
+    // Get campaign language
+    const campaign = await prisma.campaign.findFirst({
+      where: { id: campaignId, ownerId: session.user.id },
+      select: { language: true },
+    })
+
+    if (!campaign) {
+      return new Response('Campaign not found', { status: 404 })
+    }
+
     // Build context from wiki
     const context = await buildChatContext(campaignId, message)
 
@@ -22,7 +33,7 @@ export async function POST(request: NextRequest) {
     await saveChatMessage(campaignId, session.user.id, 'user', message)
 
     // Get streaming completion
-    const stream = await getChatCompletion(context, message, history || [])
+    const stream = await getChatCompletion(context, message, history || [], campaign.language)
 
     // Create a readable stream for the response
     const encoder = new TextEncoder()

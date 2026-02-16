@@ -4,11 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 
-export async function createCampaign(userId: string, name: string, description?: string) {
+export async function createCampaign(userId: string, name: string, description?: string, language = 'en') {
   const campaign = await prisma.campaign.create({
     data: {
       name,
       description,
+      language,
       ownerId: userId,
     },
   })
@@ -93,7 +94,7 @@ export async function deleteCampaign(campaignId: string, userId: string) {
 export async function updateCampaign(
   campaignId: string,
   userId: string,
-  data: { name?: string; description?: string }
+  data: { name?: string; description?: string; language?: string }
 ) {
   const campaign = await prisma.campaign.findFirst({
     where: { id: campaignId, ownerId: userId },

@@ -14,8 +14,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <nav className="bg-black/30 backdrop-blur-sm border-b border-purple-500/30">
+    <div className="min-h-screen bg-gray-950 flex flex-col">
+      <nav className="bg-gray-900 border-b border-gray-800 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-8">
@@ -23,19 +23,25 @@ export default async function DashboardLayout({
                 DM Companion
               </Link>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-300">{session.user.email}</span>
+            <div className="flex items-center">
               <Link
-                href="/api/auth/signout"
-                className="text-sm text-purple-300 hover:text-purple-200"
+                href="/profile"
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-300 transition-colors"
               >
-                Sign Out
+                {session.user.image && (
+                  <img
+                    src={session.user.image}
+                    alt=""
+                    className="w-7 h-7 rounded-full"
+                  />
+                )}
+                <span>{session.user.name || session.user.email}</span>
               </Link>
             </div>
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1">
         {children}
       </main>
     </div>

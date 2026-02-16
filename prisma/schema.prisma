@@ -16,6 +16,7 @@ model User {
   emailVerified     DateTime?
   image             String?
   defaultCampaignId String?
+  uiLanguage        String        @default("en")
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -77,6 +78,7 @@ model Campaign {
   id          String   @id @default(cuid())
   name        String
   description String?
+  language    String   @default("en")
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -106,7 +108,7 @@ model AudioFile {
   mimeType      String
   duration      Int?
   blobUrl       String
-  blobKey       String
+  blobKey       String          @unique
   status        AudioFileStatus @default(UPLOADED)
   transcription String?
   summary       String?

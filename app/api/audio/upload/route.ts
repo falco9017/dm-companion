@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
       onUploadCompleted: async ({ blob, tokenPayload }) => {
         const { campaignId } = JSON.parse(tokenPayload!)
 
+        // Skip if record already exists (client creates it directly now)
+        const existing = await prisma.audioFile.findUnique({
+          where: { blobKey: blob.pathname },
+        })
+        if (existing) return
+
         // Extract original filename from blob pathname
         const parts = blob.pathname.split('/')
         const filenameWithTimestamp = parts[parts.length - 1]

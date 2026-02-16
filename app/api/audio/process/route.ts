@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { transcribeAudio, generateSummary } from '@/lib/gemini/audio-processor'
 import { generateWikiEntries } from '@/lib/gemini/wiki-generator'
-import { updateAudioFileStatus } from '@/actions/audio'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,10 +42,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Update status to PROCESSING
-    await updateAudioFileStatus(audioFileId, 'PROCESSING')
+    await prisma.audioFile.update({
+      where: { id: audioFileId },
+      data: { status: 'PROCESSING' },
+    })
 
-    // Process in background
-    processAudioInBackground(audioFileId, audioFile.blobUrl)
+    // Process in background (fire-and-forget)
+    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language)
 
     return NextResponse.json({
       success: true,
@@ -60,45 +63,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function processAudioInBackground(audioFileId: string, blobUrl: string) {
+async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string) {
   try {
-    // Get audio file with campaign info
-    const audioFile = await prisma.audioFile.findUnique({
-      where: { id: audioFileId },
-    })
-
-    if (!audioFile) {
-      throw new Error('Audio file not found')
-    }
-
     // Transcribe audio
     console.log(`Transcribing audio file ${audioFileId}...`)
     const transcription = await transcribeAudio(blobUrl)
 
     // Generate summary
     console.log(`Generating summary for audio file ${audioFileId}...`)
-    const summary = await generateSummary(transcription)
+    const summary = await generateSummary(transcription, language)
 
-    // Update with results
-    await updateAudioFileStatus(audioFileId, 'PROCESSED', {
-      transcription,
-      summary,
+    // Update with transcription and summary
+    await prisma.audioFile.update({
+      where: { id: audioFileId },
+      data: { status: 'PROCESSED', transcription, summary },
     })
 
     // Generate wiki entries
     console.log(`Generating wiki entries for audio file ${audioFileId}...`)
-    await generateWikiEntries(
-      audioFile.campaignId,
-      audioFileId,
-      transcription,
-      summary
-    )
+    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language)
 
+    revalidatePath(`/campaigns/${campaignId}/wiki`)
     console.log(`Successfully processed audio file ${audioFileId}`)
   } catch (error) {
     console.error(`Failed to process audio file ${audioFileId}:`, error)
-    await updateAudioFileStatus(audioFileId, 'FAILED', {
-      errorMessage: error instanceof Error ? error.message : 'Processing failed',
+    await prisma.audioFile.update({
+      where: { id: audioFileId },
+      data: {
+        status: 'FAILED',
+        errorMessage: error instanceof Error ? error.message : 'Processing failed',
+      },
     })
   }
 }

@@ -4,12 +4,12 @@ import { signIn } from 'next-auth/react'
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="flex min-h-screen items-center justify-center bg-gray-950">
       <div className="w-full max-w-md">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-purple-500/30 p-8 shadow-2xl">
+        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 p-8 shadow-2xl">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">DM Companion</h1>
-            <p className="text-purple-300">Sign in to manage your campaigns</p>
+            <p className="text-gray-400">Sign in to manage your campaigns</p>
           </div>
 
           <button
@@ -37,7 +37,7 @@ export default function SignInPage() {
             Sign in with Google
           </button>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Manage campaigns, upload audio, and chat with your AI assistant
           </p>
         </div>

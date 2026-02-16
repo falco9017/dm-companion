@@ -1,5 +1,14 @@
 import { getGeminiPro, getGeminiFlash } from './client'
 
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+}
+
+export function getLanguageLabel(code: string): string {
+  return LANGUAGE_LABELS[code] || code
+}
+
 export async function transcribeAudio(audioUrl: string): Promise<string> {
   try {
     // Fetch the audio file
@@ -25,7 +34,9 @@ export async function transcribeAudio(audioUrl: string): Promise<string> {
         text: `Please transcribe this audio recording from a tabletop RPG (D&D, Pathfinder, etc.) session.
 
 Include all dialogue and narration. Format the transcript clearly with speaker labels if possible.
-Be thorough and capture all important details, character names, locations, events, and story beats.`,
+Be thorough and capture all important details, character names, locations, events, and story beats.
+
+IMPORTANT: Transcribe in the original language of the audio. Do not translate.`,
       },
     ])
 
@@ -33,12 +44,14 @@ Be thorough and capture all important details, character names, locations, event
     return transcription
   } catch (error) {
     console.error('Transcription error:', error)
-    throw new Error('Failed to transcribe audio')
+    const msg = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to transcribe audio: ${msg}`)
   }
 }
 
-export async function generateSummary(transcript: string): Promise<string> {
+export async function generateSummary(transcript: string, language = 'en'): Promise<string> {
   try {
+    const langLabel = getLanguageLabel(language)
     const result = await getGeminiFlash().generateContent(`
 You are summarizing a tabletop RPG session transcript. Create a concise summary (2-3 paragraphs) that captures:
 - Main story beats and plot developments
@@ -46,6 +59,8 @@ You are summarizing a tabletop RPG session transcript. Create a concise summary 
 - Key locations visited
 - Notable NPCs encountered
 - Any significant items found or quests accepted
+
+IMPORTANT: Write the entire summary in ${langLabel}.
 
 Transcript:
 ${transcript}
@@ -55,6 +70,7 @@ Summary:`)
     return result.response.text()
   } catch (error) {
     console.error('Summary generation error:', error)
-    throw new Error('Failed to generate summary')
+    const msg = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to generate summary: ${msg}`)
   }
 }

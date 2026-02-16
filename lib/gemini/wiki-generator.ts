@@ -1,4 +1,5 @@
 import { getGeminiFlash } from './client'
+import { getLanguageLabel } from './audio-processor'
 import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
 
@@ -14,14 +15,15 @@ export async function generateWikiEntries(
   campaignId: string,
   audioFileId: string,
   transcription: string,
-  summary: string
+  summary: string,
+  language = 'en'
 ): Promise<void> {
   try {
     // First, create a session recap entry
     await createSessionRecap(campaignId, audioFileId, summary, transcription)
 
     // Extract structured entities from the transcript
-    const entities = await extractEntities(transcription)
+    const entities = await extractEntities(transcription, language)
 
     // Create wiki entries for each entity
     for (const entity of entities) {
@@ -61,7 +63,8 @@ async function createSessionRecap(
   })
 }
 
-async function extractEntities(transcription: string): Promise<WikiEntryData[]> {
+async function extractEntities(transcription: string, language = 'en'): Promise<WikiEntryData[]> {
+  const langLabel = getLanguageLabel(language)
   const prompt = `Analyze this tabletop RPG session transcript and extract key entities.
 
 For each significant entity (characters, locations, events, items, NPCs, factions, quests), provide:
@@ -70,6 +73,8 @@ For each significant entity (characters, locations, events, items, NPCs, faction
 3. Content (detailed description with all relevant information from the transcript)
 4. Excerpt (1-2 sentence summary)
 5. Tags (3-5 relevant keywords)
+
+IMPORTANT: Write all content, excerpts, and tags in ${langLabel}. Keep entity names in their original form.
 
 Format your response as a JSON array. Only include truly significant entities that warrant their own wiki entries.
 

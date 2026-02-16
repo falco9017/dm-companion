@@ -7,12 +7,12 @@ function getGenAI() {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 }
 
-// Gemini 1.5 Pro for audio transcription
+// Gemini 2.5 Flash for audio transcription (1.5 models are retired)
 export function getGeminiPro() {
-  return getGenAI().getGenerativeModel({ model: 'gemini-1.5-pro' })
+  return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' })
 }
 
-// Gemini Flash for chat and quick tasks
+// Gemini 2.5 Flash for chat and quick tasks
 export function getGeminiFlash() {
-  return getGenAI().getGenerativeModel({ model: 'gemini-1.5-flash' })
+  return getGenAI().getGenerativeModel({ model: 'gemini-2.5-flash' })
 }
