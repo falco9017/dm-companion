@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
+import { upload } from '@vercel/blob/client'
 
 interface AudioUploaderProps {
   campaignId: string
@@ -32,19 +33,16 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
       setProgress(0)
 
       try {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('campaignId', campaignId)
+        const timestamp = Date.now()
+        const pathname = `${campaignId}/${timestamp}-${file.name}`
 
-        const response = await fetch('/api/audio/upload', {
-          method: 'POST',
-          body: formData,
+        await upload(pathname, file, {
+          access: 'public',
+          handleUploadUrl: '/api/audio/upload',
+          onUploadProgress: (e) => {
+            setProgress(Math.round(e.percentage))
+          },
         })
-
-        if (!response.ok) {
-          const data = await response.json()
-          throw new Error(data.error || 'Upload failed')
-        }
 
         setProgress(100)
         setTimeout(() => {
@@ -84,7 +82,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
           <div className="text-6xl">🎵</div>
           {uploading ? (
             <>
-              <p className="text-white font-semibold">Uploading...</p>
+              <p className="text-white font-semibold">Uploading... {progress}%</p>
               <div className="max-w-xs mx-auto bg-black/30 rounded-full h-2 overflow-hidden">
                 <div
                   className="bg-purple-500 h-full transition-all duration-300"
