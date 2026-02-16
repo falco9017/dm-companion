@@ -1,19 +1,11 @@
 import { auth, signOut } from '@/lib/auth'
-import { getUserProfile, updateUserProfile } from '@/actions/profile'
+import { getUserProfile } from '@/actions/profile'
 import { redirect } from 'next/navigation'
+import ProfileForm from './ProfileForm'
 
 export default async function ProfilePage() {
   const session = await auth()
   const profile = await getUserProfile(session!.user.id)
-
-  async function handleUpdate(formData: FormData) {
-    'use server'
-    const name = formData.get('name') as string
-    const uiLanguage = formData.get('uiLanguage') as string || 'en'
-
-    await updateUserProfile(session!.user.id, { name, uiLanguage })
-    redirect('/profile')
-  }
 
   async function handleSignOut() {
     'use server'
@@ -43,43 +35,11 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        <form action={handleUpdate} className="space-y-5">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-              Display Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              defaultValue={profile.name || ''}
-              className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your name"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="uiLanguage" className="block text-sm font-medium text-gray-300 mb-1">
-              UI Language
-            </label>
-            <select
-              id="uiLanguage"
-              name="uiLanguage"
-              defaultValue={profile.uiLanguage}
-              className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="en">English</option>
-              <option value="it">Italian</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-          >
-            Save Changes
-          </button>
-        </form>
+        <ProfileForm
+          userId={session!.user.id}
+          name={profile.name || ''}
+          uiLanguage={profile.uiLanguage}
+        />
       </div>
 
       {/* Sign out */}
