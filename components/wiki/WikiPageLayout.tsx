@@ -8,6 +8,7 @@ import SettingsModal from './SettingsModal'
 import AudioUploadModal from './AudioUploadModal'
 import WikiEntryForm from './WikiEntryForm'
 import ChatPopup from '@/components/chat/ChatPopup'
+import UpdateWikiModal from './UpdateWikiModal'
 
 interface WikiTreeEntry {
   id: string
@@ -53,6 +54,7 @@ export default function WikiPageLayout({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
+  const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -64,6 +66,7 @@ export default function WikiPageLayout({
         onSettingsClick={() => setSettingsOpen(true)}
         onUploadClick={() => setUploadOpen(true)}
         onCreateClick={() => setCreateOpen(true)}
+        onUpdateWikiClick={() => setUpdateWikiOpen(true)}
       />
 
       {/* Main content */}
@@ -118,6 +121,12 @@ export default function WikiPageLayout({
         campaignId={campaignId}
         isOpen={uploadOpen}
         onClose={() => setUploadOpen(false)}
+      />
+
+      <UpdateWikiModal
+        campaignId={campaignId}
+        isOpen={updateWikiOpen}
+        onClose={() => setUpdateWikiOpen(false)}
       />
 
       {/* Create entry modal */}

@@ -30,8 +30,7 @@ const typeLabels: Record<WikiEntryType, string> = {
   OTHER: 'Other',
 }
 
-const typeOrder: WikiEntryType[] = [
-  'SESSION_RECAP',
+const wikiTypeOrder: WikiEntryType[] = [
   'CHARACTER',
   'NPC',
   'LOCATION',
@@ -60,6 +59,7 @@ interface WikiSidebarProps {
   onSettingsClick: () => void
   onUploadClick: () => void
   onCreateClick: () => void
+  onUpdateWikiClick: () => void
 }
 
 export default function WikiSidebar({
@@ -70,19 +70,27 @@ export default function WikiSidebar({
   onSettingsClick,
   onUploadClick,
   onCreateClick,
+  onUpdateWikiClick,
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  // Group entries by type
+  // Split entries into recaps and wiki
+  const recaps = entries
+    .filter((e) => e.type === 'SESSION_RECAP')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const wikiEntries = entries.filter((e) => e.type !== 'SESSION_RECAP')
+
+  // Group wiki entries by type
   const grouped = new Map<WikiEntryType, WikiSidebarEntry[]>()
-  for (const entry of entries) {
+  for (const entry of wikiEntries) {
     const list = grouped.get(entry.type) || []
     list.push(entry)
     grouped.set(entry.type, list)
   }
 
-  const toggleGroup = (type: string) => {
-    setCollapsed((prev) => ({ ...prev, [type]: !prev[type] }))
+  const toggleGroup = (key: string) => {
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
   return (
@@ -123,53 +131,113 @@ export default function WikiSidebar({
         >
           New Page
         </button>
+        <button
+          onClick={onUpdateWikiClick}
+          className="flex-1 text-xs px-2 py-1.5 rounded bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+        >
+          Update Wiki
+        </button>
       </div>
 
-      {/* Entries tree */}
+      {/* Entries */}
       <nav className="flex-1 overflow-y-auto p-2">
         {entries.length === 0 ? (
           <p className="text-gray-500 text-xs text-center py-4">
             No entries yet
           </p>
         ) : (
-          typeOrder
-            .filter((type) => grouped.has(type))
-            .map((type) => {
-              const items = grouped.get(type)!
-              const isCollapsed = collapsed[type]
+          <>
+            {/* Session Recaps section */}
+            {recaps.length > 0 && (
+              <div className="mb-2">
+                <button
+                  onClick={() => toggleGroup('_recaps')}
+                  className="w-full flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-400 hover:text-gray-300 uppercase tracking-wider"
+                >
+                  <span className="text-[10px]">{collapsed['_recaps'] ? '\u25B6' : '\u25BC'}</span>
+                  <span>{typeIcons.SESSION_RECAP}</span>
+                  <span>Session Recaps</span>
+                  <span className="text-gray-600 ml-auto">{recaps.length}</span>
+                </button>
 
-              return (
-                <div key={type} className="mb-1">
-                  <button
-                    onClick={() => toggleGroup(type)}
-                    className="w-full flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-400 hover:text-gray-300 uppercase tracking-wider"
-                  >
-                    <span className="text-[10px]">{isCollapsed ? '\u25B6' : '\u25BC'}</span>
-                    <span>{typeIcons[type]}</span>
-                    <span>{typeLabels[type]}</span>
-                    <span className="text-gray-600 ml-auto">{items.length}</span>
-                  </button>
+                {!collapsed['_recaps'] && (
+                  <div className="ml-2">
+                    {recaps.map((entry) => (
+                      <Link
+                        key={entry.id}
+                        href={`/campaigns/${campaignId}?entry=${entry.id}`}
+                        className={`block px-2 py-1 text-sm rounded truncate transition-colors ${
+                          entry.id === activeEntryId
+                            ? 'bg-blue-600/20 text-blue-300'
+                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        {entry.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-                  {!isCollapsed && (
-                    <div className="ml-2">
-                      {items.map((entry) => (
-                        <Link
-                          key={entry.id}
-                          href={`/campaigns/${campaignId}?entry=${entry.id}`}
-                          className={`block px-2 py-1 text-sm rounded truncate transition-colors ${
-                            entry.id === activeEntryId
-                              ? 'bg-blue-600/20 text-blue-300'
-                              : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                          }`}
-                        >
-                          {entry.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })
+            {/* Campaign Wiki section */}
+            {wikiEntries.length > 0 && (
+              <div className="mb-1">
+                <button
+                  onClick={() => toggleGroup('_wiki')}
+                  className="w-full flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-400 hover:text-gray-300 uppercase tracking-wider"
+                >
+                  <span className="text-[10px]">{collapsed['_wiki'] ? '\u25B6' : '\u25BC'}</span>
+                  <span>{typeIcons.LORE}</span>
+                  <span>Campaign Wiki</span>
+                  <span className="text-gray-600 ml-auto">{wikiEntries.length}</span>
+                </button>
+
+                {!collapsed['_wiki'] && (
+                  <div className="ml-2">
+                    {wikiTypeOrder
+                      .filter((type) => grouped.has(type))
+                      .map((type) => {
+                        const items = grouped.get(type)!
+                        const isCollapsed = collapsed[type]
+
+                        return (
+                          <div key={type} className="mb-1">
+                            <button
+                              onClick={() => toggleGroup(type)}
+                              className="w-full flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-400"
+                            >
+                              <span className="text-[10px]">{isCollapsed ? '\u25B6' : '\u25BC'}</span>
+                              <span>{typeIcons[type]}</span>
+                              <span>{typeLabels[type]}</span>
+                              <span className="text-gray-600 ml-auto">{items.length}</span>
+                            </button>
+
+                            {!isCollapsed && (
+                              <div className="ml-4">
+                                {items.map((entry) => (
+                                  <Link
+                                    key={entry.id}
+                                    href={`/campaigns/${campaignId}?entry=${entry.id}`}
+                                    className={`block px-2 py-1 text-sm rounded truncate transition-colors ${
+                                      entry.id === activeEntryId
+                                        ? 'bg-blue-600/20 text-blue-300'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                    }`}
+                                  >
+                                    {entry.title}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </nav>
     </aside>

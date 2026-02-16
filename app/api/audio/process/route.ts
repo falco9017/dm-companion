@@ -83,7 +83,7 @@ async function processAudioInBackground(audioFileId: string, blobUrl: string, ca
     console.log(`Generating wiki entries for audio file ${audioFileId}...`)
     await generateWikiEntries(campaignId, audioFileId, transcription, summary, language)
 
-    revalidatePath(`/campaigns/${campaignId}/wiki`)
+    revalidatePath(`/campaigns/${campaignId}`)
     console.log(`Successfully processed audio file ${audioFileId}`)
   } catch (error) {
     console.error(`Failed to process audio file ${audioFileId}:`, error)
