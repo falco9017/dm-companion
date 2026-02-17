@@ -67,6 +67,13 @@ export default async function CampaignPage({
               })),
               createdAt: activeEntry.createdAt,
               updatedAt: activeEntry.updatedAt,
+              characterSheet: activeEntry.characterSheet
+                ? {
+                    id: activeEntry.characterSheet.id,
+                    data: activeEntry.characterSheet.data as unknown as import('@/types/character-sheet').CharacterSheetData,
+                    pdfBlobUrl: activeEntry.characterSheet.pdfBlobUrl,
+                  }
+                : null,
             }
           : null
       }
