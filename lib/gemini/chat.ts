@@ -1,4 +1,4 @@
-import { getGeminiFlashLite } from './client'
+import { getGeminiFlash } from './client'
 import { prisma } from '@/lib/db'
 
 export async function buildChatContext(
@@ -19,8 +19,22 @@ export async function buildChatContext(
     orderBy: { updatedAt: 'desc' },
   })
 
+  // If few results, also fetch recent session recaps for ambient campaign knowledge
+  if (relevantEntries.length <= 1) {
+    const recentRecaps = await prisma.wikiEntry.findMany({
+      where: {
+        campaignId,
+        type: 'SESSION_RECAP',
+        id: { notIn: relevantEntries.map((e) => e.id) },
+      },
+      take: 3,
+      orderBy: { createdAt: 'desc' },
+    })
+    relevantEntries.push(...recentRecaps)
+  }
+
   if (relevantEntries.length === 0) {
-    return 'No specific campaign information found for this query.'
+    return 'No campaign wiki entries exist yet.'
   }
 
   // Build context from wiki entries
@@ -42,9 +56,15 @@ export async function getChatCompletion(
 ) {
   const { getLanguageLabel } = await import('./audio-processor')
   const langLabel = getLanguageLabel(language)
-  const systemPrompt = `You are DM Companion, a concise assistant for a tabletop RPG campaign.
-Give short, direct answers. No fluff, no filler. Only answer what is asked.
-Use the campaign wiki context below. If the info isn't there, say so briefly.
+  const systemPrompt = `You are DM Companion, an experienced tabletop RPG assistant for game masters.
+
+Your capabilities:
+- Answer questions about the campaign using the wiki context below
+- Generate creative content on demand: NPCs, locations, items, encounters, plot hooks
+- When generating content, always include: a name, a brief description (2-3 sentences), and one peculiar or memorable trait
+- Provide useful, descriptive answers — not one-liners, but not essays either
+- If asked about campaign-specific info not in the wiki, say you don't have that info and offer to help create it
+
 Always respond in ${langLabel}.
 
 Campaign wiki context:
@@ -71,7 +91,7 @@ ${context}`
   })
 
   // Generate response
-  const chat = getGeminiFlashLite().startChat({
+  const chat = getGeminiFlash().startChat({
     history: messages.slice(0, -1),
   })
 

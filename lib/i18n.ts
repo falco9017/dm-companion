@@ -71,9 +71,11 @@ const en = {
 
   // Chat
   'chat.title': 'DM Companion',
-  'chat.placeholder': 'Ask about your campaign...',
-  'chat.emptyTitle': 'Ask me anything about your campaign!',
-  'chat.emptySubtitle': 'I can help you recall characters, locations, events, and more.',
+  'chat.placeholder': 'Ask about your campaign or generate content...',
+  'chat.emptyTitle': 'Your DM assistant is ready!',
+  'chat.emptySubtitle': 'Ask about your campaign, or generate NPCs, locations, encounters, and more.',
+  'chat.openPanel': 'Open chat',
+  'chat.closePanel': 'Close chat',
   'chat.you': 'You',
   'chat.error': 'Sorry, I encountered an error. Please try again.',
 
@@ -211,9 +213,11 @@ const it: Record<string, string> = {
 
   // Chat
   'chat.title': 'Assistente DM',
-  'chat.placeholder': 'Chiedi della tua campagna...',
-  'chat.emptyTitle': 'Chiedimi qualsiasi cosa sulla tua campagna!',
-  'chat.emptySubtitle': 'Posso aiutarti a ricordare personaggi, luoghi, eventi e altro.',
+  'chat.placeholder': 'Chiedi della campagna o genera contenuti...',
+  'chat.emptyTitle': 'Il tuo assistente DM è pronto!',
+  'chat.emptySubtitle': 'Chiedi della campagna, o genera PNG, luoghi, incontri e altro.',
+  'chat.openPanel': 'Apri chat',
+  'chat.closePanel': 'Chiudi chat',
   'chat.you': 'Tu',
   'chat.error': 'Si \u00e8 verificato un errore. Riprova.',
 

@@ -82,17 +82,66 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
     <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl">
         {/* Header */}
-        <div className="mb-6">
-          {editing ? (
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl sm:text-3xl font-bold text-text-primary bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none w-full pb-1"
-            />
-          ) : (
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{entry.title}</h1>
-          )}
+        <div className="mb-6 relative">
+          <div className="flex items-start gap-3">
+            <div className="flex-1 min-w-0">
+              {editing ? (
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="text-2xl sm:text-3xl font-bold text-text-primary bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none w-full pb-1"
+                />
+              ) : (
+                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{entry.title}</h1>
+              )}
+            </div>
+
+            {/* Action icons */}
+            <div className="flex items-center gap-1 flex-shrink-0 pt-1">
+              {editing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                    title={saving ? t('common.saving') : t('common.save')}
+                  >
+                    <Save className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditing(false)
+                      setTitle(entry.title)
+                      setContent(entry.content)
+                    }}
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+                    title={t('common.cancel')}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                    title={t('common.edit')}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors"
+                    title={deleting ? t('common.deleting') : t('common.delete')}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-3">
             <span className={`text-xs font-medium px-3 py-1 rounded-full ${typeColors[entry.type]}`}>
@@ -160,51 +209,9 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
           </div>
         )}
 
-        {/* Actions & timestamps */}
-        <div className="mt-8 pt-6 border-t border-border-theme flex flex-wrap items-center gap-3">
-          {editing ? (
-            <>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn-primary px-5 py-2 rounded-lg flex items-center gap-2 text-sm"
-              >
-                <Save className="w-4 h-4" />
-                {saving ? t('common.saving') : t('common.save')}
-              </button>
-              <button
-                onClick={() => {
-                  setEditing(false)
-                  setTitle(entry.title)
-                  setContent(entry.content)
-                }}
-                className="px-5 py-2 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center gap-2 text-sm"
-              >
-                <X className="w-4 h-4" />
-                {t('common.cancel')}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setEditing(true)}
-                className="bg-surface-elevated border border-border-theme px-5 py-2 rounded-lg text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 text-sm"
-              >
-                <Pencil className="w-4 h-4" />
-                {t('common.edit')}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-5 py-2 rounded-lg bg-error/10 hover:bg-error/20 text-red-400 transition-colors flex items-center gap-2 text-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-                {deleting ? t('common.deleting') : t('common.delete')}
-              </button>
-            </>
-          )}
-
-          <span className="text-xs text-text-muted ml-auto">
+        {/* Timestamps */}
+        <div className="mt-8 pt-6 border-t border-border-theme">
+          <span className="text-xs text-text-muted">
             Created: {new Date(entry.createdAt).toLocaleDateString()}
             {' \u2022 '}
             Updated: {new Date(entry.updatedAt).toLocaleDateString()}

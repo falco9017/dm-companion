@@ -18,7 +18,7 @@ export default function ChatPopup({ campaignId }: ChatPopupProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 rounded-full btn-primary flex items-center justify-center shadow-lg"
+        className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full btn-primary flex items-center justify-center shadow-lg md:hidden"
         title={t('chat.title')}
       >
         <MessageCircle className="w-6 h-6" />
@@ -28,11 +28,11 @@ export default function ChatPopup({ campaignId }: ChatPopupProps) {
 
   return (
     <div
-      className={`fixed z-50 flex flex-col transition-all duration-200
-        bottom-0 right-0 md:bottom-6 md:right-6
-        w-full md:w-96 md:rounded-xl
+      className={`fixed z-50 flex flex-col transition-all duration-200 md:hidden
+        bottom-0 right-0
+        w-full
         bg-surface border border-border-theme shadow-2xl
-        ${minimized ? 'h-12 md:rounded-xl rounded-none' : 'h-[80vh] md:h-[500px]'}
+        ${minimized ? 'h-12 rounded-none' : 'h-[80vh]'}
       `}
     >
       {/* Header */}

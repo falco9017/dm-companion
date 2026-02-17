@@ -9,6 +9,7 @@ import SettingsModal from './SettingsModal'
 import AudioUploadModal from './AudioUploadModal'
 import WikiEntryForm from './WikiEntryForm'
 import ChatPopup from '@/components/chat/ChatPopup'
+import ChatPanel from '@/components/chat/ChatPanel'
 import UpdateWikiModal from './UpdateWikiModal'
 import { useI18n } from '@/lib/i18n-context'
 
@@ -126,8 +127,11 @@ export default function WikiPageLayout({
         </div>
       )}
 
-      {/* Chat popup */}
-      <ChatPopup campaignId={campaignId} />
+      {/* Chat: desktop side panel + mobile popup */}
+      <ChatPanel campaignId={campaignId} />
+      <div className="md:hidden">
+        <ChatPopup campaignId={campaignId} />
+      </div>
 
       {/* Modals */}
       <SettingsModal
