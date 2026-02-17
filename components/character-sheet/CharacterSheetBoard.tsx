@@ -334,7 +334,7 @@ export default function CharacterSheetBoard({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {data.equipment.map((item, i) => (
               <EquipmentCard
-                key={`${item.name}-${i}`}
+                key={i}
                 item={item}
                 editing={editing}
                 onUpdate={(updated) => updateEquipment(i, updated)}
@@ -369,7 +369,7 @@ export default function CharacterSheetBoard({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {data.features.map((feature, i) => (
               <FeatureCard
-                key={`${feature.name}-${i}`}
+                key={i}
                 feature={feature}
                 editing={editing}
                 onUpdate={(updated) => updateFeature(i, updated)}

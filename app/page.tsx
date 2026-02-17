@@ -1,7 +1,14 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { auth } from '@/lib/auth'
 import { Scroll, Mic, BookOpen, MessageCircle } from 'lucide-react'
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth()
+  if (session?.user) {
+    redirect('/campaigns')
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-radial-glow">
       <main className="flex flex-col items-center gap-8 text-center px-6 py-12">
