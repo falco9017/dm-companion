@@ -158,7 +158,8 @@ export default function SpellSection({ spellcasting, editing, onChange }: SpellS
           <p className="text-[10px] text-text-muted">Save DC</p>
           {editing ? (
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={spellcasting.saveDC}
               onChange={(e) => onChange({ ...spellcasting, saveDC: parseInt(e.target.value) || 0 })}
               className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary mx-auto block"
@@ -171,7 +172,8 @@ export default function SpellSection({ spellcasting, editing, onChange }: SpellS
           <p className="text-[10px] text-text-muted">Attack</p>
           {editing ? (
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={spellcasting.attackBonus}
               onChange={(e) => onChange({ ...spellcasting, attackBonus: parseInt(e.target.value) || 0 })}
               className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary mx-auto block"

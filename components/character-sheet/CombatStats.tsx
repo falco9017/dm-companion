@@ -31,7 +31,8 @@ function StatBox({
       <Icon className={`w-4 h-4 ${color}`} />
       {editing ? (
         <input
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value) || 0)}
           className="w-12 text-center text-lg font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
@@ -69,7 +70,8 @@ export default function CombatStats({
           <Zap className="w-4 h-4 text-amber-400" />
           {editing ? (
             <input
-              type="number"
+              type="text"
+            inputMode="numeric"
               value={initiative}
               onChange={(e) => onChange('initiative', parseInt(e.target.value) || 0)}
               className="w-12 text-center text-lg font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
@@ -92,7 +94,8 @@ export default function CombatStats({
         <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Prof. Bonus</span>
         {editing ? (
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={proficiencyBonus}
             onChange={(e) => onChange('proficiencyBonus', parseInt(e.target.value) || 0)}
             className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"

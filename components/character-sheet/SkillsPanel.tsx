@@ -59,7 +59,8 @@ export default function SkillsPanel({ skills, editing, onChange }: SkillsPanelPr
               </button>
               {editing ? (
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={skill.modifier}
                   onChange={(e) => updateModifier(i, parseInt(e.target.value) || 0)}
                   className="w-8 text-xs text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"

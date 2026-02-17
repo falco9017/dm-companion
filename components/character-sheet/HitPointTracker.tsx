@@ -39,7 +39,8 @@ export default function HitPointTracker({
           <span className="text-sm font-bold text-text-primary min-w-[60px] text-center">
             {current} / {editing ? (
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={maximum}
                 onChange={(e) => onChange({ current, maximum: parseInt(e.target.value) || 0, temporary })}
                 className="w-10 text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none"
@@ -66,7 +67,8 @@ export default function HitPointTracker({
         <span className="text-[10px] text-text-muted">Temp HP:</span>
         {editing ? (
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={temporary}
             onChange={(e) => onChange({ current, maximum, temporary: parseInt(e.target.value) || 0 })}
             className="w-10 text-xs text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-secondary"

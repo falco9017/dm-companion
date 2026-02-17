@@ -25,7 +25,8 @@ export default function CurrencyTracker({ currency, onChange }: CurrencyTrackerP
         >
           <span className={`text-[10px] font-bold ${color}`}>{label}</span>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={currency[key]}
             onChange={(e) => onChange({ ...currency, [key]: parseInt(e.target.value) || 0 })}
             className="w-12 text-xs text-center bg-transparent border-none focus:outline-none text-text-primary"

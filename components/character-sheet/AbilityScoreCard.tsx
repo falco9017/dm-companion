@@ -29,7 +29,8 @@ export default function AbilityScoreCard({
         <span className="text-xl font-bold text-text-primary">{modStr}</span>
         {editing ? (
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={ability.score}
             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
             className="w-10 text-center text-xs text-text-muted bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none"
