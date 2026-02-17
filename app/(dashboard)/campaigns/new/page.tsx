@@ -23,7 +23,7 @@ export default async function NewCampaignPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-6 text-glow">{t(locale, 'campaigns.new.title')}</h1>
 
-      <form action={handleCreate} className="glass-card rounded-xl p-6 sm:p-8 bg-surface">
+      <form action={handleCreate} className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
         <div className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">

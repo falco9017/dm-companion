@@ -117,7 +117,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
 
         {/* Source audio */}
         {entry.audioFile && (
-          <div className="mb-6 p-3 rounded-lg glass-card flex items-center gap-2">
+          <div className="mb-6 p-3 rounded-lg bg-surface-elevated border border-border-theme flex items-center gap-2">
             <Music className="w-4 h-4 text-text-muted" />
             <p className="text-sm text-text-muted">
               {t('wiki.source')}: <span className="text-text-secondary">{entry.audioFile.filename}</span>
@@ -148,7 +148,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
                 <a
                   key={child.id}
                   href={`/campaigns/${campaignId}?entry=${child.id}`}
-                  className="glass-card rounded-lg p-3 hover-glow transition-all"
+                  className="bg-surface-elevated border border-border-theme rounded-lg p-3 hover:bg-white/5 transition-all"
                 >
                   <h3 className="text-text-primary font-semibold">{child.title}</h3>
                   {child.excerpt && (
@@ -188,7 +188,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
             <>
               <button
                 onClick={() => setEditing(true)}
-                className="glass-card-elevated px-5 py-2 rounded-lg text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center gap-2 text-sm"
+                className="bg-surface-elevated border border-border-theme px-5 py-2 rounded-lg text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 text-sm"
               >
                 <Pencil className="w-4 h-4" />
                 {t('common.edit')}

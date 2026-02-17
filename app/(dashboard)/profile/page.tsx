@@ -1,9 +1,9 @@
 import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import ProfileForm from './ProfileForm'
-import { LogOut } from 'lucide-react'
+import { LogOut, ArrowLeft } from 'lucide-react'
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -17,10 +17,19 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>
+      <div>
+        <Link
+          href="/campaigns"
+          className="text-sm text-text-muted hover:text-text-secondary flex items-center gap-1 transition-colors mb-3"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t(locale, 'nav.campaigns')}
+        </Link>
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>
+      </div>
 
       {/* Profile card */}
-      <div className="glass-card rounded-xl p-6 sm:p-8 bg-surface">
+      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
         <div className="flex items-center gap-4 mb-6">
           {profile.image && (
             <img

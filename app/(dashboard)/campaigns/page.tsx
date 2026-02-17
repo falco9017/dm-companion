@@ -26,7 +26,7 @@ export default async function CampaignsPage() {
       </div>
 
       {campaigns.length === 0 ? (
-        <div className="glass-card rounded-xl p-8 sm:p-12 text-center">
+        <div className="bg-surface border border-border-theme rounded-xl p-8 sm:p-12 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent-purple/10 flex items-center justify-center">
             <BookOpen className="w-8 h-8 text-accent-purple-light" />
           </div>

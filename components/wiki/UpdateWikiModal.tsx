@@ -65,7 +65,7 @@ export default function UpdateWikiModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative glass-card-elevated bg-surface rounded-xl w-full max-w-lg mx-3">
+      <div className="relative bg-surface rounded-xl w-full max-w-lg mx-3 border border-border-theme">
         <div className="flex items-center justify-between p-6 border-b border-border-theme">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center">

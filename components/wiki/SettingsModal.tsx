@@ -62,7 +62,7 @@ export default function SettingsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative glass-card-elevated bg-surface rounded-xl w-full max-w-lg mx-3 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-surface rounded-xl w-full max-w-lg mx-3 max-h-[90vh] overflow-y-auto border border-border-theme">
         <div className="flex items-center justify-between p-6 border-b border-border-theme">
           <h2 className="text-xl font-bold text-text-primary">{t('settings.title')}</h2>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary text-xl transition-colors">&times;</button>

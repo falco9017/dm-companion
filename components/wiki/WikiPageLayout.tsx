@@ -65,7 +65,7 @@ export default function WikiPageLayout({
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-[4.5rem] left-3 z-30 md:hidden p-2 rounded-lg glass-card-elevated text-text-secondary hover:text-text-primary transition-colors"
+        className="fixed top-[4.5rem] left-3 z-30 md:hidden p-2 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-colors"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -109,7 +109,7 @@ export default function WikiPageLayout({
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setUploadOpen(true)}
-                className="text-sm px-4 py-2.5 rounded-lg glass-card text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center gap-2"
+                className="text-sm px-4 py-2.5 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-all flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
                 {t('audio.uploadAudio')}
@@ -154,7 +154,7 @@ export default function WikiPageLayout({
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setCreateOpen(false)} />
-          <div className="relative glass-card-elevated rounded-xl w-full max-w-lg mx-3 bg-surface">
+          <div className="relative rounded-xl w-full max-w-lg mx-3 bg-surface border border-border-theme">
             <div className="flex items-center justify-between p-6 border-b border-border-theme">
               <h2 className="text-xl font-bold text-text-primary">{t('wiki.createEntry')}</h2>
               <button

@@ -120,7 +120,7 @@ export default function WikiSidebar({
       <div className="p-3 border-b border-border-theme flex gap-2">
         <button
           onClick={onUploadClick}
-          className="flex-1 text-xs px-2 py-2 rounded-lg glass-card text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center justify-center gap-1"
+          className="flex-1 text-xs px-2 py-2 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-all flex items-center justify-center gap-1"
         >
           <Upload className="w-3 h-3" />
           {t('sidebar.upload')}
