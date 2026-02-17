@@ -11,7 +11,9 @@ import WikiEntryForm from './WikiEntryForm'
 import ChatPopup from '@/components/chat/ChatPopup'
 import ChatPanel from '@/components/chat/ChatPanel'
 import UpdateWikiModal from './UpdateWikiModal'
+import CharacterPdfUploadModal from './CharacterPdfUploadModal'
 import { useI18n } from '@/lib/i18n-context'
+import type { CharacterSheetData } from '@/types/character-sheet'
 
 interface WikiTreeEntry {
   id: string
@@ -33,6 +35,11 @@ interface ActiveEntry {
   children: { id: string; title: string; excerpt: string | null }[]
   createdAt: Date
   updatedAt: Date
+  characterSheet?: {
+    id: string
+    data: CharacterSheetData
+    pdfBlobUrl: string | null
+  } | null
 }
 
 interface WikiPageLayoutProps {
@@ -59,6 +66,7 @@ export default function WikiPageLayout({
   const [createOpen, setCreateOpen] = useState(false)
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pdfImportOpen, setPdfImportOpen] = useState(false)
   const { t } = useI18n()
 
   return (
@@ -90,6 +98,7 @@ export default function WikiPageLayout({
           campaignId={campaignId}
           userId={userId}
           entry={activeEntry}
+          onImportPdf={() => setPdfImportOpen(true)}
         />
       ) : (
         <div className="flex-1 flex items-center justify-center px-4">
@@ -152,6 +161,15 @@ export default function WikiPageLayout({
         campaignId={campaignId}
         isOpen={updateWikiOpen}
         onClose={() => setUpdateWikiOpen(false)}
+      />
+
+      <CharacterPdfUploadModal
+        campaignId={campaignId}
+        userId={userId}
+        wikiEntryId={activeEntry?.id || ''}
+        wikiEntryTitle={activeEntry?.title || ''}
+        isOpen={pdfImportOpen}
+        onClose={() => setPdfImportOpen(false)}
       />
 
       {/* Create entry modal */}

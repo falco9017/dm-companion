@@ -3,9 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateWikiEntry, deleteWikiEntry } from '@/actions/wiki'
+import { createCharacterSheet } from '@/actions/character-sheet'
 import { WikiEntryType } from '@prisma/client'
-import { Pencil, Trash2, Save, X, Sparkles, Music } from 'lucide-react'
+import { Pencil, Trash2, Save, X, Sparkles, Music, LayoutGrid, FileText, Plus, Upload } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
+import CharacterSheetBoard from '@/components/character-sheet/CharacterSheetBoard'
+import { createEmptyCharacterSheet } from '@/types/character-sheet'
+import type { CharacterSheetData } from '@/types/character-sheet'
 
 const typeColors: Record<WikiEntryType, string> = {
   SESSION_RECAP: 'bg-accent-purple/20 text-accent-purple-light',
@@ -34,23 +38,35 @@ interface WikiEntryEditorProps {
     children: { id: string; title: string; excerpt: string | null }[]
     createdAt: Date
     updatedAt: Date
+    characterSheet?: {
+      id: string
+      data: CharacterSheetData
+      pdfBlobUrl: string | null
+    } | null
   }
+  onImportPdf?: () => void
 }
 
-export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntryEditorProps) {
+export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf }: WikiEntryEditorProps) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(entry.title)
   const [content, setContent] = useState(entry.content)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [viewMode, setViewMode] = useState<'board' | 'wiki'>(entry.characterSheet ? 'board' : 'wiki')
+  const [creatingSheet, setCreatingSheet] = useState(false)
   const { t } = useI18n()
+
+  const isCharacter = entry.type === 'CHARACTER'
+  const hasSheet = !!entry.characterSheet
 
   useEffect(() => {
     setEditing(false)
     setTitle(entry.title)
     setContent(entry.content)
-  }, [entry.id, entry.title, entry.content])
+    setViewMode(entry.characterSheet ? 'board' : 'wiki')
+  }, [entry.id, entry.title, entry.content, entry.characterSheet])
 
   const handleSave = async () => {
     setSaving(true)
@@ -78,8 +94,76 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
     }
   }
 
+  const handleCreateBlankSheet = async () => {
+    setCreatingSheet(true)
+    try {
+      const emptyData = createEmptyCharacterSheet()
+      emptyData.characterName = entry.title
+      await createCharacterSheet(campaignId, userId, entry.id, emptyData)
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create character sheet')
+    } finally {
+      setCreatingSheet(false)
+    }
+  }
+
+  // Board view for characters with sheet data
+  if (isCharacter && hasSheet && viewMode === 'board') {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        {/* View toggle bar */}
+        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-sm border-b border-border-theme px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('board')}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors bg-accent-purple/20 text-accent-purple-light"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              {t('characterSheet.boardView')}
+            </button>
+            <button
+              onClick={() => setViewMode('wiki')}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors text-text-muted hover:text-text-primary"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              {t('characterSheet.wikiView')}
+            </button>
+          </div>
+        </div>
+        <CharacterSheetBoard
+          characterSheetId={entry.characterSheet!.id}
+          userId={userId}
+          campaignId={campaignId}
+          initialData={entry.characterSheet!.data}
+          pdfBlobUrl={entry.characterSheet!.pdfBlobUrl}
+          onBack={() => setViewMode('wiki')}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      {/* View toggle for characters with sheet */}
+      {isCharacter && hasSheet && viewMode === 'wiki' && (
+        <div className="mb-4 flex items-center gap-2">
+          <button
+            onClick={() => setViewMode('board')}
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            {t('characterSheet.boardView')}
+          </button>
+          <button
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-accent-purple/20 text-accent-purple-light"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            {t('characterSheet.wikiView')}
+          </button>
+        </div>
+      )}
+
       <div className="max-w-4xl">
         {/* Header */}
         <div className="mb-6 relative">
@@ -163,6 +247,32 @@ export default function WikiEntryEditor({ campaignId, userId, entry }: WikiEntry
             )}
           </div>
         </div>
+
+        {/* Character sheet prompt for CHARACTER entries without a sheet */}
+        {isCharacter && !hasSheet && !editing && (
+          <div className="mb-6 p-4 rounded-lg bg-surface-elevated border border-dashed border-accent-purple/30">
+            <p className="text-sm text-text-secondary mb-3">{t('characterSheet.addPrompt')}</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleCreateBlankSheet}
+                disabled={creatingSheet}
+                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg btn-primary"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {creatingSheet ? t('common.creating') : t('characterSheet.createBlank')}
+              </button>
+              {onImportPdf && (
+                <button
+                  onClick={onImportPdf}
+                  className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-surface border border-border-theme text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {t('characterSheet.importPdf')}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Source audio */}
         {entry.audioFile && (

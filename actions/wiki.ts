@@ -118,6 +118,13 @@ export async function getWikiEntry(entryId: string, userId: string) {
         },
       },
       children: true,
+      characterSheet: {
+        select: {
+          id: true,
+          data: true,
+          pdfBlobUrl: true,
+        },
+      },
     },
   })
 

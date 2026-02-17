@@ -132,6 +132,27 @@ const en = {
   'updateWiki.analyzing': 'Analyzing sessions...',
   'updateWiki.done': 'Done! Created {created} and updated {updated} entries.',
 
+  // Character sheet
+  'characterSheet.boardView': 'Board View',
+  'characterSheet.wikiView': 'Wiki View',
+  'characterSheet.addPrompt': 'Add an interactive character sheet to track stats, equipment, and spells.',
+  'characterSheet.createBlank': 'Create Character Sheet',
+  'characterSheet.importPdf': 'Import from PDF',
+  'characterSheet.importTitle': 'Import Character Sheet',
+  'characterSheet.importSubtitle': 'Upload a D&D Beyond PDF character sheet',
+  'characterSheet.importForEntry': 'Import character sheet for {name}',
+  'characterSheet.dropHere': 'Drop the PDF here',
+  'characterSheet.dragOrClick': 'Drag & drop a character sheet PDF, or click to browse',
+  'characterSheet.pdfOnly': 'PDF files only (max 10MB)',
+  'characterSheet.uploading': 'Uploading PDF...',
+  'characterSheet.processing': 'AI is reading the character sheet...',
+  'characterSheet.aiParsing': 'Extracting abilities, equipment, spells, and more',
+  'characterSheet.importSuccess': 'Character sheet imported!',
+  'characterSheet.redirecting': 'Redirecting to character board...',
+
+  // Common (additions)
+  'common.creating': 'Creating...',
+
   // Profile
   'profile.title': 'Profile',
   'profile.displayName': 'Display Name',
@@ -273,6 +294,27 @@ const it: Record<string, string> = {
   'updateWiki.generate': 'Genera Wiki',
   'updateWiki.analyzing': 'Analisi sessioni...',
   'updateWiki.done': 'Fatto! Create {created} e aggiornate {updated} voci.',
+
+  // Character sheet
+  'characterSheet.boardView': 'Vista Scheda',
+  'characterSheet.wikiView': 'Vista Wiki',
+  'characterSheet.addPrompt': 'Aggiungi una scheda personaggio interattiva per monitorare statistiche, equipaggiamento e incantesimi.',
+  'characterSheet.createBlank': 'Crea Scheda Personaggio',
+  'characterSheet.importPdf': 'Importa da PDF',
+  'characterSheet.importTitle': 'Importa Scheda Personaggio',
+  'characterSheet.importSubtitle': 'Carica un PDF della scheda personaggio di D&D Beyond',
+  'characterSheet.importForEntry': 'Importa scheda personaggio per {name}',
+  'characterSheet.dropHere': 'Rilascia il PDF qui',
+  'characterSheet.dragOrClick': 'Trascina un PDF della scheda personaggio, o clicca per sfogliare',
+  'characterSheet.pdfOnly': 'Solo file PDF (max 10MB)',
+  'characterSheet.uploading': 'Caricamento PDF...',
+  'characterSheet.processing': 'L\'IA sta leggendo la scheda personaggio...',
+  'characterSheet.aiParsing': 'Estrazione abilit\u00e0, equipaggiamento, incantesimi e altro',
+  'characterSheet.importSuccess': 'Scheda personaggio importata!',
+  'characterSheet.redirecting': 'Reindirizzamento alla scheda...',
+
+  // Common (additions)
+  'common.creating': 'Creazione...',
 
   // Profile
   'profile.title': 'Profilo',

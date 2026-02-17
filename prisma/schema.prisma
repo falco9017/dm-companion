@@ -83,10 +83,11 @@ model Campaign {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  audioFiles   AudioFile[]
-  wikiEntries  WikiEntry[]
-  chatMessages ChatMessage[]
+  owner           User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  audioFiles      AudioFile[]
+  wikiEntries     WikiEntry[]
+  chatMessages    ChatMessage[]
+  characterSheets CharacterSheet[]
 
   @@index([ownerId])
   @@map("campaigns")
@@ -155,16 +156,35 @@ model WikiEntry {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  campaign  Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  audioFile AudioFile? @relation(fields: [audioFileId], references: [id], onDelete: SetNull)
-  parent    WikiEntry? @relation("WikiEntryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children  WikiEntry[] @relation("WikiEntryHierarchy")
+  campaign       Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  audioFile      AudioFile?      @relation(fields: [audioFileId], references: [id], onDelete: SetNull)
+  parent         WikiEntry?      @relation("WikiEntryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       WikiEntry[]     @relation("WikiEntryHierarchy")
+  characterSheet CharacterSheet?
 
   @@unique([campaignId, slug])
   @@index([campaignId])
   @@index([type])
   @@index([audioFileId])
   @@map("wiki_entries")
+}
+
+// Character sheet model — structured D&D character data linked to a CHARACTER wiki entry
+model CharacterSheet {
+  id          String   @id @default(cuid())
+  wikiEntryId String   @unique
+  data        Json     // Structured CharacterSheetData (see types/character-sheet.ts)
+  pdfBlobUrl  String?  // Original uploaded PDF URL
+  pdfBlobKey  String?  // Blob storage key for cleanup
+  campaignId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  wikiEntry WikiEntry @relation(fields: [wikiEntryId], references: [id], onDelete: Cascade)
+  campaign  Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("character_sheets")
 }
 
 // Chat message model
