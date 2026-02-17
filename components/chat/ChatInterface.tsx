@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -18,6 +19,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { t } = useI18n()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -85,7 +87,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
         const updated = [...prev]
         updated[updated.length - 1] = {
           role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
+          content: t('chat.error'),
         }
         return updated
       })
@@ -100,9 +102,9 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="text-center text-text-muted mt-8">
-            <p className="text-base mb-2">Ask me anything about your campaign!</p>
+            <p className="text-base mb-2">{t('chat.emptyTitle')}</p>
             <p className="text-sm">
-              I can help you recall characters, locations, events, and more.
+              {t('chat.emptySubtitle')}
             </p>
           </div>
         ) : (
@@ -115,11 +117,11 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
                 className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                   message.role === 'user'
                     ? 'btn-primary rounded-br-sm'
-                    : 'glass-card text-text-secondary rounded-bl-sm'
+                    : 'bg-surface-elevated border border-border-theme text-text-secondary rounded-bl-sm'
                 }`}
               >
                 <p className="text-xs font-medium mb-1 opacity-70">
-                  {message.role === 'user' ? 'You' : 'DM Companion'}
+                  {message.role === 'user' ? t('chat.you') : t('chat.title')}
                 </p>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
@@ -137,7 +139,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
-            placeholder="Ask about your campaign..."
+            placeholder={t('chat.placeholder')}
             className="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
           />
           <button

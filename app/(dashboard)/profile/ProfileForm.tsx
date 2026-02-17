@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateUserProfile } from '@/actions/profile'
+import { useI18n } from '@/lib/i18n-context'
 
 interface ProfileFormProps {
   userId: string
@@ -16,6 +17,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
   const [uiLanguage, setUiLanguage] = useState(initialLang)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const { t } = useI18n()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,7 +39,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1">
-          Display Name
+          {t('profile.displayName')}
         </label>
         <input
           type="text"
@@ -45,13 +47,13 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full px-4 py-3 rounded-lg input-dark"
-          placeholder="Your name"
+          placeholder={t('profile.displayNamePlaceholder')}
         />
       </div>
 
       <div>
         <label htmlFor="uiLanguage" className="block text-sm font-medium text-text-secondary mb-1">
-          UI Language
+          {t('profile.uiLanguage')}
         </label>
         <select
           id="uiLanguage"
@@ -69,7 +71,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
         disabled={saving}
         className="w-full btn-primary px-6 py-3 rounded-lg"
       >
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+        {saving ? t('common.saving') : saved ? t('profile.saved') : t('settings.saveChanges')}
       </button>
     </form>
   )

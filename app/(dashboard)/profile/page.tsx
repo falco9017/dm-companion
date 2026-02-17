@@ -1,5 +1,6 @@
 import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
+import { t, type Locale } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import ProfileForm from './ProfileForm'
 import { LogOut } from 'lucide-react'
@@ -7,6 +8,7 @@ import { LogOut } from 'lucide-react'
 export default async function ProfilePage() {
   const session = await auth()
   const profile = await getUserProfile(session!.user.id)
+  const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
 
   async function handleSignOut() {
     'use server'
@@ -15,7 +17,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">Profile</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>
 
       {/* Profile card */}
       <div className="glass-card rounded-xl p-6 sm:p-8 bg-surface">
@@ -28,10 +30,10 @@ export default async function ProfilePage() {
             />
           )}
           <div>
-            <p className="text-lg font-semibold text-text-primary">{profile.name || 'No name set'}</p>
+            <p className="text-lg font-semibold text-text-primary">{profile.name || t(locale, 'profile.noName')}</p>
             <p className="text-sm text-text-secondary">{profile.email}</p>
             <p className="text-xs text-text-muted mt-1">
-              Member since {new Date(profile.createdAt).toLocaleDateString()}
+              {t(locale, 'profile.memberSince')} {new Date(profile.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -50,7 +52,7 @@ export default async function ProfilePage() {
           className="w-full px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
         >
           <LogOut className="w-4 h-4" />
-          Sign Out
+          {t(locale, 'nav.signOut')}
         </button>
       </form>
     </div>

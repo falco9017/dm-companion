@@ -10,6 +10,7 @@ import AudioUploadModal from './AudioUploadModal'
 import WikiEntryForm from './WikiEntryForm'
 import ChatPopup from '@/components/chat/ChatPopup'
 import UpdateWikiModal from './UpdateWikiModal'
+import { useI18n } from '@/lib/i18n-context'
 
 interface WikiTreeEntry {
   id: string
@@ -57,6 +58,7 @@ export default function WikiPageLayout({
   const [createOpen, setCreateOpen] = useState(false)
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { t } = useI18n()
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -98,11 +100,11 @@ export default function WikiPageLayout({
             </div>
             <p className="text-text-secondary text-lg mb-2">
               {wikiTree.length === 0
-                ? 'No wiki entries yet'
-                : 'Select an entry from the sidebar'}
+                ? t('wiki.noEntriesYet')
+                : t('wiki.selectEntry')}
             </p>
             <p className="text-text-muted text-sm mb-6">
-              Upload audio to generate entries automatically, or create one manually
+              {t('wiki.uploadHint')}
             </p>
             <div className="flex justify-center gap-3">
               <button
@@ -110,14 +112,14 @@ export default function WikiPageLayout({
                 className="text-sm px-4 py-2.5 rounded-lg glass-card text-text-secondary hover:text-text-primary hover-glow transition-all flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
-                Upload Audio
+                {t('audio.uploadAudio')}
               </button>
               <button
                 onClick={() => setCreateOpen(true)}
                 className="text-sm px-4 py-2.5 rounded-lg btn-primary flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                New Page
+                {t('sidebar.newPage')}
               </button>
             </div>
           </div>
@@ -154,7 +156,7 @@ export default function WikiPageLayout({
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setCreateOpen(false)} />
           <div className="relative glass-card-elevated rounded-xl w-full max-w-lg mx-3 bg-surface">
             <div className="flex items-center justify-between p-6 border-b border-border-theme">
-              <h2 className="text-xl font-bold text-text-primary">Create Wiki Entry</h2>
+              <h2 className="text-xl font-bold text-text-primary">{t('wiki.createEntry')}</h2>
               <button
                 onClick={() => setCreateOpen(false)}
                 className="text-text-muted hover:text-text-primary text-xl transition-colors"

@@ -4,18 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createWikiEntry } from '@/actions/wiki'
 import { Save } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 const ENTRY_TYPES = [
-  { value: 'CHARACTER', label: 'Character' },
-  { value: 'NPC', label: 'NPC' },
-  { value: 'LOCATION', label: 'Location' },
-  { value: 'ITEM', label: 'Item' },
-  { value: 'FACTION', label: 'Faction' },
-  { value: 'EVENT', label: 'Event' },
-  { value: 'QUEST', label: 'Quest' },
-  { value: 'LORE', label: 'Lore' },
-  { value: 'SESSION_RECAP', label: 'Session Recap' },
-  { value: 'OTHER', label: 'Other' },
+  'CHARACTER', 'NPC', 'LOCATION', 'ITEM', 'FACTION',
+  'EVENT', 'QUEST', 'LORE', 'SESSION_RECAP', 'OTHER',
 ] as const
 
 interface WikiEntryFormProps {
@@ -28,6 +21,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useI18n()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -62,7 +56,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-text-secondary mb-1">
-            Title *
+            {t('wiki.form.title')}
           </label>
           <input
             type="text"
@@ -70,12 +64,12 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
             name="title"
             required
             className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
-            placeholder="e.g. Eldrin the Wise"
+            placeholder={t('wiki.form.titlePlaceholder')}
           />
         </div>
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-text-secondary mb-1">
-            Type *
+            {t('wiki.form.type')}
           </label>
           <select
             id="type"
@@ -83,9 +77,9 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
             required
             className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           >
-            {ENTRY_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            {ENTRY_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {t(`wiki.typeSingle.${type}`)}
               </option>
             ))}
           </select>
@@ -94,7 +88,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
 
       <div>
         <label htmlFor="content" className="block text-sm font-medium text-text-secondary mb-1">
-          Content *
+          {t('wiki.form.content')}
         </label>
         <textarea
           id="content"
@@ -102,20 +96,20 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
           required
           rows={5}
           className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
-          placeholder="Write the wiki entry content..."
+          placeholder={t('wiki.form.contentPlaceholder')}
         />
       </div>
 
       <div>
         <label htmlFor="tags" className="block text-sm font-medium text-text-secondary mb-1">
-          Tags (comma-separated)
+          {t('wiki.form.tags')}
         </label>
         <input
           type="text"
           id="tags"
           name="tags"
           className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
-          placeholder="e.g. wizard, ally, magic"
+          placeholder={t('wiki.form.tagsPlaceholder')}
         />
       </div>
 
@@ -130,7 +124,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
           className="btn-primary px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Create Entry'}
+          {saving ? t('common.saving') : t('common.createEntry')}
         </button>
         {onDone && (
           <button
@@ -138,7 +132,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
             onClick={onDone}
             className="px-5 py-2.5 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors text-sm"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
       </div>

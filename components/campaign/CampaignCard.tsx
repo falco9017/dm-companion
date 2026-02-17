@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateCampaign, deleteCampaign } from '@/actions/campaigns'
 import { MoreVertical, Music, BookOpen } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface CampaignCardProps {
   campaign: {
@@ -27,6 +28,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
   const [saving, setSaving] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { t } = useI18n()
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -103,7 +105,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
               }}
               className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:bg-white/5 hover:text-text-primary transition-colors"
             >
-              Rename
+              {t('campaigns.rename')}
             </button>
             <button
               onClick={(e) => {
@@ -113,7 +115,7 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
               }}
               className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5 hover:text-red-300 transition-colors"
             >
-              Delete
+              {t('common.delete')}
             </button>
           </div>
         )}
@@ -152,11 +154,11 @@ export default function CampaignCard({ campaign, userId }: CampaignCardProps) {
         <div className="flex gap-4 text-xs text-text-muted">
           <span className="flex items-center gap-1">
             <Music className="w-3 h-3" />
-            {campaign._count.audioFiles} audio
+            {campaign._count.audioFiles} {t('campaigns.audio')}
           </span>
           <span className="flex items-center gap-1">
             <BookOpen className="w-3 h-3" />
-            {campaign._count.wikiEntries} wiki
+            {campaign._count.wikiEntries} {t('campaigns.wiki')}
           </span>
         </div>
       </Link>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { upload } from '@vercel/blob/client'
 import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface AudioUploaderProps {
   campaignId: string
@@ -12,21 +13,13 @@ interface AudioUploaderProps {
 
 type UploadStage = 'idle' | 'uploading' | 'creating' | 'processing' | 'done' | 'error'
 
-const stageMessages: Record<UploadStage, string> = {
-  idle: '',
-  uploading: 'Uploading file...',
-  creating: 'Creating record...',
-  processing: 'Processing audio (transcribing, summarizing, generating wiki entries)...',
-  done: 'Done! Wiki entries generated.',
-  error: 'Something went wrong.',
-}
-
 export default function AudioUploader({ campaignId }: AudioUploaderProps) {
   const router = useRouter()
   const [stage, setStage] = useState<UploadStage>('idle')
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const { t } = useI18n()
 
   useEffect(() => {
     return () => {
@@ -162,7 +155,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
         <div className="space-y-3">
           {stage === 'uploading' ? (
             <>
-              <p className="text-text-primary font-semibold">Uploading... {progress}%</p>
+              <p className="text-text-primary font-semibold">{t('audio.uploading')} {progress}%</p>
               <div className="max-w-xs mx-auto bg-surface rounded-full h-2 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-300"
@@ -177,25 +170,27 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
             <>
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 text-accent-purple-light animate-spin" />
-                <p className="text-text-primary font-semibold">{stageMessages[stage]}</p>
+                <p className="text-text-primary font-semibold">
+                  {stage === 'creating' ? t('audio.creating') : t('audio.processing')}
+                </p>
               </div>
-              <p className="text-text-muted text-xs">This may take a few minutes for longer recordings</p>
+              <p className="text-text-muted text-xs">{t('audio.waitNote')}</p>
             </>
           ) : stage === 'done' ? (
             <div className="flex items-center justify-center gap-2">
               <CheckCircle className="w-5 h-5 text-success" />
-              <p className="text-success font-semibold">{stageMessages.done}</p>
+              <p className="text-success font-semibold">{t('audio.done')}</p>
             </div>
           ) : (
             <>
               <Upload className="w-8 h-8 text-text-muted mx-auto" />
               <p className="text-text-primary font-semibold">
-                {isDragActive ? 'Drop the file here' : 'Drag & drop an audio file here'}
+                {isDragActive ? t('audio.dropHere') : t('audio.dragDrop')}
               </p>
               {!isDragActive && (
                 <>
-                  <p className="text-text-secondary text-sm">or click to browse</p>
-                  <p className="text-text-muted text-xs">MP3, WAV, M4A, OGG (max 100MB)</p>
+                  <p className="text-text-secondary text-sm">{t('audio.orBrowse')}</p>
+                  <p className="text-text-muted text-xs">{t('audio.formats')}</p>
                 </>
               )}
             </>
@@ -212,7 +207,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
               onClick={() => { setError(null); setStage('idle') }}
               className="text-red-400/70 hover:text-red-400 text-xs mt-1 underline"
             >
-              Try again
+              {t('audio.tryAgain')}
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RefreshCw, Loader2 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface UpdateWikiModalProps {
   campaignId: string
@@ -20,6 +21,7 @@ export default function UpdateWikiModal({
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ created: number; updated: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useI18n()
 
   if (!isOpen) return null
 
@@ -69,7 +71,7 @@ export default function UpdateWikiModal({
             <div className="w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-accent-purple-light" />
             </div>
-            <h2 className="text-lg font-bold text-text-primary">Update Wiki</h2>
+            <h2 className="text-lg font-bold text-text-primary">{t('updateWiki.title')}</h2>
           </div>
           <button
             onClick={handleClose}
@@ -81,17 +83,17 @@ export default function UpdateWikiModal({
 
         <div className="p-6 space-y-4">
           <p className="text-text-muted text-sm">
-            Analyze all session recaps and create or update wiki entries for characters, locations, items, and more.
+            {t('updateWiki.description')}
           </p>
 
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-1">
-              Additional instructions (optional)
+              {t('updateWiki.instructions')}
             </label>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              placeholder="e.g. Focus on the new NPCs from the latest session"
+              placeholder={t('updateWiki.instructionsPlaceholder')}
               className="w-full px-3 py-2.5 rounded-lg input-dark text-sm resize-none"
               rows={3}
               disabled={loading}
@@ -106,7 +108,7 @@ export default function UpdateWikiModal({
 
           {result && (
             <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-sm">
-              Done! Created {result.created} and updated {result.updated} entries.
+              {t('updateWiki.done', { created: result.created, updated: result.updated })}
             </div>
           )}
 
@@ -116,7 +118,7 @@ export default function UpdateWikiModal({
               className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors"
               disabled={loading}
             >
-              {result ? 'Close' : 'Cancel'}
+              {result ? t('common.close') : t('common.cancel')}
             </button>
             {!result && (
               <button
@@ -129,7 +131,7 @@ export default function UpdateWikiModal({
                 ) : (
                   <RefreshCw className="w-4 h-4" />
                 )}
-                {loading ? 'Analyzing sessions...' : 'Generate Wiki'}
+                {loading ? t('updateWiki.analyzing') : t('updateWiki.generate')}
               </button>
             )}
           </div>

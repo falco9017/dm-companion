@@ -2,6 +2,7 @@
 
 import AudioUploader from '@/components/audio/AudioUploader'
 import { Mic } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface AudioUploadModalProps {
   campaignId: string
@@ -10,6 +11,8 @@ interface AudioUploadModalProps {
 }
 
 export default function AudioUploadModal({ campaignId, isOpen, onClose }: AudioUploadModalProps) {
+  const { t } = useI18n()
+
   if (!isOpen) return null
 
   return (
@@ -22,9 +25,9 @@ export default function AudioUploadModal({ campaignId, isOpen, onClose }: AudioU
               <Mic className="w-4 h-4 text-accent-purple-light" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-text-primary">Upload Session Recording</h2>
+              <h2 className="text-lg font-bold text-text-primary">{t('audio.uploadTitle')}</h2>
               <p className="text-text-muted text-xs mt-0.5">
-                Upload audio to auto-transcribe and generate wiki entries
+                {t('audio.uploadSubtitle')}
               </p>
             </div>
           </div>

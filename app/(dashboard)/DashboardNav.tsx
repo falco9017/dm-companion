@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X, Scroll } from 'lucide-react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface DashboardNavProps {
   user: {
@@ -14,6 +15,7 @@ interface DashboardNavProps {
 
 export default function DashboardNav({ user }: DashboardNavProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { t } = useI18n()
 
   return (
     <nav className="bg-surface border-b border-border-theme flex-shrink-0 relative">
@@ -63,7 +65,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
             onClick={() => setMenuOpen(false)}
             className="block px-3 py-2 text-sm text-text-secondary hover:text-text-primary rounded-lg hover:bg-white/5 transition-colors"
           >
-            Campaigns
+            {t('nav.campaigns')}
           </Link>
           <Link
             href="/profile"
