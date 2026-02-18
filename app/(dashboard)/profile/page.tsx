@@ -2,6 +2,7 @@ import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
 import ProfileForm from './ProfileForm'
+import ChangePasswordForm from './ChangePasswordForm'
 import BackButton from './BackButton'
 import { EmailVerificationBanner } from '../EmailVerificationBanner'
 import { LogOut } from 'lucide-react'
@@ -53,6 +54,14 @@ export default async function ProfilePage() {
           uiLanguage={profile.uiLanguage}
         />
       </div>
+
+      {/* Change password (credentials users only) */}
+      {profile.password && (
+        <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
+          <h2 className="text-lg font-semibold text-text-primary mb-5">Change password</h2>
+          <ChangePasswordForm />
+        </div>
+      )}
 
       {/* Sign out */}
       <form action={handleSignOut}>
