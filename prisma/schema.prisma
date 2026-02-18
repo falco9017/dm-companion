@@ -8,13 +8,14 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-// User model with Google OAuth profile
+// User model with Google OAuth + email/password auth
 model User {
   id                String        @id @default(cuid())
   name              String?
   email             String        @unique
   emailVerified     DateTime?
   image             String?
+  password          String?       // bcrypt hash, null for Google-only users
   defaultCampaignId String?
   uiLanguage        String        @default("en")
   createdAt         DateTime      @default(now())

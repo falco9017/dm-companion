@@ -1,9 +1,60 @@
 'use client'
 
+import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { Scroll } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Scroll, Mail, Lock, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 
 export default function SignInForm() {
+  const searchParams = useSearchParams()
+  const verified = searchParams.get('verified') === 'true'
+  const reset = searchParams.get('reset') === 'true'
+  const errorParam = searchParams.get('error')
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const statusMessage = verified
+    ? 'Email verified! You can now sign in.'
+    : reset
+    ? 'Password reset successfully. Sign in with your new password.'
+    : errorParam === 'token_expired'
+    ? 'Verification link has expired. Please sign up again.'
+    : errorParam === 'invalid_token'
+    ? 'Invalid verification link.'
+    : null
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        if (result.error.includes('EMAIL_NOT_VERIFIED')) {
+          setError('Please verify your email before signing in. Check your inbox for the verification link.')
+        } else {
+          setError('Invalid email or password.')
+        }
+      } else if (result?.ok) {
+        window.location.href = '/campaigns'
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-radial-glow px-4">
       <div className="w-full max-w-md">
@@ -16,11 +67,97 @@ export default function SignInForm() {
             <p className="text-text-muted">Sign in to manage your campaigns</p>
           </div>
 
+          {statusMessage && (
+            <div className={`p-3 rounded-lg text-sm mb-6 ${
+              verified || reset
+                ? 'bg-success/10 border border-success/20 text-emerald-400'
+                : 'bg-error/10 border border-error/20 text-red-400'
+            }`}>
+              {statusMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg input-dark text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-text-secondary">
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs text-accent-purple-light hover:text-accent-purple transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg input-dark text-sm"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary py-2.5 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-theme" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-surface text-text-muted">or continue with</span>
+            </div>
+          </div>
+
           <button
             onClick={() => signIn('google', { callbackUrl: '/campaigns' })}
             className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 rounded-lg px-6 py-3 font-semibold hover:bg-gray-100 transition-colors"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -42,7 +179,10 @@ export default function SignInForm() {
           </button>
 
           <p className="text-center text-sm text-text-muted mt-6">
-            Manage campaigns, upload audio, and chat with your AI assistant
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/signup" className="text-accent-purple-light hover:text-accent-purple transition-colors font-medium">
+              Sign up
+            </Link>
           </p>
         </div>
       </div>

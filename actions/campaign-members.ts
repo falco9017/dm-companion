@@ -3,10 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { getCampaignAccess, isDM } from '@/lib/permissions'
+import { sendCampaignInviteEmail } from '@/lib/email'
 
 /**
  * DM invites a player by email. Creates a PENDING membership row.
  * If the user already has an account with that email, links them immediately.
+ * Sends an invitation email notification.
  */
 export async function inviteMember(campaignId: string, dmUserId: string, email: string) {
   const access = await getCampaignAccess(campaignId, dmUserId)
@@ -39,6 +41,21 @@ export async function inviteMember(campaignId: string, dmUserId: string, email: 
       userId: existingUser?.id ?? null,
     },
   })
+
+  // Send invitation email (non-blocking — don't fail the invite if email fails)
+  try {
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: campaignId },
+      select: { name: true, owner: { select: { name: true, email: true } } },
+    })
+    if (campaign) {
+      const dmName = campaign.owner.name || campaign.owner.email
+      const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || ''
+      await sendCampaignInviteEmail(normalizedEmail, campaign.name, dmName, baseUrl)
+    }
+  } catch (error) {
+    console.error('Failed to send invitation email:', error)
+  }
 
   revalidatePath(`/campaigns/${campaignId}`)
   return member
