@@ -3,6 +3,7 @@ import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
 import ProfileForm from './ProfileForm'
 import BackButton from './BackButton'
+import { EmailVerificationBanner } from '../EmailVerificationBanner'
 import { LogOut } from 'lucide-react'
 
 export default async function ProfilePage() {
@@ -15,8 +16,13 @@ export default async function ProfilePage() {
     await signOut({ redirectTo: '/signin' })
   }
 
+  const showEmailBanner = !profile.emailVerified && !!profile.password
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      {showEmailBanner && (
+        <EmailVerificationBanner email={profile.email} />
+      )}
       <div>
         <BackButton />
         <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>

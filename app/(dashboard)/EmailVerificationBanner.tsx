@@ -34,7 +34,7 @@ export function EmailVerificationBanner({ email }: { email: string | null }) {
   }
 
   return (
-    <div className="bg-amber-900/30 border-b border-amber-700/40 px-4 py-2.5 flex items-center justify-between gap-3">
+    <div className="bg-amber-900/30 border border-amber-700/40 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2 text-sm text-amber-300">
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
         {sent ? (

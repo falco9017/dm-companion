@@ -13,6 +13,7 @@ export async function getUserProfile(userId: string) {
       image: true,
       uiLanguage: true,
       emailVerified: true,
+      password: true,
       createdAt: true,
     },
   })
