@@ -389,6 +389,7 @@ export default function CharacterSheetBoard({
               <SpellSection
                 spellcasting={data.spellcasting}
                 editing={editing}
+                characterClass={data.class}
                 onChange={(spellcasting: Spellcasting) => updateData({ spellcasting })}
               />
             ) : editing ? (

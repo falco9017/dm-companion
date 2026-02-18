@@ -1,11 +1,13 @@
 'use client'
 
-import { BookOpen, X, Plus } from 'lucide-react'
+import { BookOpen, X } from 'lucide-react'
 import type { Spellcasting, Spell, SpellSlot } from '@/types/character-sheet'
+import SpellPicker from './SpellPicker'
 
 interface SpellSectionProps {
   spellcasting: Spellcasting
   editing: boolean
+  characterClass?: string
   onChange: (spellcasting: Spellcasting) => void
 }
 
@@ -92,7 +94,7 @@ function SpellCard({
   )
 }
 
-export default function SpellSection({ spellcasting, editing, onChange }: SpellSectionProps) {
+export default function SpellSection({ spellcasting, editing, characterClass, onChange }: SpellSectionProps) {
   const spellsByLevel = spellcasting.spells.reduce(
     (acc, spell) => {
       const key = spell.level
@@ -120,14 +122,8 @@ export default function SpellSection({ spellcasting, editing, onChange }: SpellS
     onChange({ ...spellcasting, spellSlots: updated })
   }
 
-  const addSpell = () => {
-    onChange({
-      ...spellcasting,
-      spells: [
-        ...spellcasting.spells,
-        { name: 'New Spell', level: 0, prepared: false, ritual: false, concentration: false, description: '', school: '' },
-      ],
-    })
+  const addSpell = (spell: Spell) => {
+    onChange({ ...spellcasting, spells: [...spellcasting.spells, spell] })
   }
 
   const levelLabels: Record<number, string> = {
@@ -235,12 +231,7 @@ export default function SpellSection({ spellcasting, editing, onChange }: SpellS
       </div>
 
       {editing && (
-        <button
-          onClick={addSpell}
-          className="flex items-center gap-1 text-xs text-accent-purple-light hover:text-accent-purple transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" /> Add Spell
-        </button>
+        <SpellPicker characterClass={characterClass} onAdd={addSpell} />
       )}
     </div>
   )
