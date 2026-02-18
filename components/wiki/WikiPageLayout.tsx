@@ -14,7 +14,6 @@ import UpdateWikiModal from './UpdateWikiModal'
 import CharacterPdfUploadModal from './CharacterPdfUploadModal'
 import { useI18n } from '@/lib/i18n-context'
 import type { CharacterSheetData } from '@/types/character-sheet'
-import PlayersModal from './PlayersModal'
 
 interface WikiTreeEntry {
   id: string
@@ -43,12 +42,6 @@ interface ActiveEntry {
   } | null
 }
 
-interface CharacterSheetSummary {
-  id: string
-  assignedPlayerId: string | null
-  wikiEntry: { id: string; title: string }
-}
-
 interface WikiPageLayoutProps {
   campaignId: string
   userId: string
@@ -59,7 +52,6 @@ interface WikiPageLayoutProps {
   }
   wikiTree: WikiTreeEntry[]
   activeEntry: ActiveEntry | null
-  characterSheets: CharacterSheetSummary[]
 }
 
 export default function WikiPageLayout({
@@ -68,7 +60,6 @@ export default function WikiPageLayout({
   campaign,
   wikiTree,
   activeEntry,
-  characterSheets,
 }: WikiPageLayoutProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -76,7 +67,6 @@ export default function WikiPageLayout({
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
-  const [playersOpen, setPlayersOpen] = useState(false)
   const { t } = useI18n()
 
   return (
@@ -95,7 +85,6 @@ export default function WikiPageLayout({
         entries={wikiTree}
         activeEntryId={activeEntry?.id}
         onSettingsClick={() => setSettingsOpen(true)}
-        onPlayersClick={() => setPlayersOpen(true)}
         onUploadClick={() => setUploadOpen(true)}
         onCreateClick={() => setCreateOpen(true)}
         onUpdateWikiClick={() => setUpdateWikiOpen(true)}
@@ -172,14 +161,6 @@ export default function WikiPageLayout({
         campaignId={campaignId}
         isOpen={updateWikiOpen}
         onClose={() => setUpdateWikiOpen(false)}
-      />
-
-      <PlayersModal
-        campaignId={campaignId}
-        userId={userId}
-        characterSheets={characterSheets}
-        isOpen={playersOpen}
-        onClose={() => setPlayersOpen(false)}
       />
 
       <CharacterPdfUploadModal

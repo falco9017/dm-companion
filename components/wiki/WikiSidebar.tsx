@@ -6,7 +6,7 @@ import { WikiEntryType } from '@prisma/client'
 import {
   ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
   BookOpen, Target, FileText, ChevronRight, ChevronDown,
-  Upload, Plus, RefreshCw, ArrowLeft, X, Settings, Users,
+  Upload, Plus, RefreshCw, ArrowLeft, X, Settings,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 
@@ -43,7 +43,6 @@ interface WikiSidebarProps {
   entries: WikiSidebarEntry[]
   activeEntryId?: string
   onSettingsClick: () => void
-  onPlayersClick: () => void
   onUploadClick: () => void
   onCreateClick: () => void
   onUpdateWikiClick: () => void
@@ -57,7 +56,6 @@ export default function WikiSidebar({
   entries,
   activeEntryId,
   onSettingsClick,
-  onPlayersClick,
   onUploadClick,
   onCreateClick,
   onUpdateWikiClick,
@@ -109,13 +107,6 @@ export default function WikiSidebar({
             {campaignName}
           </h2>
           <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={onPlayersClick}
-              className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
-              title="Manage Players"
-            >
-              <Users className="w-4 h-4" />
-            </button>
             <button
               onClick={onSettingsClick}
               className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"

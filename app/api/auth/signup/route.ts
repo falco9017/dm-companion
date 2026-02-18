@@ -96,12 +96,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Send verification email
-    const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || request.nextUrl.origin
-    await sendVerificationEmail(normalizedEmail, token, baseUrl)
+    // Try to send verification email (non-blocking — account is created regardless)
+    try {
+      const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || request.nextUrl.origin
+      await sendVerificationEmail(normalizedEmail, token, baseUrl)
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError)
+    }
 
     return NextResponse.json({
-      message: 'Account created. Please check your email to verify your address.',
+      message: 'Account created! You can now sign in.',
     })
   } catch (error) {
     console.error('Signup error:', error)

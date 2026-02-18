@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
-import { Scroll, Mail, Lock, Loader2 } from 'lucide-react'
+import { Scroll, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
 export default function SignInForm() {
@@ -14,6 +14,7 @@ export default function SignInForm() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -40,11 +41,7 @@ export default function SignInForm() {
       })
 
       if (result?.error) {
-        if (result.error.includes('EMAIL_NOT_VERIFIED')) {
-          setError('Please verify your email before signing in. Check your inbox for the verification link.')
-        } else {
-          setError('Invalid email or password.')
-        }
+        setError('Invalid email or password.')
       } else if (result?.ok) {
         window.location.href = '/campaigns'
       }
@@ -112,13 +109,20 @@ export default function SignInForm() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg input-dark text-sm"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg input-dark text-sm"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

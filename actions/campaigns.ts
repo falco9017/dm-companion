@@ -48,11 +48,8 @@ export async function getCampaigns(userId: string) {
 }
 
 export async function getCampaign(campaignId: string, userId: string) {
-  const access = await getCampaignAccess(campaignId, userId)
-  if (!access) return null
-
   return await prisma.campaign.findUnique({
-    where: { id: campaignId },
+    where: { id: campaignId, ownerId: userId },
     include: {
       _count: {
         select: {
