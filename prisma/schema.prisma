@@ -20,10 +20,12 @@ model User {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  campaigns     Campaign[]
-  chatMessages  ChatMessage[]
+  accounts                Account[]
+  sessions                Session[]
+  campaigns               Campaign[]
+  chatMessages            ChatMessage[]
+  campaignMemberships     CampaignMember[]
+  assignedCharacterSheets CharacterSheet[] @relation("PlayerCharacterSheets")
 
   @@map("users")
 }
@@ -73,6 +75,36 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+enum CampaignRole {
+  DM
+  PLAYER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+}
+
+// Campaign membership — links players to campaigns they've been invited to
+model CampaignMember {
+  id         String       @id @default(cuid())
+  campaignId String
+  userId     String?      // null while invite is PENDING (player hasn't signed up yet)
+  email      String       // email used for the invite
+  role       CampaignRole @default(PLAYER)
+  status     InviteStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, email])
+  @@index([userId])
+  @@index([campaignId])
+  @@map("campaign_members")
+}
+
 // Campaign model
 model Campaign {
   id          String   @id @default(cuid())
@@ -88,6 +120,7 @@ model Campaign {
   wikiEntries     WikiEntry[]
   chatMessages    ChatMessage[]
   characterSheets CharacterSheet[]
+  members         CampaignMember[]
 
   @@index([ownerId])
   @@map("campaigns")
@@ -171,19 +204,22 @@ model WikiEntry {
 
 // Character sheet model — structured D&D character data linked to a CHARACTER wiki entry
 model CharacterSheet {
-  id          String   @id @default(cuid())
-  wikiEntryId String   @unique
-  data        Json     // Structured CharacterSheetData (see types/character-sheet.ts)
-  pdfBlobUrl  String?  // Original uploaded PDF URL
-  pdfBlobKey  String?  // Blob storage key for cleanup
-  campaignId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String   @id @default(cuid())
+  wikiEntryId      String   @unique
+  data             Json     // Structured CharacterSheetData (see types/character-sheet.ts)
+  pdfBlobUrl       String?  // Original uploaded PDF URL
+  pdfBlobKey       String?  // Blob storage key for cleanup
+  campaignId       String
+  assignedPlayerId String?  // The User.id of the player who owns this character
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  wikiEntry WikiEntry @relation(fields: [wikiEntryId], references: [id], onDelete: Cascade)
-  campaign  Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  wikiEntry      WikiEntry @relation(fields: [wikiEntryId], references: [id], onDelete: Cascade)
+  campaign       Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  assignedPlayer User?     @relation("PlayerCharacterSheets", fields: [assignedPlayerId], references: [id], onDelete: SetNull)
 
   @@index([campaignId])
+  @@index([assignedPlayerId])
   @@map("character_sheets")
 }
 

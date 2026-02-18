@@ -6,7 +6,7 @@ import { WikiEntryType } from '@prisma/client'
 import {
   ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
   BookOpen, Target, FileText, ChevronRight, ChevronDown,
-  Upload, Plus, RefreshCw, ArrowLeft, X, Settings,
+  Upload, Plus, RefreshCw, ArrowLeft, X, Settings, Users,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 
@@ -43,6 +43,7 @@ interface WikiSidebarProps {
   entries: WikiSidebarEntry[]
   activeEntryId?: string
   onSettingsClick: () => void
+  onPlayersClick: () => void
   onUploadClick: () => void
   onCreateClick: () => void
   onUpdateWikiClick: () => void
@@ -56,6 +57,7 @@ export default function WikiSidebar({
   entries,
   activeEntryId,
   onSettingsClick,
+  onPlayersClick,
   onUploadClick,
   onCreateClick,
   onUpdateWikiClick,
@@ -106,13 +108,22 @@ export default function WikiSidebar({
           <h2 className="text-sm font-bold text-text-primary truncate flex-1">
             {campaignName}
           </h2>
-          <button
-            onClick={onSettingsClick}
-            className="ml-2 text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
-            title={t('sidebar.campaignSettings')}
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1 ml-2">
+            <button
+              onClick={onPlayersClick}
+              className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
+              title="Manage Players"
+            >
+              <Users className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onSettingsClick}
+              className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-white/5 transition-colors"
+              title={t('sidebar.campaignSettings')}
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,8 +1,12 @@
 import { auth } from '@/lib/auth'
 import { getCampaign } from '@/actions/campaigns'
 import { getWikiTree, getWikiEntry } from '@/actions/wiki'
+import { getCampaignCharacterSheets } from '@/actions/character-sheet'
+import { getCampaignAccess } from '@/lib/permissions'
+import { acceptPendingInvites } from '@/actions/campaign-members'
 import { notFound } from 'next/navigation'
 import WikiPageLayout from '@/components/wiki/WikiPageLayout'
+import PlayerCampaignView from '@/components/player/PlayerCampaignView'
 
 export default async function CampaignPage({
   params,
@@ -14,13 +18,49 @@ export default async function CampaignPage({
   const { campaignId } = await params
   const { entry: entryParam } = await searchParams
   const session = await auth()
-  const campaign = await getCampaign(campaignId, session!.user.id)
+  const userId = session!.user.id
+  const userEmail = session!.user.email!
 
+  // Accept any pending invites for this user on page load
+  await acceptPendingInvites(userId, userEmail)
+
+  const campaign = await getCampaign(campaignId, userId)
   if (!campaign) {
     notFound()
   }
 
-  const wikiTree = await getWikiTree(campaignId, session!.user.id)
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access) {
+    notFound()
+  }
+
+  // === PLAYER VIEW ===
+  if (access.role === 'PLAYER') {
+    const allSheets = await getCampaignCharacterSheets(campaignId, userId)
+    const mySheet = allSheets.find((s) => s.assignedPlayerId === userId) ?? null
+
+    return (
+      <PlayerCampaignView
+        campaignId={campaignId}
+        userId={userId}
+        campaign={{ name: campaign.name, description: campaign.description }}
+        allSheets={allSheets.map((s) => ({
+          id: s.id,
+          data: s.data as any,
+          assignedPlayerId: s.assignedPlayerId,
+          assignedPlayer: s.assignedPlayer,
+          wikiEntry: s.wikiEntry,
+        }))}
+        mySheetId={mySheet?.id ?? null}
+      />
+    )
+  }
+
+  // === DM VIEW ===
+  const [wikiTree, characterSheets] = await Promise.all([
+    getWikiTree(campaignId, userId),
+    getCampaignCharacterSheets(campaignId, userId),
+  ])
 
   // Determine which entry to show
   let activeEntry = null
@@ -34,7 +74,7 @@ export default async function CampaignPage({
 
   if (activeEntryId) {
     try {
-      activeEntry = await getWikiEntry(activeEntryId, session!.user.id)
+      activeEntry = await getWikiEntry(activeEntryId, userId)
     } catch {
       // Entry not found, show empty state
     }
@@ -43,13 +83,18 @@ export default async function CampaignPage({
   return (
     <WikiPageLayout
       campaignId={campaignId}
-      userId={session!.user.id}
+      userId={userId}
       campaign={{
         name: campaign.name,
         description: campaign.description,
         language: campaign.language,
       }}
       wikiTree={wikiTree}
+      characterSheets={characterSheets.map((s) => ({
+        id: s.id,
+        assignedPlayerId: s.assignedPlayerId,
+        wikiEntry: s.wikiEntry,
+      }))}
       activeEntry={
         activeEntry
           ? {

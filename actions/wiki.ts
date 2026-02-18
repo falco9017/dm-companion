@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
+import { getCampaignAccess, isDM } from '@/lib/permissions'
 
 function slugify(text: string): string {
   return text
@@ -22,11 +23,8 @@ export async function createWikiEntry(
     tags?: string[]
   }
 ) {
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
@@ -65,12 +63,8 @@ export async function getWikiEntries(
     tags?: string[]
   }
 ) {
-  // Verify ownership
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
@@ -123,13 +117,29 @@ export async function getWikiEntry(entryId: string, userId: string) {
           id: true,
           data: true,
           pdfBlobUrl: true,
+          assignedPlayerId: true,
         },
       },
     },
   })
 
-  if (!entry || entry.campaign.ownerId !== userId) {
+  if (!entry) {
     throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const access = await getCampaignAccess(entry.campaign.id, userId)
+  if (!access) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  // Players can only access their own assigned CHARACTER entry
+  if (!isDM(access)) {
+    const isOwnCharacter =
+      entry.type === 'CHARACTER' &&
+      entry.characterSheet?.assignedPlayerId === userId
+    if (!isOwnCharacter) {
+      throw new Error('Wiki entry not found or unauthorized')
+    }
   }
 
   return entry
@@ -140,12 +150,8 @@ export async function searchWikiEntries(
   userId: string,
   query: string
 ) {
-  // Verify ownership
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
@@ -179,7 +185,12 @@ export async function updateWikiEntry(
     include: { campaign: { select: { ownerId: true, id: true } } },
   })
 
-  if (!entry || entry.campaign.ownerId !== userId) {
+  if (!entry) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const access = await getCampaignAccess(entry.campaign.id, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Wiki entry not found or unauthorized')
   }
 
@@ -203,7 +214,12 @@ export async function deleteWikiEntry(entryId: string, userId: string) {
     include: { campaign: { select: { ownerId: true, id: true } } },
   })
 
-  if (!entry || entry.campaign.ownerId !== userId) {
+  if (!entry) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const access = await getCampaignAccess(entry.campaign.id, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Wiki entry not found or unauthorized')
   }
 
@@ -213,11 +229,8 @@ export async function deleteWikiEntry(entryId: string, userId: string) {
 }
 
 export async function getWikiTree(campaignId: string, userId: string) {
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
@@ -239,12 +252,8 @@ export async function getWikiEntriesByType(
   campaignId: string,
   userId: string
 ) {
-  // Verify ownership
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 

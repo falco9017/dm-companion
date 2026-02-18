@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { getCampaignAccess, isDM } from '@/lib/permissions'
 
 export async function createCampaign(userId: string, name: string, description?: string, language = 'en') {
   const campaign = await prisma.campaign.create({
@@ -47,11 +48,11 @@ export async function getCampaigns(userId: string) {
 }
 
 export async function getCampaign(campaignId: string, userId: string) {
-  return await prisma.campaign.findFirst({
-    where: {
-      id: campaignId,
-      ownerId: userId,
-    },
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access) return null
+
+  return await prisma.campaign.findUnique({
+    where: { id: campaignId },
     include: {
       _count: {
         select: {
@@ -74,12 +75,8 @@ export async function setDefaultCampaign(userId: string, campaignId: string) {
 }
 
 export async function deleteCampaign(campaignId: string, userId: string) {
-  // Verify ownership
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
@@ -96,11 +93,8 @@ export async function updateCampaign(
   userId: string,
   data: { name?: string; description?: string; language?: string }
 ) {
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, ownerId: userId },
-  })
-
-  if (!campaign) {
+  const access = await getCampaignAccess(campaignId, userId)
+  if (!access || !isDM(access)) {
     throw new Error('Campaign not found or unauthorized')
   }
 
