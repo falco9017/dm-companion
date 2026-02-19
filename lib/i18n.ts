@@ -122,6 +122,14 @@ const en = {
   'audio.waitNote': 'This may take a few minutes for longer recordings',
   'audio.tryAgain': 'Try again',
   'audio.uploadAudio': 'Upload Audio',
+  'audio.reviewTitle': 'Session Processed',
+  'audio.reviewSubtitle': 'Review your session recap',
+  'audio.sessionDate': 'Session Date',
+  'audio.updateWiki': 'Update Wiki',
+  'audio.updateWikiPrompt': 'Would you like to update the wiki with this session\'s information?',
+  'audio.updatingWiki': 'Updating wiki...',
+  'audio.wikiUpdated': 'Wiki updated! Created {created} and updated {updated} entries.',
+  'audio.skip': 'Skip',
 
   // Update wiki modal
   'updateWiki.title': 'Update Wiki',
@@ -370,6 +378,14 @@ const it: Record<string, string> = {
   'audio.waitNote': 'Potrebbe richiedere alcuni minuti per registrazioni lunghe',
   'audio.tryAgain': 'Riprova',
   'audio.uploadAudio': 'Carica Audio',
+  'audio.reviewTitle': 'Sessione Elaborata',
+  'audio.reviewSubtitle': 'Rivedi il riepilogo della sessione',
+  'audio.sessionDate': 'Data Sessione',
+  'audio.updateWiki': 'Aggiorna Wiki',
+  'audio.updateWikiPrompt': 'Vuoi aggiornare la wiki con le informazioni di questa sessione?',
+  'audio.updatingWiki': 'Aggiornamento wiki...',
+  'audio.wikiUpdated': 'Wiki aggiornata! Create {created} e aggiornate {updated} voci.',
+  'audio.skip': 'Salta',
 
   // Update wiki modal
   'updateWiki.title': 'Aggiorna Wiki',

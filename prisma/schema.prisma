@@ -159,6 +159,7 @@ model AudioFile {
   transcription String?
   summary       String?
   errorMessage  String?
+  recordingDate DateTime?
   campaignId    String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt

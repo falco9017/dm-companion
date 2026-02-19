@@ -4,20 +4,36 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { upload } from '@vercel/blob/client'
-import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Upload, Loader2, CheckCircle, AlertCircle, RefreshCw, Calendar } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
+import { useSession } from 'next-auth/react'
+import { updateSessionRecapDate } from '@/actions/wiki'
 
 interface AudioUploaderProps {
   campaignId: string
+  onClose?: () => void
 }
 
-type UploadStage = 'idle' | 'uploading' | 'creating' | 'processing' | 'done' | 'error'
+type UploadStage = 'idle' | 'uploading' | 'creating' | 'processing' | 'review' | 'updatingWiki' | 'done' | 'error'
 
-export default function AudioUploader({ campaignId }: AudioUploaderProps) {
+function toDateInputValue(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+export default function AudioUploader({ campaignId, onClose }: AudioUploaderProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [stage, setStage] = useState<UploadStage>('idle')
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [recapEntryId, setRecapEntryId] = useState<string | null>(null)
+  const [sessionDate, setSessionDate] = useState<string>('')
+  const [wikiResult, setWikiResult] = useState<{ created: number; updated: number } | null>(null)
+  const [wikiError, setWikiError] = useState<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { t } = useI18n()
 
@@ -27,7 +43,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
     }
   }, [])
 
-  const pollStatus = useCallback((audioFileId: string) => {
+  const pollStatus = useCallback((audioFileId: string, fileLastModified: number) => {
     pollingRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/audio/status?id=${audioFileId}`)
@@ -37,12 +53,10 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
 
         if (data.status === 'PROCESSED') {
           if (pollingRef.current) clearInterval(pollingRef.current)
-          setStage('done')
-          setTimeout(() => {
-            router.refresh()
-            setStage('idle')
-            setProgress(0)
-          }, 2000)
+          setSummary(data.summary ?? null)
+          setRecapEntryId(data.recapEntryId ?? null)
+          setSessionDate(toDateInputValue(new Date(fileLastModified)))
+          setStage('review')
         } else if (data.status === 'FAILED') {
           if (pollingRef.current) clearInterval(pollingRef.current)
           setStage('error')
@@ -52,12 +66,13 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
         // Keep polling on transient errors
       }
     }, 3000)
-  }, [router])
+  }, [])
 
   const handleDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return
 
     const file = acceptedFiles[0]
+    const fileLastModified = file.lastModified
     setStage('uploading')
     setError(null)
     setProgress(0)
@@ -85,6 +100,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
           filename: file.name,
           fileSize: file.size,
           mimeType: file.type || 'audio/mpeg',
+          lastModifiedDate: new Date(fileLastModified).toISOString(),
         }),
       })
 
@@ -107,7 +123,7 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
         throw new Error(data.error || 'Failed to start processing')
       }
 
-      pollStatus(audioFile.id)
+      pollStatus(audioFile.id, fileLastModified)
     } catch (err) {
       setStage('error')
       setError(err instanceof Error ? err.message : 'Upload failed')
@@ -137,7 +153,140 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
     },
   })
 
+  const saveDate = async () => {
+    if (recapEntryId && session?.user?.id) {
+      try {
+        await updateSessionRecapDate(recapEntryId, session.user.id, sessionDate)
+      } catch {
+        // Non-fatal — date save failure shouldn't block close
+      }
+    }
+  }
+
+  const handleUpdateWiki = async () => {
+    setStage('updatingWiki')
+    setWikiError(null)
+    await saveDate()
+
+    try {
+      const res = await fetch('/api/wiki/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Generation failed')
+
+      setWikiResult({ created: data.created, updated: data.updated })
+      setStage('done')
+      router.refresh()
+    } catch (err) {
+      setWikiError(err instanceof Error ? err.message : 'Something went wrong')
+      setStage('review')
+    }
+  }
+
+  const handleSkip = async () => {
+    await saveDate()
+    router.refresh()
+    onClose?.()
+  }
+
   const isActive = stage !== 'idle' && stage !== 'error'
+
+  if (stage === 'review' || stage === 'updatingWiki' || stage === 'done') {
+    return (
+      <div className="w-full space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+          <div>
+            <p className="text-text-primary font-semibold">{t('audio.reviewTitle')}</p>
+            <p className="text-text-muted text-xs">{t('audio.reviewSubtitle')}</p>
+          </div>
+        </div>
+
+        {/* Summary preview */}
+        {summary && (
+          <div className="bg-surface-elevated border border-border-theme rounded-lg p-3 max-h-40 overflow-y-auto">
+            <p className="text-text-secondary text-xs leading-relaxed whitespace-pre-wrap">{summary}</p>
+          </div>
+        )}
+
+        {/* Date editor */}
+        <div>
+          <label className="block text-xs font-medium text-text-secondary mb-1">
+            <Calendar className="w-3 h-3 inline mr-1" />
+            {t('audio.sessionDate')}
+          </label>
+          <input
+            type="date"
+            value={sessionDate}
+            onChange={(e) => setSessionDate(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg input-dark text-sm"
+            disabled={stage === 'updatingWiki'}
+          />
+        </div>
+
+        {/* Wiki update prompt */}
+        <p className="text-text-muted text-xs">{t('audio.updateWikiPrompt')}</p>
+
+        {/* Errors */}
+        {wikiError && (
+          <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-xs">
+            {wikiError}
+          </div>
+        )}
+
+        {/* Done result */}
+        {stage === 'done' && wikiResult && (
+          <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-xs">
+            {t('audio.wikiUpdated', { created: wikiResult.created, updated: wikiResult.updated })}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-1">
+          {stage === 'done' ? (
+            <button
+              onClick={() => onClose?.()}
+              className="btn-primary px-4 py-2 text-sm rounded-lg"
+            >
+              {t('common.close')}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleSkip}
+                disabled={stage === 'updatingWiki'}
+                className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                {t('audio.skip')}
+              </button>
+              <button
+                onClick={handleUpdateWiki}
+                disabled={stage === 'updatingWiki'}
+                className="btn-primary px-4 py-2 text-sm rounded-lg flex items-center gap-2"
+              >
+                {stage === 'updatingWiki' ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t('audio.updatingWiki')}
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    {t('audio.updateWiki')}
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full">
@@ -176,11 +325,6 @@ export default function AudioUploader({ campaignId }: AudioUploaderProps) {
               </div>
               <p className="text-text-muted text-xs">{t('audio.waitNote')}</p>
             </>
-          ) : stage === 'done' ? (
-            <div className="flex items-center justify-center gap-2">
-              <CheckCircle className="w-5 h-5 text-success" />
-              <p className="text-success font-semibold">{t('audio.done')}</p>
-            </div>
           ) : (
             <>
               <Upload className="w-8 h-8 text-text-muted mx-auto" />

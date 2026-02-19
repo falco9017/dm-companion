@@ -6,7 +6,7 @@ import { WikiEntryType } from '@prisma/client'
 import {
   ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
   BookOpen, Target, FileText, ChevronRight, ChevronDown,
-  Plus, ArrowLeft, X, Settings,
+  Plus, ArrowLeft, X, Settings, RefreshCw,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 
@@ -112,7 +112,6 @@ export default function WikiSidebar({
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [sessionsDropdown, setSessionsDropdown] = useState(false)
-  const [wikiDropdown, setWikiDropdown] = useState(false)
   const { t } = useI18n()
 
   const recaps = entries
@@ -238,22 +237,21 @@ export default function WikiSidebar({
                   <span>{t('sidebar.wiki')}</span>
                   <span className="text-text-muted text-[10px]">{wikiEntries.length}</span>
                 </button>
-                <div className="relative">
+                <div className="flex items-center gap-0.5">
                   <button
-                    onClick={() => setWikiDropdown(!wikiDropdown)}
+                    onClick={onCreateClick}
                     className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
+                    title={t('sidebar.newWikiPage')}
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
-                  {wikiDropdown && (
-                    <DropdownMenu
-                      items={[
-                        { label: t('sidebar.newWikiPage'), onClick: onCreateClick },
-                        { label: t('sidebar.updateWikiAI'), onClick: onUpdateWikiClick },
-                      ]}
-                      onClose={() => setWikiDropdown(false)}
-                    />
-                  )}
+                  <button
+                    onClick={onUpdateWikiClick}
+                    className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
+                    title={t('sidebar.updateWikiAI')}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 

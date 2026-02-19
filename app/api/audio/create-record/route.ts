@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { campaignId, blobUrl, blobPathname, filename, fileSize, mimeType } = await request.json()
+    const { campaignId, blobUrl, blobPathname, filename, fileSize, mimeType, lastModifiedDate } = await request.json()
 
     if (!campaignId || !blobUrl || !blobPathname || !filename) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         blobKey: blobPathname,
         status: 'UPLOADED',
         campaignId,
+        ...(lastModifiedDate ? { recordingDate: new Date(lastModifiedDate) } : {}),
       },
     })
 

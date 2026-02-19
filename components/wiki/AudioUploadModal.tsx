@@ -34,7 +34,7 @@ export default function AudioUploadModal({ campaignId, isOpen, onClose }: AudioU
           <button onClick={onClose} className="text-text-muted hover:text-text-primary text-xl transition-colors">&times;</button>
         </div>
         <div className="p-6">
-          <AudioUploader campaignId={campaignId} />
+          <AudioUploader campaignId={campaignId} onClose={onClose} />
         </div>
       </div>
     </div>

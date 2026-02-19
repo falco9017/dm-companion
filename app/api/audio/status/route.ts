@@ -23,10 +23,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
+    let recapEntryId: string | null = null
+    if (audioFile.status === 'PROCESSED') {
+      const recap = await prisma.wikiEntry.findFirst({
+        where: { audioFileId: audioFile.id, type: 'SESSION_RECAP' },
+        select: { id: true },
+      })
+      recapEntryId = recap?.id ?? null
+    }
+
     return NextResponse.json({
       id: audioFile.id,
       status: audioFile.status,
       errorMessage: audioFile.errorMessage,
+      ...(audioFile.status === 'PROCESSED' ? {
+        summary: audioFile.summary,
+        recapEntryId,
+      } : {}),
     })
   } catch {
     return NextResponse.json(

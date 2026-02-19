@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     await incrementAudioUsage(session.user.id)
 
     // Process in background (fire-and-forget)
-    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language, session.user.id)
+    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language, session.user.id, audioFile.recordingDate ?? undefined)
 
     return NextResponse.json({
       success: true,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string, userId: string) {
+async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string, userId: string, recordingDate?: Date) {
   try {
     // Transcribe audio
     console.log(`Transcribing audio file ${audioFileId}...`)
@@ -113,7 +113,7 @@ async function processAudioInBackground(audioFileId: string, blobUrl: string, ca
 
     // Generate wiki entries
     console.log(`Generating wiki entries for audio file ${audioFileId}...`)
-    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language, userId)
+    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language, userId, recordingDate)
 
     revalidatePath(`/campaigns/${campaignId}`)
     console.log(`Successfully processed audio file ${audioFileId}`)

@@ -5,6 +5,30 @@ import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
 import { getCampaignAccess, isDM } from '@/lib/permissions'
 
+export async function updateSessionRecapDate(entryId: string, userId: string, date: string) {
+  const entry = await prisma.wikiEntry.findUnique({
+    where: { id: entryId },
+    include: { campaign: { select: { id: true } } },
+  })
+
+  if (!entry) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const access = await getCampaignAccess(entry.campaign.id, userId)
+  if (!access || !isDM(access)) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const sessionDate = new Date(date + 'T12:00:00Z')
+  await prisma.wikiEntry.update({
+    where: { id: entryId },
+    data: { createdAt: sessionDate },
+  })
+
+  revalidatePath(`/campaigns/${entry.campaign.id}`)
+}
+
 export async function createSessionEntry(
   campaignId: string,
   userId: string,
