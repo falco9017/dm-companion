@@ -1,5 +1,6 @@
 import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
+import { getEffectiveTier } from '@/lib/subscription'
 import { t, type Locale } from '@/lib/i18n'
 import SettingsForm from './SettingsForm'
 import ChangePasswordForm from './ChangePasswordForm'
@@ -11,7 +12,10 @@ import Image from 'next/image'
 
 export default async function ProfilePage() {
   const session = await auth()
-  const profile = await getUserProfile(session!.user.id)
+  const [profile, effectiveTier] = await Promise.all([
+    getUserProfile(session!.user.id),
+    getEffectiveTier(session!.user.id),
+  ])
   const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
 
   async function handleSignOut() {
@@ -71,7 +75,7 @@ export default async function ProfilePage() {
         {/* Current plan */}
         <SubscriptionSection
           userId={session!.user.id}
-          subscriptionTier={profile.subscriptionTier || 'basic'}
+          subscriptionTier={effectiveTier}
           subscriptionStatus={profile.subscriptionStatus || null}
         />
 

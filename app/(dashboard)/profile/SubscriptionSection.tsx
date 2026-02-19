@@ -1,6 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n-context'
 import { toggleSubscription } from '@/actions/subscription'
 import { Crown, Zap, ArrowRight } from 'lucide-react'
@@ -19,16 +20,18 @@ export default function SubscriptionSection({
   subscriptionStatus,
 }: SubscriptionSectionProps) {
   const { t } = useI18n()
-  const { update } = useSession()
+  const { data: session, update } = useSession()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  const isPro = subscriptionTier === 'pro'
+  const isPro = (session?.user?.subscriptionTier ?? subscriptionTier) === 'pro'
 
   async function handleDowngrade() {
     setLoading(true)
     try {
       await toggleSubscription(userId)
       await update()
+      router.refresh()
     } catch (error) {
       console.error('Toggle error:', error)
     } finally {

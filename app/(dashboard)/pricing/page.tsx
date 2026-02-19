@@ -1,13 +1,16 @@
 import { auth } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
+import { getEffectiveTier } from '@/lib/subscription'
 import { t, type Locale } from '@/lib/i18n'
 import PricingCards from './PricingCards'
 
 export default async function PricingPage() {
   const session = await auth()
-  const profile = await getUserProfile(session!.user.id)
+  const [profile, currentTier] = await Promise.all([
+    getUserProfile(session!.user.id),
+    getEffectiveTier(session!.user.id),
+  ])
   const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
-  const currentTier = profile.subscriptionTier || 'basic'
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
