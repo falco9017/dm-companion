@@ -4,8 +4,15 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getCampaignAccess, isDM } from '@/lib/permissions'
+import { canCreateCampaign } from '@/lib/subscription'
 
 export async function createCampaign(userId: string, name: string, description?: string, language = 'en') {
+  // Subscription check
+  const check = await canCreateCampaign(userId)
+  if (!check.allowed) {
+    throw new Error('SUBSCRIPTION_LIMIT: campaign_limit_reached')
+  }
+
   const campaign = await prisma.campaign.create({
     data: {
       name,

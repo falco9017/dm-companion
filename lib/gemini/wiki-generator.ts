@@ -2,6 +2,7 @@ import { getGeminiFlash } from './client'
 import { getLanguageLabel } from './audio-processor'
 import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
+import { trackUsage, extractTokenCounts } from '@/lib/usage-tracking'
 
 interface WikiEntryData {
   title: string
@@ -16,14 +17,15 @@ export async function generateWikiEntries(
   audioFileId: string,
   transcription: string,
   summary: string,
-  language = 'en'
+  language = 'en',
+  userId?: string
 ): Promise<void> {
   try {
     // First, create a session recap entry
     await createSessionRecap(campaignId, audioFileId, summary, transcription)
 
     // Extract structured entities from the transcript
-    const entities = await extractEntities(transcription, language)
+    const entities = await extractEntities(transcription, language, userId, campaignId)
 
     // Create wiki entries for each entity
     for (const entity of entities) {
@@ -67,7 +69,7 @@ async function createSessionRecap(
   })
 }
 
-async function extractEntities(transcription: string, language = 'en'): Promise<WikiEntryData[]> {
+async function extractEntities(transcription: string, language = 'en', userId?: string, campaignId?: string): Promise<WikiEntryData[]> {
   const langLabel = getLanguageLabel(language)
   const prompt = `Analyze this tabletop RPG session transcript and extract key entities.
 
@@ -99,6 +101,13 @@ ${transcription.slice(0, 20000)}
 JSON Array:`
 
   const result = await getGeminiFlash().generateContent(prompt)
+
+  // Track usage
+  if (userId) {
+    const tokens = extractTokenCounts(result.response.usageMetadata)
+    trackUsage(userId, 'wiki_generation', tokens, campaignId)
+  }
+
   const responseText = result.response.text()
 
   try {
@@ -170,7 +179,8 @@ async function upsertWikiEntry(
 export async function generateWikiFromRecaps(
   campaignId: string,
   language: string,
-  userInstructions?: string
+  userInstructions?: string,
+  userId?: string
 ): Promise<{ created: number; updated: number }> {
   const langLabel = getLanguageLabel(language)
 
@@ -234,6 +244,13 @@ Return a JSON array of entities:
 JSON Array:`
 
   const result = await getGeminiFlash().generateContent(prompt)
+
+  // Track usage
+  if (userId) {
+    const tokens = extractTokenCounts(result.response.usageMetadata)
+    trackUsage(userId, 'wiki_generation', tokens, campaignId)
+  }
+
   const responseText = result.response.text()
 
   let entities: WikiEntryData[] = []

@@ -1,5 +1,7 @@
 import { getGeminiFlash } from './client'
 import { prisma } from '@/lib/db'
+import { trackUsage } from '@/lib/usage-tracking'
+import type { Prisma } from '@prisma/client'
 
 export async function buildChatContext(
   campaignId: string,
@@ -52,7 +54,9 @@ export async function getChatCompletion(
   context: string,
   userMessage: string,
   conversationHistory: Array<{ role: string; content: string }> = [],
-  language = 'en'
+  language = 'en',
+  userId?: string,
+  campaignId?: string
 ) {
   const { getLanguageLabel } = await import('./audio-processor')
   const langLabel = getLanguageLabel(language)
@@ -96,6 +100,21 @@ ${context}`
   })
 
   const result = await chat.sendMessageStream(userMessage)
+
+  // Track usage after stream completes (fire-and-forget)
+  if (userId) {
+    result.response.then((res) => {
+      const meta = res.usageMetadata
+      if (meta) {
+        trackUsage(userId, 'chat', {
+          promptTokens: meta.promptTokenCount ?? 0,
+          completionTokens: meta.candidatesTokenCount ?? 0,
+          totalTokens: meta.totalTokenCount ?? 0,
+        }, campaignId)
+      }
+    }).catch(() => {})
+  }
+
   return result.stream
 }
 
@@ -104,7 +123,7 @@ export async function saveChatMessage(
   userId: string,
   role: 'user' | 'assistant',
   content: string,
-  contextUsed?: any
+  contextUsed?: Prisma.InputJsonValue
 ) {
   return await prisma.chatMessage.create({
     data: {

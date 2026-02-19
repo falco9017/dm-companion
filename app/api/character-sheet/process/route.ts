@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import { parseCharacterPdf } from '@/lib/gemini/character-parser'
 
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(arrayBuffer).toString('base64')
 
     // Parse PDF with Gemini
-    const characterData = await parseCharacterPdf(base64, 'application/pdf')
+    const characterData = await parseCharacterPdf(base64, 'application/pdf', session.user.id, campaignId)
 
     // Create or use existing wiki entry
     let entryId = wikiEntryId
@@ -106,6 +106,17 @@ export async function POST(request: NextRequest) {
         pdfBlobKey: blob.pathname,
       },
     })
+
+    // Delete PDF blob to save storage (data is already parsed)
+    try {
+      await del(blob.url)
+      await prisma.characterSheet.update({
+        where: { id: characterSheet.id },
+        data: { pdfBlobUrl: null, pdfBlobKey: null },
+      })
+    } catch (blobError) {
+      console.error('Failed to delete PDF blob (non-fatal):', blobError)
+    }
 
     return NextResponse.json({
       characterSheetId: characterSheet.id,

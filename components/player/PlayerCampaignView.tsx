@@ -33,7 +33,7 @@ export default function PlayerCampaignView({
   mySheetId,
 }: PlayerCampaignViewProps) {
   const [activeTab, setActiveTab] = useState<'character' | 'party'>(mySheetId ? 'character' : 'party')
-  const [showSheet, setShowSheet] = useState(!!mySheetId)
+  const [, setShowSheet] = useState(!!mySheetId)
   const [characterName, setCharacterName] = useState('')
   const [creating, startCreate] = useTransition()
   const [createError, setCreateError] = useState('')

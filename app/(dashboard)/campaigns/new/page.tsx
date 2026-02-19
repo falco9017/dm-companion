@@ -3,6 +3,7 @@ import { createCampaign } from '@/actions/campaigns'
 import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function NewCampaignPage() {
   const session = await auth()
@@ -77,12 +78,12 @@ export default async function NewCampaignPage() {
             >
               {t(locale, 'campaigns.create')}
             </button>
-            <a
+            <Link
               href="/campaigns"
               className="px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors text-center"
             >
               {t(locale, 'common.cancel')}
-            </a>
+            </Link>
           </div>
         </div>
       </form>

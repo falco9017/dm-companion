@@ -37,7 +37,7 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
     try {
       await createWikiEntry(campaignId, userId, {
         title,
-        type: type as any,
+        type: type as import('@prisma/client').WikiEntryType,
         content,
         tags: tagsRaw ? tagsRaw.split(',').map((t) => t.trim()).filter(Boolean) : [],
       })

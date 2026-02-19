@@ -161,6 +161,71 @@ const en = {
   'profile.saved': 'Saved!',
   'profile.memberSince': 'Member since',
   'profile.noName': 'No name set',
+
+  // Subscription
+  'subscription.title': 'Subscription',
+  'subscription.currentPlan': 'Current Plan',
+  'subscription.basic': 'Basic',
+  'subscription.pro': 'Pro',
+  'subscription.free': 'Free',
+  'subscription.status': 'Status',
+  'subscription.active': 'Active',
+  'subscription.canceled': 'Canceled',
+  'subscription.pastDue': 'Past Due',
+  'subscription.trialing': 'Trialing',
+  'subscription.nextBilling': 'Next billing date',
+  'subscription.upgradeToPro': 'Upgrade to Pro',
+  'subscription.downgradToBasic': 'Downgrade to Basic',
+  'subscription.audioUsage': 'Audio transcriptions: {used} / {limit} this month',
+  'subscription.audioUsageUnlimited': 'Audio transcriptions: {used} this month (unlimited)',
+  'subscription.manageSub': 'Manage Subscription',
+
+  // Pricing
+  'pricing.title': 'Choose Your Plan',
+  'pricing.subtitle': 'Start free and upgrade when you need more power.',
+  'pricing.monthly': 'Monthly',
+  'pricing.annual': 'Annual',
+  'pricing.perMonth': '/month',
+  'pricing.perYear': '/year',
+  'pricing.saveBadge': 'Save ~17%',
+  'pricing.currentPlan': 'Current Plan',
+  'pricing.getStarted': 'Get Started',
+  'pricing.subscribe': 'Subscribe',
+  'pricing.basicName': 'Basic',
+  'pricing.proName': 'Pro',
+  'pricing.basicPrice': 'Free',
+  'pricing.proMonthly': '$6.99',
+  'pricing.proAnnual': '$70',
+  'pricing.basicFeature1': '1 campaign',
+  'pricing.basicFeature2': '1 audio transcription/month',
+  'pricing.basicFeature3': 'Wiki auto-generation',
+  'pricing.basicFeature4': 'Character sheets',
+  'pricing.basicNoChat': 'No AI chat',
+  'pricing.proFeature1': 'Unlimited campaigns',
+  'pricing.proFeature2': 'Unlimited audio transcriptions',
+  'pricing.proFeature3': 'Wiki auto-generation',
+  'pricing.proFeature4': 'Character sheets',
+  'pricing.proFeature5': 'AI chat assistant',
+  'pricing.proFeature6': 'Priority support',
+
+  // Limits / enforcement
+  'limits.campaignLimit': 'You\'ve reached the campaign limit on the Basic plan. Upgrade to Pro for unlimited campaigns.',
+  'limits.audioLimit': 'You\'ve used your audio transcription for this month. Upgrade to Pro for unlimited transcriptions.',
+  'limits.audioTooLong': 'This audio file exceeds the Basic plan duration limit. Upgrade to Pro for longer recordings.',
+  'limits.chatLocked': 'AI Chat is a Pro feature. Upgrade to unlock your campaign assistant.',
+  'limits.upgrade': 'Upgrade to Pro',
+
+  // Landing
+  'landing.hero': 'Your Ultimate Campaign Management Tool',
+  'landing.subtitle': 'For Dungeon Masters & Players',
+  'landing.feature1': 'Upload & transcribe session audio',
+  'landing.feature2': 'Auto-generate campaign wiki',
+  'landing.feature3': 'AI chat with campaign context',
+  'landing.getStarted': 'Get Started',
+  'landing.viewPricing': 'View Pricing',
+
+  // Nav
+  'nav.pricing': 'Pricing',
 } as const
 
 const it: Record<string, string> = {
@@ -324,6 +389,71 @@ const it: Record<string, string> = {
   'profile.saved': 'Salvato!',
   'profile.memberSince': 'Membro dal',
   'profile.noName': 'Nome non impostato',
+
+  // Subscription
+  'subscription.title': 'Abbonamento',
+  'subscription.currentPlan': 'Piano Attuale',
+  'subscription.basic': 'Base',
+  'subscription.pro': 'Pro',
+  'subscription.free': 'Gratuito',
+  'subscription.status': 'Stato',
+  'subscription.active': 'Attivo',
+  'subscription.canceled': 'Cancellato',
+  'subscription.pastDue': 'Pagamento in ritardo',
+  'subscription.trialing': 'Periodo di prova',
+  'subscription.nextBilling': 'Prossima fatturazione',
+  'subscription.upgradeToPro': 'Passa a Pro',
+  'subscription.downgradToBasic': 'Passa a Base',
+  'subscription.audioUsage': 'Trascrizioni audio: {used} / {limit} questo mese',
+  'subscription.audioUsageUnlimited': 'Trascrizioni audio: {used} questo mese (illimitate)',
+  'subscription.manageSub': 'Gestisci Abbonamento',
+
+  // Pricing
+  'pricing.title': 'Scegli il Tuo Piano',
+  'pricing.subtitle': 'Inizia gratis e aggiorna quando hai bisogno di pi\u00f9 potenza.',
+  'pricing.monthly': 'Mensile',
+  'pricing.annual': 'Annuale',
+  'pricing.perMonth': '/mese',
+  'pricing.perYear': '/anno',
+  'pricing.saveBadge': 'Risparmia ~17%',
+  'pricing.currentPlan': 'Piano Attuale',
+  'pricing.getStarted': 'Inizia',
+  'pricing.subscribe': 'Abbonati',
+  'pricing.basicName': 'Base',
+  'pricing.proName': 'Pro',
+  'pricing.basicPrice': 'Gratuito',
+  'pricing.proMonthly': '\u20ac6,99',
+  'pricing.proAnnual': '\u20ac70',
+  'pricing.basicFeature1': '1 campagna',
+  'pricing.basicFeature2': '1 trascrizione audio/mese',
+  'pricing.basicFeature3': 'Generazione wiki automatica',
+  'pricing.basicFeature4': 'Schede personaggio',
+  'pricing.basicNoChat': 'Nessuna chat IA',
+  'pricing.proFeature1': 'Campagne illimitate',
+  'pricing.proFeature2': 'Trascrizioni audio illimitate',
+  'pricing.proFeature3': 'Generazione wiki automatica',
+  'pricing.proFeature4': 'Schede personaggio',
+  'pricing.proFeature5': 'Assistente chat IA',
+  'pricing.proFeature6': 'Supporto prioritario',
+
+  // Limits / enforcement
+  'limits.campaignLimit': 'Hai raggiunto il limite di campagne del piano Base. Passa a Pro per campagne illimitate.',
+  'limits.audioLimit': 'Hai usato la tua trascrizione audio per questo mese. Passa a Pro per trascrizioni illimitate.',
+  'limits.audioTooLong': 'Questo file audio supera il limite di durata del piano Base. Passa a Pro per registrazioni pi\u00f9 lunghe.',
+  'limits.chatLocked': 'La chat IA \u00e8 una funzione Pro. Passa a Pro per sbloccare l\'assistente della campagna.',
+  'limits.upgrade': 'Passa a Pro',
+
+  // Landing
+  'landing.hero': 'Il Tuo Strumento Definitivo per la Gestione delle Campagne',
+  'landing.subtitle': 'Per Dungeon Master e Giocatori',
+  'landing.feature1': 'Carica e trascrivi l\'audio delle sessioni',
+  'landing.feature2': 'Genera automaticamente la wiki della campagna',
+  'landing.feature3': 'Chat IA con contesto della campagna',
+  'landing.getStarted': 'Inizia',
+  'landing.viewPricing': 'Vedi i Prezzi',
+
+  // Nav
+  'nav.pricing': 'Prezzi',
 }
 
 type TranslationKey = keyof typeof en

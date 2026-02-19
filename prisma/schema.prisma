@@ -21,12 +21,22 @@ model User {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
+  // Subscription fields
+  stripeCustomerId            String?   @unique
+  subscriptionTier            String    @default("basic") // "basic" | "pro"
+  subscriptionStatus          String?   // "active" | "canceled" | "past_due" | "trialing" | null
+  stripeSubscriptionId        String?   @unique
+  subscriptionPeriodEnd       DateTime?
+  audioTranscriptionsThisMonth Int      @default(0)
+  audioQuotaResetAt           DateTime  @default(now())
+
   accounts                Account[]
   sessions                Session[]
   campaigns               Campaign[]
   chatMessages            ChatMessage[]
   campaignMemberships     CampaignMember[]
   assignedCharacterSheets CharacterSheet[] @relation("PlayerCharacterSheets")
+  usageRecords            UsageRecord[]
 
   @@map("users")
 }
@@ -240,4 +250,24 @@ model ChatMessage {
   @@index([campaignId])
   @@index([userId])
   @@map("chat_messages")
+}
+
+// Usage tracking — append-only token usage log
+model UsageRecord {
+  id               String   @id @default(cuid())
+  userId           String
+  operation        String   // transcription, summary, wiki_generation, chat, character_parse
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  campaignId       String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, operation])
+  @@index([createdAt])
+  @@map("usage_records")
 }

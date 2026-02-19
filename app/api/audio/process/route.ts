@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db'
 import { transcribeAudio, generateSummary } from '@/lib/gemini/audio-processor'
 import { generateWikiEntries } from '@/lib/gemini/wiki-generator'
 import { revalidatePath } from 'next/cache'
+import { del } from '@vercel/blob'
+import { canProcessAudio, incrementAudioUsage, getEffectiveTier, getLimits } from '@/lib/subscription'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,14 +43,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Subscription check: can this user process audio?
+    const audioCheck = await canProcessAudio(session.user.id)
+    if (!audioCheck.allowed) {
+      return NextResponse.json(
+        { error: 'subscription_limit', reason: audioCheck.reason },
+        { status: 403 }
+      )
+    }
+
+    // Check audio duration against tier limit
+    const tier = await getEffectiveTier(session.user.id)
+    const limits = getLimits(tier)
+    if (audioFile.duration && audioFile.duration > limits.maxAudioDurationSec) {
+      return NextResponse.json(
+        { error: 'subscription_limit', reason: 'audio_too_long' },
+        { status: 403 }
+      )
+    }
+
     // Update status to PROCESSING
     await prisma.audioFile.update({
       where: { id: audioFileId },
       data: { status: 'PROCESSING' },
     })
 
+    // Increment usage counter
+    await incrementAudioUsage(session.user.id)
+
     // Process in background (fire-and-forget)
-    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language)
+    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language, session.user.id)
 
     return NextResponse.json({
       success: true,
@@ -63,15 +87,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string) {
+async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string, userId: string) {
   try {
     // Transcribe audio
     console.log(`Transcribing audio file ${audioFileId}...`)
-    const transcription = await transcribeAudio(blobUrl)
+    const transcription = await transcribeAudio(blobUrl, userId, campaignId)
 
     // Generate summary
     console.log(`Generating summary for audio file ${audioFileId}...`)
-    const summary = await generateSummary(transcription, language)
+    const summary = await generateSummary(transcription, language, userId, campaignId)
 
     // Update with transcription and summary
     await prisma.audioFile.update({
@@ -79,9 +103,17 @@ async function processAudioInBackground(audioFileId: string, blobUrl: string, ca
       data: { status: 'PROCESSED', transcription, summary },
     })
 
+    // Delete audio blob to save storage
+    try {
+      await del(blobUrl)
+      console.log(`Deleted audio blob for file ${audioFileId}`)
+    } catch (blobError) {
+      console.error(`Failed to delete audio blob (non-fatal):`, blobError)
+    }
+
     // Generate wiki entries
     console.log(`Generating wiki entries for audio file ${audioFileId}...`)
-    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language)
+    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language, userId)
 
     revalidatePath(`/campaigns/${campaignId}`)
     console.log(`Successfully processed audio file ${audioFileId}`)

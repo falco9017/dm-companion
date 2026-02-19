@@ -1,6 +1,6 @@
 'use client'
 
-import { Users, Heart, Shield, Zap } from 'lucide-react'
+import { Heart, Shield, Zap } from 'lucide-react'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
 interface PartySheet {

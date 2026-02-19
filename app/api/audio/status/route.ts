@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       status: audioFile.status,
       errorMessage: audioFile.errorMessage,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to get status' },
       { status: 500 }

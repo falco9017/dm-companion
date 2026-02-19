@@ -1,4 +1,5 @@
 import { getGeminiPro, getGeminiFlash } from './client'
+import { trackUsage, extractTokenCounts } from '@/lib/usage-tracking'
 
 const LANGUAGE_LABELS: Record<string, string> = {
   en: 'English',
@@ -9,7 +10,7 @@ export function getLanguageLabel(code: string): string {
   return LANGUAGE_LABELS[code] || code
 }
 
-export async function transcribeAudio(audioUrl: string): Promise<string> {
+export async function transcribeAudio(audioUrl: string, userId?: string, campaignId?: string): Promise<string> {
   try {
     // Fetch the audio file
     const response = await fetch(audioUrl)
@@ -40,6 +41,12 @@ IMPORTANT: Transcribe in the original language of the audio. Do not translate.`,
       },
     ])
 
+    // Track usage
+    if (userId) {
+      const tokens = extractTokenCounts(result.response.usageMetadata)
+      trackUsage(userId, 'transcription', tokens, campaignId)
+    }
+
     const transcription = result.response.text()
     return transcription
   } catch (error) {
@@ -49,7 +56,7 @@ IMPORTANT: Transcribe in the original language of the audio. Do not translate.`,
   }
 }
 
-export async function generateSummary(transcript: string, language = 'en'): Promise<string> {
+export async function generateSummary(transcript: string, language = 'en', userId?: string, campaignId?: string): Promise<string> {
   try {
     const langLabel = getLanguageLabel(language)
     const result = await getGeminiFlash().generateContent(`
@@ -66,6 +73,12 @@ Transcript:
 ${transcript}
 
 Summary:`)
+
+    // Track usage
+    if (userId) {
+      const tokens = extractTokenCounts(result.response.usageMetadata)
+      trackUsage(userId, 'summary', tokens, campaignId)
+    }
 
     return result.response.text()
   } catch (error) {

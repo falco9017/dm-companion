@@ -2,12 +2,22 @@ import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { buildChatContext, getChatCompletion, saveChatMessage } from '@/lib/gemini/chat'
+import { canUseChat } from '@/lib/subscription'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session) {
       return new Response('Unauthorized', { status: 401 })
+    }
+
+    // Subscription check: chat enabled?
+    const chatCheck = await canUseChat(session.user.id)
+    if (!chatCheck.allowed) {
+      return new Response(JSON.stringify({ error: 'subscription_limit', reason: chatCheck.reason }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     const { message, campaignId, history } = await request.json()
@@ -33,7 +43,7 @@ export async function POST(request: NextRequest) {
     await saveChatMessage(campaignId, session.user.id, 'user', message)
 
     // Get streaming completion
-    const stream = await getChatCompletion(context, message, history || [], campaign.language)
+    const stream = await getChatCompletion(context, message, history || [], campaign.language, session.user.id, campaignId)
 
     // Create a readable stream for the response
     const encoder = new TextEncoder()

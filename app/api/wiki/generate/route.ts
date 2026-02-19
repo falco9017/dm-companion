@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
     const result = await generateWikiFromRecaps(
       campaignId,
       campaign.language,
-      userInstructions || undefined
+      userInstructions || undefined,
+      session.user.id
     )
 
     revalidatePath(`/campaigns/${campaignId}`)

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Users, X, UserPlus, Trash2, Shield, User } from 'lucide-react'
 import {
   inviteMember,
@@ -98,8 +99,6 @@ export default function PlayersModal({
     })
   }
 
-  const acceptedMembers = members.filter((m) => m.status === 'ACCEPTED')
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -165,7 +164,7 @@ export default function PlayersModal({
                     {/* Avatar */}
                     <div className="w-8 h-8 rounded-full bg-accent-purple/20 flex items-center justify-center shrink-0">
                       {member.user?.image ? (
-                        <img src={member.user.image} alt="" className="w-8 h-8 rounded-full" />
+                        <Image src={member.user.image} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
                       ) : (
                         <User className="w-4 h-4 text-accent-purple-light" />
                       )}

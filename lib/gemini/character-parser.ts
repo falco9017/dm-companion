@@ -1,10 +1,13 @@
 import { getGeminiFlash } from './client'
 import type { CharacterSheetData } from '@/types/character-sheet'
 import { createEmptyCharacterSheet } from '@/types/character-sheet'
+import { trackUsage, extractTokenCounts } from '@/lib/usage-tracking'
 
 export async function parseCharacterPdf(
   pdfBase64: string,
-  mimeType: string = 'application/pdf'
+  mimeType: string = 'application/pdf',
+  userId?: string,
+  campaignId?: string
 ): Promise<CharacterSheetData> {
   const model = getGeminiFlash()
 
@@ -106,6 +109,12 @@ Return ONLY the JSON object, no markdown formatting or explanation.`
       },
     },
   ])
+
+  // Track usage
+  if (userId) {
+    const tokens = extractTokenCounts(result.response.usageMetadata)
+    trackUsage(userId, 'character_parse', tokens, campaignId)
+  }
 
   const responseText = result.response.text()
 

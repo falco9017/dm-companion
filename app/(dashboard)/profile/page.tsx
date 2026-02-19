@@ -3,14 +3,21 @@ import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
 import ProfileForm from './ProfileForm'
 import ChangePasswordForm from './ChangePasswordForm'
+import SubscriptionSection from './SubscriptionSection'
 import BackButton from './BackButton'
 import { EmailVerificationBanner } from '../EmailVerificationBanner'
 import { LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { getAudioUsageThisMonth } from '@/lib/subscription'
+import { TIER_LIMITS, type SubscriptionTier } from '@/lib/subscription'
 
 export default async function ProfilePage() {
   const session = await auth()
   const profile = await getUserProfile(session!.user.id)
   const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
+  const audioUsed = await getAudioUsageThisMonth(session!.user.id)
+  const tier = (profile.subscriptionTier || 'basic') as SubscriptionTier
+  const audioLimit = TIER_LIMITS[tier].maxAudioPerMonth === Infinity ? null : TIER_LIMITS[tier].maxAudioPerMonth
 
   async function handleSignOut() {
     'use server'
@@ -33,9 +40,11 @@ export default async function ProfilePage() {
       <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
         <div className="flex items-center gap-4 mb-6">
           {profile.image && (
-            <img
+            <Image
               src={profile.image}
               alt=""
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full ring-2 ring-accent-purple/30"
             />
           )}
@@ -54,6 +63,16 @@ export default async function ProfilePage() {
           uiLanguage={profile.uiLanguage}
         />
       </div>
+
+      {/* Subscription */}
+      <SubscriptionSection
+        userId={session!.user.id}
+        subscriptionTier={profile.subscriptionTier || 'basic'}
+        subscriptionStatus={profile.subscriptionStatus || null}
+        subscriptionPeriodEnd={profile.subscriptionPeriodEnd?.toISOString() || null}
+        audioUsedThisMonth={audioUsed}
+        audioLimit={audioLimit}
+      />
 
       {/* Change password (credentials users only) */}
       {profile.password && (

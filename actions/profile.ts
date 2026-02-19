@@ -15,6 +15,9 @@ export async function getUserProfile(userId: string) {
       emailVerified: true,
       password: true,
       createdAt: true,
+      subscriptionTier: true,
+      subscriptionStatus: true,
+      subscriptionPeriodEnd: true,
     },
   })
 

@@ -68,7 +68,7 @@ export async function getWikiEntries(
     throw new Error('Campaign not found or unauthorized')
   }
 
-  const where: any = { campaignId }
+  const where: Record<string, unknown> = { campaignId }
 
   if (filters?.type) {
     where.type = filters.type
