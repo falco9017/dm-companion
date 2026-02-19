@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
 import { WikiEntryType } from '@prisma/client'
 import {
   ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
@@ -48,6 +47,7 @@ interface WikiSidebarProps {
   onCreateClick: () => void
   onUpdateWikiClick: () => void
   onCreateSessionClick: () => void
+  onNavigate: (href: string) => void
   isOpen: boolean
   onClose: () => void
 }
@@ -107,6 +107,7 @@ export default function WikiSidebar({
   onCreateClick,
   onUpdateWikiClick,
   onCreateSessionClick,
+  onNavigate,
   isOpen,
   onClose,
 }: WikiSidebarProps) {
@@ -136,13 +137,13 @@ export default function WikiSidebar({
       {/* Header */}
       <div className="p-4 border-b border-border-theme">
         <div className="flex items-center justify-between mb-1">
-          <Link
-            href="/campaigns"
+          <button
+            onClick={() => onNavigate('/campaigns')}
             className="text-xs text-text-muted hover:text-text-secondary flex items-center gap-1 transition-colors"
           >
             <ArrowLeft className="w-3 h-3" />
             {t('sidebar.allCampaigns')}
-          </Link>
+          </button>
           <button
             onClick={onClose}
             className="md:hidden text-text-muted hover:text-text-primary p-1"
@@ -208,18 +209,17 @@ export default function WikiSidebar({
               {!collapsed['_sessions'] && recaps.length > 0 && (
                 <div className="ml-2">
                   {recaps.map((entry) => (
-                    <Link
+                    <button
                       key={entry.id}
-                      href={`/campaigns/${campaignId}?entry=${entry.id}`}
-                      onClick={onClose}
-                      className={`block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
+                      onClick={() => { onNavigate(`/campaigns/${campaignId}?entry=${entry.id}`) }}
+                      className={`w-full text-left block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
                         entry.id === activeEntryId
                           ? 'sidebar-active text-accent-purple-light font-medium'
                           : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                       }`}
                     >
                       {formatDate(entry.createdAt, dateFormat)} - {entry.title}
-                    </Link>
+                    </button>
                   ))}
                 </div>
               )}
@@ -278,18 +278,17 @@ export default function WikiSidebar({
                           {!isCollapsed && (
                             <div className="ml-5">
                               {items.map((entry) => (
-                                <Link
+                                <button
                                   key={entry.id}
-                                  href={`/campaigns/${campaignId}?entry=${entry.id}`}
-                                  onClick={onClose}
-                                  className={`block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
+                                  onClick={() => { onNavigate(`/campaigns/${campaignId}?entry=${entry.id}`) }}
+                                  className={`w-full text-left block px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
                                     entry.id === activeEntryId
                                       ? 'sidebar-active text-accent-purple-light font-medium'
                                       : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
                                   }`}
                                 >
                                   {entry.title}
-                                </Link>
+                                </button>
                               ))}
                             </div>
                           )}

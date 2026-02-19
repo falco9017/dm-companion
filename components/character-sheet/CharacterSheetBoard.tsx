@@ -23,6 +23,7 @@ interface CharacterSheetBoardProps {
   initialData: CharacterSheetData
   pdfBlobUrl?: string | null
   onBack: () => void
+  onUnsavedChange?: (isDirty: boolean) => void
 }
 
 const abilityConfig = [
@@ -40,6 +41,7 @@ export default function CharacterSheetBoard({
   initialData,
   pdfBlobUrl,
   onBack,
+  onUnsavedChange,
 }: CharacterSheetBoardProps) {
   const [data, setData] = useState<CharacterSheetData>(initialData)
   const [editing, setEditing] = useState(false)
@@ -65,7 +67,10 @@ export default function CharacterSheetBoard({
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+      // Clear dirty state on unmount (e.g. navigating to a different entry)
+      onUnsavedChange?.(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateData = (patch: Partial<CharacterSheetData>) => {
@@ -79,6 +84,7 @@ export default function CharacterSheetBoard({
     try {
       await updateCharacterSheet(characterSheetId, userId, data)
       setEditing(false)
+      onUnsavedChange?.(false)
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save')
     } finally {
@@ -206,7 +212,7 @@ export default function CharacterSheetBoard({
                   <button onClick={handleSave} disabled={saving} className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors" title={saving ? t('common.saving') : t('common.save')}>
                     <Save className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { setEditing(false); setData(initialData) }} className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors" title={t('common.cancel')}>
+                  <button onClick={() => { setEditing(false); setData(initialData); onUnsavedChange?.(false) }} className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors" title={t('common.cancel')}>
                     <X className="w-4 h-4" />
                   </button>
                 </>
@@ -217,7 +223,7 @@ export default function CharacterSheetBoard({
                       <FileText className="w-4 h-4" />
                     </a>
                   )}
-                  <button onClick={() => setEditing(true)} className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors" title={t('common.edit')}>
+                  <button onClick={() => { setEditing(true); onUnsavedChange?.(true) }} className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors" title={t('common.edit')}>
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button onClick={handleDelete} className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors" title={t('common.delete')}>

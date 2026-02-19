@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
 import { Menu, Upload, Plus } from 'lucide-react'
 import WikiSidebar from './WikiSidebar'
@@ -64,6 +65,7 @@ export default function WikiPageLayout({
   activeEntry,
   dateFormat,
 }: WikiPageLayoutProps) {
+  const router = useRouter()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
@@ -71,7 +73,33 @@ export default function WikiPageLayout({
   const [createSessionOpen, setCreateSessionOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
+  const [pendingNav, setPendingNav] = useState<string | null>(null)
+  const isDirtyRef = useRef(false)
   const { t } = useI18n()
+
+  const handleUnsavedChange = useCallback((isDirty: boolean) => {
+    isDirtyRef.current = isDirty
+  }, [])
+
+  const handleNavigate = useCallback((href: string) => {
+    if (isDirtyRef.current) {
+      setPendingNav(href)
+    } else {
+      setSidebarOpen(false)
+      router.push(href)
+    }
+  }, [router])
+
+  // Warn on browser close/refresh while dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirtyRef.current) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -94,6 +122,7 @@ export default function WikiPageLayout({
         onCreateClick={() => setCreateOpen(true)}
         onUpdateWikiClick={() => setUpdateWikiOpen(true)}
         onCreateSessionClick={() => setCreateSessionOpen(true)}
+        onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -105,6 +134,7 @@ export default function WikiPageLayout({
           userId={userId}
           entry={activeEntry}
           onImportPdf={() => setPdfImportOpen(true)}
+          onUnsavedChange={handleUnsavedChange}
         />
       ) : (
         <div className="flex-1 flex items-center justify-center px-4">
@@ -184,6 +214,37 @@ export default function WikiPageLayout({
         isOpen={pdfImportOpen}
         onClose={() => setPdfImportOpen(false)}
       />
+
+      {/* Unsaved changes confirmation */}
+      {pendingNav && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPendingNav(null)} />
+          <div className="relative bg-surface rounded-xl w-full max-w-sm mx-4 border border-border-theme p-6 shadow-xl">
+            <h3 className="text-base font-bold text-text-primary mb-2">{t('unsaved.title')}</h3>
+            <p className="text-sm text-text-muted mb-6">{t('unsaved.message')}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setPendingNav(null)}
+                className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  const href = pendingNav
+                  isDirtyRef.current = false
+                  setPendingNav(null)
+                  setSidebarOpen(false)
+                  router.push(href)
+                }}
+                className="px-4 py-2 text-sm rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+              >
+                {t('unsaved.leave')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create entry modal */}
       {createOpen && (

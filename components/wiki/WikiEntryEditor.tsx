@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateWikiEntry, deleteWikiEntry } from '@/actions/wiki'
 import { createCharacterSheet } from '@/actions/character-sheet'
@@ -45,9 +45,10 @@ interface WikiEntryEditorProps {
     } | null
   }
   onImportPdf?: () => void
+  onUnsavedChange?: (isDirty: boolean) => void
 }
 
-export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf }: WikiEntryEditorProps) {
+export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf, onUnsavedChange }: WikiEntryEditorProps) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(entry.title)
@@ -61,18 +62,25 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
   const isCharacter = entry.type === 'CHARACTER'
   const hasSheet = !!entry.characterSheet
 
+  // Ref so we can call onUnsavedChange inside effects without it being a dep
+  const onUnsavedChangeRef = useRef(onUnsavedChange)
+  onUnsavedChangeRef.current = onUnsavedChange
+
   useEffect(() => {
     setEditing(false)
     setTitle(entry.title)
     setContent(entry.content)
     setViewMode(entry.characterSheet ? 'board' : 'wiki')
-  }, [entry.id, entry.title, entry.content, entry.characterSheet])
+    onUnsavedChangeRef.current?.(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry.id])
 
   const handleSave = async () => {
     setSaving(true)
     try {
       await updateWikiEntry(entry.id, userId, { title, content })
       setEditing(false)
+      onUnsavedChange?.(false)
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save')
@@ -132,12 +140,14 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
           </div>
         </div>
         <CharacterSheetBoard
+          key={entry.characterSheet!.id}
           characterSheetId={entry.characterSheet!.id}
           userId={userId}
           campaignId={campaignId}
           initialData={entry.characterSheet!.data}
           pdfBlobUrl={entry.characterSheet!.pdfBlobUrl}
           onBack={() => setViewMode('wiki')}
+          onUnsavedChange={onUnsavedChange}
         />
       </div>
     )
@@ -198,6 +208,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
                       setEditing(false)
                       setTitle(entry.title)
                       setContent(entry.content)
+                      onUnsavedChange?.(false)
                     }}
                     className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
                     title={t('common.cancel')}
@@ -208,7 +219,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
               ) : (
                 <>
                   <button
-                    onClick={() => setEditing(true)}
+                    onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
                     className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
                     title={t('common.edit')}
                   >

@@ -248,6 +248,11 @@ const en = {
   'sidebar.newWikiPage': 'New Page',
   'sidebar.updateWikiAI': 'Update Wiki (AI)',
 
+  // Unsaved changes dialog
+  'unsaved.title': 'Unsaved Changes',
+  'unsaved.message': 'You have unsaved changes that will be lost if you navigate away.',
+  'unsaved.leave': 'Leave without saving',
+
   // Session creation
   'session.createTitle': 'Create Session',
   'session.date': 'Session Date',
@@ -503,6 +508,11 @@ const it: Record<string, string> = {
   'sidebar.uploadAudio': 'Carica Audio',
   'sidebar.newWikiPage': 'Nuova Pagina',
   'sidebar.updateWikiAI': 'Aggiorna Wiki (IA)',
+
+  // Unsaved changes dialog
+  'unsaved.title': 'Modifiche non salvate',
+  'unsaved.message': 'Hai modifiche non salvate che andranno perse se esci.',
+  'unsaved.leave': 'Esci senza salvare',
 
   // Session creation
   'session.createTitle': 'Crea Sessione',
