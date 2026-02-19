@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation'
 import { updateUserProfile } from '@/actions/profile'
 import { useI18n } from '@/lib/i18n-context'
 
-interface ProfileFormProps {
+interface SettingsFormProps {
   userId: string
   name: string
   uiLanguage: string
+  dateFormat: string
 }
 
-export default function ProfileForm({ userId, name: initialName, uiLanguage: initialLang }: ProfileFormProps) {
+export default function SettingsForm({ userId, name: initialName, uiLanguage: initialLang, dateFormat: initialDateFormat }: SettingsFormProps) {
   const router = useRouter()
   const [name, setName] = useState(initialName)
   const [uiLanguage, setUiLanguage] = useState(initialLang)
+  const [dateFormat, setDateFormat] = useState(initialDateFormat)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const { t } = useI18n()
@@ -24,7 +26,7 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
     setSaving(true)
     setSaved(false)
     try {
-      await updateUserProfile(userId, { name, uiLanguage })
+      await updateUserProfile(userId, { name, uiLanguage, dateFormat })
       setSaved(true)
       router.refresh()
       setTimeout(() => setSaved(false), 2000)
@@ -63,6 +65,22 @@ export default function ProfileForm({ userId, name: initialName, uiLanguage: ini
         >
           <option value="en">English</option>
           <option value="it">Italian</option>
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="dateFormat" className="block text-sm font-medium text-text-secondary mb-1">
+          {t('profile.dateFormat')}
+        </label>
+        <select
+          id="dateFormat"
+          value={dateFormat}
+          onChange={(e) => setDateFormat(e.target.value)}
+          className="w-full px-4 py-3 rounded-lg input-dark"
+        >
+          <option value="DD.MM.YY">DD.MM.YY</option>
+          <option value="MM/DD/YY">MM/DD/YY</option>
+          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
         </select>
       </div>
 

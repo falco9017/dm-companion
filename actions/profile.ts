@@ -12,6 +12,7 @@ export async function getUserProfile(userId: string) {
       email: true,
       image: true,
       uiLanguage: true,
+      dateFormat: true,
       emailVerified: true,
       password: true,
       createdAt: true,
@@ -30,7 +31,7 @@ export async function getUserProfile(userId: string) {
 
 export async function updateUserProfile(
   userId: string,
-  data: { name?: string; uiLanguage?: string }
+  data: { name?: string; uiLanguage?: string; dateFormat?: string }
 ) {
   const updated = await prisma.user.update({
     where: { id: userId },

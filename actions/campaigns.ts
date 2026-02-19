@@ -43,14 +43,6 @@ export async function getCampaigns(userId: string) {
   return await prisma.campaign.findMany({
     where: { ownerId: userId },
     orderBy: { createdAt: 'desc' },
-    include: {
-      _count: {
-        select: {
-          audioFiles: true,
-          wikiEntries: true,
-        },
-      },
-    },
   })
 }
 

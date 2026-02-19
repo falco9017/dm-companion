@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   return (
     <I18nProvider locale={locale}>
       <div className="min-h-screen bg-background flex flex-col">
-        <DashboardNav user={{ ...session.user, subscriptionTier: session.user.subscriptionTier }} />
+        <DashboardNav user={session.user} />
         <main className="flex-1">
           {children}
         </main>

@@ -1,23 +1,18 @@
 import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
-import ProfileForm from './ProfileForm'
+import SettingsForm from './SettingsForm'
 import ChangePasswordForm from './ChangePasswordForm'
 import SubscriptionSection from './SubscriptionSection'
 import BackButton from './BackButton'
 import { EmailVerificationBanner } from '../EmailVerificationBanner'
 import { LogOut } from 'lucide-react'
 import Image from 'next/image'
-import { getAudioUsageThisMonth } from '@/lib/subscription'
-import { TIER_LIMITS, type SubscriptionTier } from '@/lib/subscription'
 
 export default async function ProfilePage() {
   const session = await auth()
   const profile = await getUserProfile(session!.user.id)
   const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
-  const audioUsed = await getAudioUsageThisMonth(session!.user.id)
-  const tier = (profile.subscriptionTier || 'basic') as SubscriptionTier
-  const audioLimit = TIER_LIMITS[tier].maxAudioPerMonth === Infinity ? null : TIER_LIMITS[tier].maxAudioPerMonth
 
   async function handleSignOut() {
     'use server'
@@ -36,9 +31,9 @@ export default async function ProfilePage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>
       </div>
 
-      {/* Profile card */}
+      {/* Profile header card */}
       <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4">
           {profile.image && (
             <Image
               src={profile.image}
@@ -56,42 +51,51 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
+      </div>
 
-        <ProfileForm
+      {/* Settings section */}
+      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
+        <h2 className="text-lg font-semibold text-text-primary mb-5">{t(locale, 'profile.settings')}</h2>
+        <SettingsForm
           userId={session!.user.id}
           name={profile.name || ''}
           uiLanguage={profile.uiLanguage}
+          dateFormat={profile.dateFormat}
         />
       </div>
 
-      {/* Subscription */}
-      <SubscriptionSection
-        userId={session!.user.id}
-        subscriptionTier={profile.subscriptionTier || 'basic'}
-        subscriptionStatus={profile.subscriptionStatus || null}
-        subscriptionPeriodEnd={profile.subscriptionPeriodEnd?.toISOString() || null}
-        audioUsedThisMonth={audioUsed}
-        audioLimit={audioLimit}
-      />
+      {/* Account section */}
+      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme space-y-6">
+        <h2 className="text-lg font-semibold text-text-primary">{t(locale, 'profile.account')}</h2>
 
-      {/* Change password (credentials users only) */}
-      {profile.password && (
-        <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
-          <h2 className="text-lg font-semibold text-text-primary mb-5">Change password</h2>
-          <ChangePasswordForm />
+        {/* Current plan */}
+        <SubscriptionSection
+          userId={session!.user.id}
+          subscriptionTier={profile.subscriptionTier || 'basic'}
+          subscriptionStatus={profile.subscriptionStatus || null}
+        />
+
+        {/* Change password (credentials users only) */}
+        {profile.password && (
+          <div className="border-t border-border-theme pt-5">
+            <h3 className="text-sm font-semibold text-text-secondary mb-4">Change password</h3>
+            <ChangePasswordForm />
+          </div>
+        )}
+
+        {/* Sign out */}
+        <div className="border-t border-border-theme pt-5">
+          <form action={handleSignOut}>
+            <button
+              type="submit"
+              className="w-full px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              {t(locale, 'nav.signOut')}
+            </button>
+          </form>
         </div>
-      )}
-
-      {/* Sign out */}
-      <form action={handleSignOut}>
-        <button
-          type="submit"
-          className="w-full px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
-        >
-          <LogOut className="w-4 h-4" />
-          {t(locale, 'nav.signOut')}
-        </button>
-      </form>
+      </div>
     </div>
   )
 }

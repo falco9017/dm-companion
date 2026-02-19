@@ -70,7 +70,6 @@ export default async function CampaignsPage() {
             <CampaignCard
               key={campaign.id}
               campaign={campaign}
-              userId={userId}
             />
           ))}
         </div>

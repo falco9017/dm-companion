@@ -8,6 +8,7 @@ import WikiEntryEditor from './WikiEntryEditor'
 import SettingsModal from './SettingsModal'
 import AudioUploadModal from './AudioUploadModal'
 import WikiEntryForm from './WikiEntryForm'
+import CreateSessionModal from './CreateSessionModal'
 import ChatPopup from '@/components/chat/ChatPopup'
 import ChatPanel from '@/components/chat/ChatPanel'
 import UpdateWikiModal from './UpdateWikiModal'
@@ -52,6 +53,7 @@ interface WikiPageLayoutProps {
   }
   wikiTree: WikiTreeEntry[]
   activeEntry: ActiveEntry | null
+  dateFormat: string
 }
 
 export default function WikiPageLayout({
@@ -60,11 +62,13 @@ export default function WikiPageLayout({
   campaign,
   wikiTree,
   activeEntry,
+  dateFormat,
 }: WikiPageLayoutProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
+  const [createSessionOpen, setCreateSessionOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
   const { t } = useI18n()
@@ -84,10 +88,12 @@ export default function WikiPageLayout({
         campaignName={campaign.name}
         entries={wikiTree}
         activeEntryId={activeEntry?.id}
+        dateFormat={dateFormat}
         onSettingsClick={() => setSettingsOpen(true)}
         onUploadClick={() => setUploadOpen(true)}
         onCreateClick={() => setCreateOpen(true)}
         onUpdateWikiClick={() => setUpdateWikiOpen(true)}
+        onCreateSessionClick={() => setCreateSessionOpen(true)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -161,6 +167,13 @@ export default function WikiPageLayout({
         campaignId={campaignId}
         isOpen={updateWikiOpen}
         onClose={() => setUpdateWikiOpen(false)}
+      />
+
+      <CreateSessionModal
+        campaignId={campaignId}
+        userId={userId}
+        isOpen={createSessionOpen}
+        onClose={() => setCreateSessionOpen(false)}
       />
 
       <CharacterPdfUploadModal

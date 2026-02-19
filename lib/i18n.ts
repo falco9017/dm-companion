@@ -226,6 +226,26 @@ const en = {
 
   // Nav
   'nav.pricing': 'Pricing',
+
+  // Profile settings & account
+  'profile.settings': 'Settings',
+  'profile.account': 'Account',
+  'profile.dateFormat': 'Date Format',
+
+  // Sidebar sessions/wiki
+  'sidebar.sessions': 'Sessions',
+  'sidebar.wiki': 'Wiki',
+  'sidebar.newSession': 'New Session',
+  'sidebar.uploadAudio': 'Upload Audio',
+  'sidebar.newWikiPage': 'New Page',
+  'sidebar.updateWikiAI': 'Update Wiki (AI)',
+
+  // Session creation
+  'session.createTitle': 'Create Session',
+  'session.date': 'Session Date',
+  'session.title': 'Session Title',
+  'session.titlePlaceholder': 'Leave blank to use date as title',
+  'session.create': 'Create',
 } as const
 
 const it: Record<string, string> = {
@@ -454,6 +474,26 @@ const it: Record<string, string> = {
 
   // Nav
   'nav.pricing': 'Prezzi',
+
+  // Profile settings & account
+  'profile.settings': 'Impostazioni',
+  'profile.account': 'Account',
+  'profile.dateFormat': 'Formato Data',
+
+  // Sidebar sessions/wiki
+  'sidebar.sessions': 'Sessioni',
+  'sidebar.wiki': 'Wiki',
+  'sidebar.newSession': 'Nuova Sessione',
+  'sidebar.uploadAudio': 'Carica Audio',
+  'sidebar.newWikiPage': 'Nuova Pagina',
+  'sidebar.updateWikiAI': 'Aggiorna Wiki (IA)',
+
+  // Session creation
+  'session.createTitle': 'Crea Sessione',
+  'session.date': 'Data Sessione',
+  'session.title': 'Titolo Sessione',
+  'session.titlePlaceholder': 'Lascia vuoto per usare la data come titolo',
+  'session.create': 'Crea',
 }
 
 type TranslationKey = keyof typeof en

@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { getCampaign } from '@/actions/campaigns'
 import { getWikiTree, getWikiEntry } from '@/actions/wiki'
+import { getUserProfile } from '@/actions/profile'
 import { notFound } from 'next/navigation'
 import WikiPageLayout from '@/components/wiki/WikiPageLayout'
 
@@ -16,12 +17,15 @@ export default async function CampaignPage({
   const session = await auth()
   const userId = session!.user.id
 
-  const campaign = await getCampaign(campaignId, userId)
+  const [campaign, wikiTree, profile] = await Promise.all([
+    getCampaign(campaignId, userId),
+    getWikiTree(campaignId, userId),
+    getUserProfile(userId),
+  ])
+
   if (!campaign) {
     notFound()
   }
-
-  const wikiTree = await getWikiTree(campaignId, userId)
 
   // Determine which entry to show
   let activeEntry = null
@@ -78,6 +82,7 @@ export default async function CampaignPage({
             }
           : null
       }
+      dateFormat={profile.dateFormat}
     />
   )
 }

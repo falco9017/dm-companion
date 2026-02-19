@@ -18,6 +18,7 @@ model User {
   password          String?       // bcrypt hash, null for Google-only users
   defaultCampaignId String?
   uiLanguage        String        @default("en")
+  dateFormat        String        @default("DD.MM.YY")
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
