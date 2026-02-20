@@ -144,7 +144,7 @@ const en = {
   'updateWiki.instructionsPlaceholder': 'e.g. Focus on the new NPCs from the latest session',
   'updateWiki.generate': 'Generate Wiki',
   'updateWiki.analyzing': 'Analyzing sessions...',
-  'updateWiki.done': 'Done! Created {created} and updated {updated} entries.',
+  'updateWiki.done': 'Done! Created {created}, updated {updated}, and removed {deleted} entries.',
 
   // Character sheet
   'characterSheet.boardView': 'Board View',
@@ -453,7 +453,7 @@ const it: Record<string, string> = {
   'updateWiki.instructionsPlaceholder': 'es. Concentrati sui nuovi PNG dell\'ultima sessione',
   'updateWiki.generate': 'Genera Wiki',
   'updateWiki.analyzing': 'Analisi sessioni...',
-  'updateWiki.done': 'Fatto! Create {created} e aggiornate {updated} voci.',
+  'updateWiki.done': 'Fatto! Create {created}, aggiornate {updated} e rimosse {deleted} voci.',
 
   // Character sheet
   'characterSheet.boardView': 'Vista Scheda',
@@ -762,7 +762,7 @@ const fr: Record<string, string> = {
   'updateWiki.instructionsPlaceholder': 'ex: Concentrez-vous sur les nouveaux PNJ de la dernière session',
   'updateWiki.generate': 'Générer le Wiki',
   'updateWiki.analyzing': 'Analyse des sessions...',
-  'updateWiki.done': 'Terminé ! {created} créées et {updated} entrées mises à jour.',
+  'updateWiki.done': 'Terminé ! {created} créées, {updated} mises à jour et {deleted} entrées supprimées.',
 
   // Character sheet
   'characterSheet.boardView': 'Vue Tableau',
@@ -1071,7 +1071,7 @@ const de: Record<string, string> = {
   'updateWiki.instructionsPlaceholder': 'z.B. Fokus auf die neuen NSCs aus der letzten Sitzung',
   'updateWiki.generate': 'Wiki generieren',
   'updateWiki.analyzing': 'Sitzungen werden analysiert...',
-  'updateWiki.done': 'Fertig! {created} erstellt und {updated} Einträge aktualisiert.',
+  'updateWiki.done': 'Fertig! {created} erstellt, {updated} aktualisiert und {deleted} Einträge entfernt.',
 
   // Character sheet
   'characterSheet.boardView': 'Board-Ansicht',
@@ -1380,7 +1380,7 @@ const es: Record<string, string> = {
   'updateWiki.instructionsPlaceholder': 'ej. Centrarse en los nuevos PNJs de la última sesión',
   'updateWiki.generate': 'Generar Wiki',
   'updateWiki.analyzing': 'Analizando sesiones...',
-  'updateWiki.done': '¡Hecho! Creadas {created} y actualizadas {updated} entradas.',
+  'updateWiki.done': '¡Hecho! Creadas {created}, actualizadas {updated} y eliminadas {deleted} entradas.',
 
   // Character sheet
   'characterSheet.boardView': 'Vista de Tablero',

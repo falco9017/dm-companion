@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       success: true,
       created: result.created,
       updated: result.updated,
+      deleted: result.deleted,
     })
   } catch (error) {
     console.error('Wiki generate error:', error)

@@ -19,7 +19,7 @@ export default function UpdateWikiModal({
   const router = useRouter()
   const [instructions, setInstructions] = useState('')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ created: number; updated: number } | null>(null)
+  const [result, setResult] = useState<{ created: number; updated: number; deleted: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { t } = useI18n()
 
@@ -46,7 +46,7 @@ export default function UpdateWikiModal({
         throw new Error(data.error || 'Generation failed')
       }
 
-      setResult({ created: data.created, updated: data.updated })
+      setResult({ created: data.created, updated: data.updated, deleted: data.deleted || 0 })
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -108,7 +108,7 @@ export default function UpdateWikiModal({
 
           {result && (
             <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-sm">
-              {t('updateWiki.done', { created: result.created, updated: result.updated })}
+              {t('updateWiki.done', { created: result.created, updated: result.updated, deleted: result.deleted })}
             </div>
           )}
 
