@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateCampaign, deleteCampaign } from '@/actions/campaigns'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Mic } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 
 interface SettingsModalProps {
@@ -16,6 +16,8 @@ interface SettingsModalProps {
   }
   isOpen: boolean
   onClose: () => void
+  onVoiceProfilesClick?: () => void
+  voiceProfileCount?: number
 }
 
 export default function SettingsModal({
@@ -24,6 +26,8 @@ export default function SettingsModal({
   campaign,
   isOpen,
   onClose,
+  onVoiceProfilesClick,
+  voiceProfileCount = 0,
 }: SettingsModalProps) {
   const router = useRouter()
   const [name, setName] = useState(campaign.name)
@@ -122,6 +126,40 @@ export default function SettingsModal({
             {saving ? t('common.saving') : t('settings.saveChanges')}
           </button>
         </form>
+
+        {/* Voice Profiles section */}
+        <div className="px-6 pb-4">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-surface-elevated border border-border-theme">
+            <div className="flex items-center gap-3">
+              <Mic className="w-5 h-5 text-accent-purple-light" />
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary">
+                  {t('settings.voiceProfiles')}
+                </h3>
+                <p className="text-xs text-text-muted">
+                  {t('voiceProfiles.settingsHint')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {voiceProfileCount > 0 && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-accent-purple/20 text-accent-purple-light">
+                  {voiceProfileCount}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onVoiceProfilesClick?.()
+                }}
+                className="px-3 py-1.5 rounded-lg text-sm bg-surface border border-border-theme text-text-secondary hover:text-text-primary transition-colors"
+              >
+                {t('voiceProfiles.manage')}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="px-6 pb-6">
           <div className="bg-error/5 border border-error/20 rounded-lg p-4">

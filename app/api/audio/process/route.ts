@@ -71,8 +71,14 @@ export async function POST(request: NextRequest) {
     // Increment usage counter
     await incrementAudioUsage(session.user.id)
 
+    // Fetch voice profiles for speaker identification
+    const voiceProfiles = await prisma.voiceProfile.findMany({
+      where: { campaignId: audioFile.campaignId },
+      select: { name: true, role: true, blobUrl: true },
+    })
+
     // Process in background (fire-and-forget)
-    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language, session.user.id, audioFile.recordingDate ?? undefined)
+    processAudioInBackground(audioFileId, audioFile.blobUrl, audioFile.campaignId, audioFile.campaign.language, session.user.id, audioFile.recordingDate ?? undefined, voiceProfiles.length > 0 ? voiceProfiles : undefined)
 
     return NextResponse.json({
       success: true,
@@ -87,11 +93,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string, userId: string, recordingDate?: Date) {
+async function processAudioInBackground(audioFileId: string, blobUrl: string, campaignId: string, language: string, userId: string, recordingDate?: Date, voiceProfiles?: { name: string; role: string; blobUrl: string }[]) {
   try {
-    // Transcribe audio
+    // Transcribe audio (with voice profiles for speaker identification if available)
     console.log(`Transcribing audio file ${audioFileId}...`)
-    const transcription = await transcribeAudio(blobUrl, userId, campaignId)
+    const transcription = await transcribeAudio(blobUrl, voiceProfiles, userId, campaignId)
 
     // Generate summary
     console.log(`Generating summary for audio file ${audioFileId}...`)

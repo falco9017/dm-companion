@@ -15,6 +15,7 @@ import ChatPopup from '@/components/chat/ChatPopup'
 import ChatPanel from '@/components/chat/ChatPanel'
 import UpdateWikiModal from './UpdateWikiModal'
 import CharacterPdfUploadModal from './CharacterPdfUploadModal'
+import VoiceProfilesModal from './VoiceProfilesModal'
 import { useI18n } from '@/lib/i18n-context'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
@@ -76,6 +77,7 @@ export default function WikiPageLayout({
   const [createSessionOpen, setCreateSessionOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
+  const [voiceProfilesOpen, setVoiceProfilesOpen] = useState(false)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
   const [sidebarWidth, setSidebarWidth] = useState(256)
   const [chatFullScreen, setChatFullScreen] = useState(false)
@@ -225,6 +227,14 @@ export default function WikiPageLayout({
         campaign={campaign}
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
+        onVoiceProfilesClick={() => setVoiceProfilesOpen(true)}
+      />
+
+      <VoiceProfilesModal
+        campaignId={campaignId}
+        userId={userId}
+        isOpen={voiceProfilesOpen}
+        onClose={() => setVoiceProfilesOpen(false)}
       />
 
       <AudioUploadModal

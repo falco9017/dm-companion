@@ -138,6 +138,7 @@ model Campaign {
   chatMessages    ChatMessage[]
   characterSheets CharacterSheet[]
   members         CampaignMember[]
+  voiceProfiles   VoiceProfile[]
 
   @@index([ownerId])
   @@map("campaigns")
@@ -277,4 +278,21 @@ model UsageRecord {
   @@index([userId, operation])
   @@index([createdAt])
   @@map("usage_records")
+}
+
+// Voice profile model — voice samples for speaker identification during transcription
+model VoiceProfile {
+  id         String   @id @default(cuid())
+  campaignId String
+  name       String
+  role       String   @default("PLAYER") // "DM" or "PLAYER"
+  blobUrl    String
+  blobKey    String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("voice_profiles")
 }
