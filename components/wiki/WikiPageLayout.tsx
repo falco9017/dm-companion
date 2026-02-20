@@ -74,6 +74,8 @@ export default function WikiPageLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
+  const [sidebarWidth, setSidebarWidth] = useState(256)
+  const [chatFullScreen, setChatFullScreen] = useState(false)
   const isDirtyRef = useRef(false)
   const { t } = useI18n()
 
@@ -125,10 +127,13 @@ export default function WikiPageLayout({
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        desktopWidth={sidebarWidth}
+        onWidthChange={setSidebarWidth}
+        desktopHidden={chatFullScreen}
       />
 
       {/* Main content */}
-      {activeEntry ? (
+      {!chatFullScreen && (activeEntry ? (
         <WikiEntryEditor
           campaignId={campaignId}
           userId={userId}
@@ -170,10 +175,14 @@ export default function WikiPageLayout({
             </div>
           </div>
         </div>
-      )}
+      ))}
 
       {/* Chat: desktop side panel + mobile popup */}
-      <ChatPanel campaignId={campaignId} />
+      <ChatPanel
+        campaignId={campaignId}
+        isFullScreen={chatFullScreen}
+        onFullScreenChange={setChatFullScreen}
+      />
       <div className="md:hidden">
         <ChatPopup campaignId={campaignId} />
       </div>

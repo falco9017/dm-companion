@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { WikiEntryType } from '@prisma/client'
 import {
   ScrollText, User, MapPin, Swords, Gem, Drama, Castle,
@@ -50,6 +50,9 @@ interface WikiSidebarProps {
   onNavigate: (href: string) => void
   isOpen: boolean
   onClose: () => void
+  desktopWidth?: number
+  onWidthChange?: (w: number) => void
+  desktopHidden?: boolean
 }
 
 function formatDate(date: Date, format: string): string {
@@ -110,10 +113,42 @@ export default function WikiSidebar({
   onNavigate,
   isOpen,
   onClose,
+  desktopWidth,
+  onWidthChange,
+  desktopHidden,
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [sessionsDropdown, setSessionsDropdown] = useState(false)
   const { t } = useI18n()
+  const widthRef = useRef(desktopWidth ?? 256)
+
+  useEffect(() => {
+    widthRef.current = desktopWidth ?? 256
+  }, [desktopWidth])
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = widthRef.current
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX
+      const newWidth = Math.min(480, Math.max(180, startWidth + delta))
+      onWidthChange?.(newWidth)
+    }
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [onWidthChange])
 
   const recaps = entries
     .filter((e) => e.type === 'SESSION_RECAP')
@@ -316,16 +351,25 @@ export default function WikiSidebar({
 
       {/* Sidebar */}
       <aside
+        style={desktopWidth ? { width: `${desktopWidth}px` } : undefined}
         className={`
           fixed md:relative inset-y-0 left-0 z-40
-          w-72 md:w-64 flex-shrink-0
+          w-72 md:w-auto flex-shrink-0
           bg-surface border-r border-border-theme
           flex flex-col h-full overflow-hidden
           transform transition-transform duration-200 ease-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${desktopHidden ? 'md:hidden' : ''}
         `}
       >
         {sidebarContent}
+        {/* Resize handle — desktop only */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hidden md:block z-10 group/resize"
+          onMouseDown={handleDragStart}
+        >
+          <div className="absolute inset-y-0 right-0 w-px bg-transparent group-hover/resize:bg-accent-purple/50 transition-colors duration-150" />
+        </div>
       </aside>
     </>
   )
