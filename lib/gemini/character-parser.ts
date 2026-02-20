@@ -15,24 +15,21 @@ export async function parseCharacterPdf(
 
 IMPORTANT: The PDF may be written in any language (Italian, French, Spanish, German, etc.).
 Regardless of the PDF language, you MUST output ALL field values in English:
-- class, subclass, race/species, background, alignment → use the official English D&D 5e/2024 names
+- class, subclass, race/species, background → use the official English D&D 5e/2024 names
 - skill names → always use English (Acrobatics, Perception, etc.)
 - feature names, spell names, equipment names → translate to English
-- personalityTraits, ideals, bonds, flaws, notes → translate to English
-- characterName and playerName → keep as-is (proper names, do not translate)
+- notes → translate to English
+- characterName → keep as-is (proper names, do not translate)
 
 Extract ALL character information and return it as a JSON object with exactly this structure:
 
 {
   "characterName": "string",
-  "playerName": "string",
   "class": "string (e.g. Fighter, Wizard)",
   "subclass": "string (e.g. Champion, School of Evocation)",
   "level": number,
   "race": "string (e.g. Human, Elf, Dwarf)",
   "background": "string (e.g. Soldier, Noble)",
-  "alignment": "string (e.g. Lawful Good)",
-  "experiencePoints": number,
   "abilities": {
     "strength": { "score": number, "modifier": number },
     "dexterity": { "score": number, "modifier": number },
@@ -83,10 +80,6 @@ Extract ALL character information and return it as a JSON object with exactly th
   "features": [
     { "name": "string", "description": "string", "source": "Class|Race|Background|Feat", "usesMax": number_or_undefined, "usesCurrent": 0 }
   ],
-  "personalityTraits": "string",
-  "ideals": "string",
-  "bonds": "string",
-  "flaws": "string",
   "spellcasting": null_or_object,
   "notes": "string"
 }

@@ -71,10 +71,14 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
     setEditing(false)
     setTitle(entry.title)
     setContent(entry.content)
-    setViewMode(entry.characterSheet ? 'board' : 'wiki')
+    if (entry.characterSheet) {
+      setViewMode('board')
+    } else {
+      setViewMode('wiki')
+    }
     onUnsavedChangeRef.current?.(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry.id])
+  }, [entry.id, entry.characterSheet?.id])
 
   const handleSave = async () => {
     setSaving(true)
@@ -109,6 +113,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
       const emptyData = createEmptyCharacterSheet()
       emptyData.characterName = entry.title
       await createCharacterSheet(campaignId, userId, entry.id, emptyData)
+      setViewMode('board')
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to create character sheet')

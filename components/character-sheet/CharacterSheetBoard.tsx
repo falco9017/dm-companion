@@ -318,38 +318,6 @@ export default function CharacterSheetBoard({
                   placeholder={t('characterSheet.subclassPlaceholder')}
                 />
               </div>
-              {/* Row 2: Background / Alignment / Player / XP */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <ComboField
-                  label={t('characterSheet.background')}
-                  value={data.background}
-                  onChange={(v) => updateData({ background: v })}
-                  options={BACKGROUNDS}
-                  listId="cs-backgrounds"
-                  placeholder={t('characterSheet.backgroundPlaceholder')}
-                />
-                <ComboField
-                  label={t('characterSheet.alignment')}
-                  value={data.alignment}
-                  onChange={(v) => updateData({ alignment: v })}
-                  options={ALIGNMENTS}
-                  listId="cs-alignments"
-                  placeholder={t('characterSheet.alignmentPlaceholder')}
-                />
-                <IdentityField
-                  label={t('characterSheet.playerName')}
-                  value={data.playerName}
-                  onChange={(v) => updateData({ playerName: v })}
-                  placeholder={t('characterSheet.playerNamePlaceholder')}
-                />
-                <IdentityField
-                  label={t('characterSheet.experiencePoints')}
-                  value={String(data.experiencePoints)}
-                  onChange={(v) => updateData({ experiencePoints: parseInt(v) || 0 })}
-                  placeholder="0"
-                  type="number"
-                />
-              </div>
             </div>
           ) : (
             /* View Mode */
@@ -364,24 +332,7 @@ export default function CharacterSheetBoard({
                     `${data.class} ${data.level}${data.subclass ? ` — ${data.subclass}` : ''}`
                   } />
                 )}
-                {data.background && (
-                  <IdentityBadge color="amber" label={t('characterSheet.background')} value={data.background} />
-                )}
-                {data.alignment && (
-                  <IdentityBadge color="neutral" label={t('characterSheet.alignment')} value={data.alignment} />
-                )}
               </div>
-              {/* Secondary row */}
-              {(data.playerName || data.experiencePoints > 0) && (
-                <div className="flex items-center gap-3 text-xs text-text-muted">
-                  {data.playerName && (
-                    <span>{t('characterSheet.playerName')}: <span className="text-text-secondary">{data.playerName}</span></span>
-                  )}
-                  {data.experiencePoints > 0 && (
-                    <span>{t('characterSheet.experiencePoints')}: <span className="text-text-secondary">{data.experiencePoints.toLocaleString()}</span></span>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -584,30 +535,24 @@ export default function CharacterSheetBoard({
             {t('characterSheet.notesAndBackground')}
           </h3>
           <div className="space-y-3">
-            <PersonalityField
-              label={t('characterSheet.personalityTraits')}
-              color="border-l-blue-400"
-              value={data.personalityTraits}
-              onChange={(v) => updateData({ personalityTraits: v })}
-            />
-            <PersonalityField
-              label={t('characterSheet.ideals')}
-              color="border-l-emerald-400"
-              value={data.ideals}
-              onChange={(v) => updateData({ ideals: v })}
-            />
-            <PersonalityField
-              label={t('characterSheet.bonds')}
-              color="border-l-amber-400"
-              value={data.bonds}
-              onChange={(v) => updateData({ bonds: v })}
-            />
-            <PersonalityField
-              label={t('characterSheet.flaws')}
-              color="border-l-red-400"
-              value={data.flaws}
-              onChange={(v) => updateData({ flaws: v })}
-            />
+            <div className="p-2 rounded-lg border border-border-theme bg-surface border-l-2 border-l-amber-400">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">
+                {t('characterSheet.background')}
+              </label>
+              <input
+                list="cs-backgrounds"
+                value={data.background}
+                onChange={(e) => updateData({ background: e.target.value })}
+                className="w-full text-sm text-text-primary bg-transparent border-none focus:outline-none"
+                placeholder={t('characterSheet.backgroundPlaceholder')}
+              />
+              <datalist id="cs-backgrounds">
+                {BACKGROUNDS.map((o) => (
+                  <option key={o} value={o} />
+                ))}
+              </datalist>
+            </div>
+
             {/* General Notes */}
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">

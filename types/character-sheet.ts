@@ -88,14 +88,11 @@ export interface Currency {
 export interface CharacterSheetData {
   // Identity
   characterName: string
-  playerName: string
   class: string
   subclass: string
   level: number
   race: string
   background: string
-  alignment: string
-  experiencePoints: number
 
   // Ability Scores
   abilities: Abilities
@@ -122,12 +119,6 @@ export interface CharacterSheetData {
   // Features & Traits
   features: Feature[]
 
-  // Personality
-  personalityTraits: string
-  ideals: string
-  bonds: string
-  flaws: string
-
   // Spellcasting (null if non-caster)
   spellcasting: Spellcasting | null
 
@@ -139,14 +130,11 @@ export interface CharacterSheetData {
 export function createEmptyCharacterSheet(): CharacterSheetData {
   return {
     characterName: '',
-    playerName: '',
     class: '',
     subclass: '',
     level: 1,
     race: '',
     background: '',
-    alignment: '',
-    experiencePoints: 0,
     abilities: {
       strength: { score: 10, modifier: 0 },
       dexterity: { score: 10, modifier: 0 },
@@ -193,10 +181,6 @@ export function createEmptyCharacterSheet(): CharacterSheetData {
     equipment: [],
     currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
     features: [],
-    personalityTraits: '',
-    ideals: '',
-    bonds: '',
-    flaws: '',
     spellcasting: null,
     notes: '',
   }
