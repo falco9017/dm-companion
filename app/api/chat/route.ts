@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
       return new Response('Missing message or campaignId', { status: 400 })
     }
 
-    // Get campaign language
+    // Verify campaign ownership
     const campaign = await prisma.campaign.findFirst({
       where: { id: campaignId, ownerId: session.user.id },
-      select: { language: true },
+      select: { id: true },
     })
 
     if (!campaign) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     await saveChatMessage(campaignId, session.user.id, 'user', message)
 
     // Get streaming completion
-    const stream = await getChatCompletion(context, message, history || [], campaign.language, session.user.id, campaignId)
+    const stream = await getChatCompletion(context, message, history || [], session.user.id, campaignId)
 
     // Create a readable stream for the response
     const encoder = new TextEncoder()
