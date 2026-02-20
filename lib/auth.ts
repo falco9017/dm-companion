@@ -59,30 +59,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/signin',
   },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
       }
-      // Refresh subscription tier on sign-in or session update
-      if (user || trigger === 'update') {
-        const userId = token.id as string
-        if (userId) {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { subscriptionTier: true, subscriptionStatus: true, subscriptionPeriodEnd: true },
-          })
-          if (dbUser) {
-            // Compute effective tier (handle grace period for canceled subs)
-            let effectiveTier = 'basic'
-            if (dbUser.subscriptionTier === 'pro') {
-              if (dbUser.subscriptionStatus === 'active' || dbUser.subscriptionStatus === 'trialing' || dbUser.subscriptionStatus === 'past_due') {
-                effectiveTier = 'pro'
-              } else if (dbUser.subscriptionStatus === 'canceled' && dbUser.subscriptionPeriodEnd && dbUser.subscriptionPeriodEnd > new Date()) {
-                effectiveTier = 'pro'
-              }
+      // Always refresh subscription tier from DB so JWT never goes stale.
+      // This ensures chat UI, campaign limits, and all enforcement are consistent.
+      const userId = token.id as string
+      if (userId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { subscriptionTier: true, subscriptionStatus: true, subscriptionPeriodEnd: true },
+        })
+        if (dbUser) {
+          let effectiveTier = 'basic'
+          if (dbUser.subscriptionTier === 'pro') {
+            if (dbUser.subscriptionStatus === 'active' || dbUser.subscriptionStatus === 'trialing' || dbUser.subscriptionStatus === 'past_due') {
+              effectiveTier = 'pro'
+            } else if (dbUser.subscriptionStatus === 'canceled' && dbUser.subscriptionPeriodEnd && dbUser.subscriptionPeriodEnd > new Date()) {
+              effectiveTier = 'pro'
             }
-            token.subscriptionTier = effectiveTier
           }
+          token.subscriptionTier = effectiveTier
         }
       }
       return token
