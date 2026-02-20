@@ -13,6 +13,14 @@ export async function parseCharacterPdf(
 
   const prompt = `You are a D&D character sheet parser. Analyze this PDF document which is a D&D 5e character sheet (likely exported from D&D Beyond or a similar tool).
 
+IMPORTANT: The PDF may be written in any language (Italian, French, Spanish, German, etc.).
+Regardless of the PDF language, you MUST output ALL field values in English:
+- class, subclass, race/species, background, alignment → use the official English D&D 5e/2024 names
+- skill names → always use English (Acrobatics, Perception, etc.)
+- feature names, spell names, equipment names → translate to English
+- personalityTraits, ideals, bonds, flaws, notes → translate to English
+- characterName and playerName → keep as-is (proper names, do not translate)
+
 Extract ALL character information and return it as a JSON object with exactly this structure:
 
 {
