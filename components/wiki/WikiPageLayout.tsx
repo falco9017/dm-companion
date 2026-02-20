@@ -3,7 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Menu, Upload, Plus } from 'lucide-react'
+import { Menu, Upload, Plus, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 import WikiSidebar from './WikiSidebar'
 import WikiEntryEditor from './WikiEntryEditor'
 import SettingsModal from './SettingsModal'
@@ -55,6 +56,7 @@ interface WikiPageLayoutProps {
   wikiTree: WikiTreeEntry[]
   activeEntry: ActiveEntry | null
   dateFormat: string
+  isLocked?: boolean
 }
 
 export default function WikiPageLayout({
@@ -64,6 +66,7 @@ export default function WikiPageLayout({
   wikiTree,
   activeEntry,
   dateFormat,
+  isLocked,
 }: WikiPageLayoutProps) {
   const router = useRouter()
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -104,7 +107,24 @@ export default function WikiPageLayout({
   }, [])
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {/* Locked plan banner */}
+      {isLocked && (
+        <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/30">
+          <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <p className="flex-1 text-xs sm:text-sm text-orange-200/90">
+            {t('limits.campaignReadOnly')}
+          </p>
+          <Link
+            href="/campaigns"
+            className="flex-shrink-0 text-xs px-3 py-1 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30 transition-colors whitespace-nowrap"
+          >
+            {t('sidebar.allCampaigns')}
+          </Link>
+        </div>
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(true)}
@@ -130,6 +150,7 @@ export default function WikiPageLayout({
         desktopWidth={sidebarWidth}
         onWidthChange={setSidebarWidth}
         desktopHidden={chatFullScreen}
+        isLocked={isLocked}
       />
 
       {/* Main content */}
@@ -140,6 +161,7 @@ export default function WikiPageLayout({
           entry={activeEntry}
           onImportPdf={() => setPdfImportOpen(true)}
           onUnsavedChange={handleUnsavedChange}
+          isReadOnly={isLocked}
         />
       ) : (
         <div className="flex-1 flex items-center justify-center px-4">
@@ -154,38 +176,47 @@ export default function WikiPageLayout({
                 ? t('wiki.noEntriesYet')
                 : t('wiki.selectEntry')}
             </p>
-            <p className="text-text-muted text-sm mb-6">
-              {t('wiki.uploadHint')}
-            </p>
-            <div className="flex justify-center gap-3">
-              <button
-                onClick={() => setUploadOpen(true)}
-                className="text-sm px-4 py-2.5 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-all flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                {t('audio.uploadAudio')}
-              </button>
-              <button
-                onClick={() => setCreateOpen(true)}
-                className="text-sm px-4 py-2.5 rounded-lg btn-primary flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                {t('sidebar.newPage')}
-              </button>
-            </div>
+            {!isLocked && (
+              <>
+                <p className="text-text-muted text-sm mb-6">
+                  {t('wiki.uploadHint')}
+                </p>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={() => setUploadOpen(true)}
+                    className="text-sm px-4 py-2.5 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-all flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {t('audio.uploadAudio')}
+                  </button>
+                  <button
+                    onClick={() => setCreateOpen(true)}
+                    className="text-sm px-4 py-2.5 rounded-lg btn-primary flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('sidebar.newPage')}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       ))}
 
       {/* Chat: desktop side panel + mobile popup */}
-      <ChatPanel
-        campaignId={campaignId}
-        isFullScreen={chatFullScreen}
-        onFullScreenChange={setChatFullScreen}
-      />
-      <div className="md:hidden">
-        <ChatPopup campaignId={campaignId} />
-      </div>
+      {!isLocked && (
+        <>
+          <ChatPanel
+            campaignId={campaignId}
+            isFullScreen={chatFullScreen}
+            onFullScreenChange={setChatFullScreen}
+          />
+          <div className="md:hidden">
+            <ChatPopup campaignId={campaignId} />
+          </div>
+        </>
+      )}
+      </div>{/* end inner flex */}
 
       {/* Modals */}
       <SettingsModal

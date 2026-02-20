@@ -4,6 +4,9 @@ import { trackUsage, extractTokenCounts } from '@/lib/usage-tracking'
 const LANGUAGE_LABELS: Record<string, string> = {
   en: 'English',
   it: 'Italian',
+  fr: 'French',
+  de: 'German',
+  es: 'Spanish',
 }
 
 export function getLanguageLabel(code: string): string {

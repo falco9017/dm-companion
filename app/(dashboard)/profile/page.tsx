@@ -1,5 +1,6 @@
 import { auth, signOut } from '@/lib/auth'
 import { getUserProfile } from '@/actions/profile'
+import { getCampaigns } from '@/actions/campaigns'
 import { getEffectiveTier } from '@/lib/subscription'
 import { t, type Locale } from '@/lib/i18n'
 import SettingsForm from './SettingsForm'
@@ -12,11 +13,12 @@ import Image from 'next/image'
 
 export default async function ProfilePage() {
   const session = await auth()
-  const [profile, effectiveTier] = await Promise.all([
+  const [profile, effectiveTier, campaigns] = await Promise.all([
     getUserProfile(session!.user.id),
     getEffectiveTier(session!.user.id),
+    getCampaigns(session!.user.id),
   ])
-  const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
+  const locale = (profile.uiLanguage || 'en') as Locale
 
   async function handleSignOut() {
     'use server'
@@ -77,6 +79,7 @@ export default async function ProfilePage() {
           userId={session!.user.id}
           subscriptionTier={effectiveTier}
           subscriptionStatus={profile.subscriptionStatus || null}
+          campaignCount={campaigns.length}
         />
 
         {/* Change password (credentials users only) */}

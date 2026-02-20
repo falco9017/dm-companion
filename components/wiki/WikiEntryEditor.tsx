@@ -46,9 +46,10 @@ interface WikiEntryEditorProps {
   }
   onImportPdf?: () => void
   onUnsavedChange?: (isDirty: boolean) => void
+  isReadOnly?: boolean
 }
 
-export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf, onUnsavedChange }: WikiEntryEditorProps) {
+export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf, onUnsavedChange, isReadOnly }: WikiEntryEditorProps) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(entry.title)
@@ -192,50 +193,52 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
             </div>
 
             {/* Action icons */}
-            <div className="flex items-center gap-1 flex-shrink-0 pt-1">
-              {editing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
-                    title={saving ? t('common.saving') : t('common.save')}
-                  >
-                    <Save className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditing(false)
-                      setTitle(entry.title)
-                      setContent(entry.content)
-                      onUnsavedChange?.(false)
-                    }}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
-                    title={t('common.cancel')}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
-                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
-                    title={t('common.edit')}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors"
-                    title={deleting ? t('common.deleting') : t('common.delete')}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-            </div>
+            {!isReadOnly && (
+              <div className="flex items-center gap-1 flex-shrink-0 pt-1">
+                {editing ? (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                      title={saving ? t('common.saving') : t('common.save')}
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditing(false)
+                        setTitle(entry.title)
+                        setContent(entry.content)
+                        onUnsavedChange?.(false)
+                      }}
+                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+                      title={t('common.cancel')}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
+                      className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                      title={t('common.edit')}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors"
+                      title={deleting ? t('common.deleting') : t('common.delete')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -260,7 +263,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
         </div>
 
         {/* Character sheet prompt for CHARACTER entries without a sheet */}
-        {isCharacter && !hasSheet && !editing && (
+        {isCharacter && !hasSheet && !editing && !isReadOnly && (
           <div className="mb-6 p-4 rounded-lg bg-surface-elevated border border-dashed border-accent-purple/30">
             <p className="text-sm text-text-secondary mb-3">{t('characterSheet.addPrompt')}</p>
             <div className="flex flex-wrap gap-2">

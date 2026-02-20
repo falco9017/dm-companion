@@ -10,7 +10,7 @@ export default async function PricingPage() {
     getUserProfile(session!.user.id),
     getEffectiveTier(session!.user.id),
   ])
-  const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
+  const locale = (profile.uiLanguage || 'en') as Locale
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

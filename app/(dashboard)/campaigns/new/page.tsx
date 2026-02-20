@@ -21,7 +21,7 @@ export default async function NewCampaignPage() {
     redirect('/campaigns')
   }
 
-  const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
+  const locale = (profile.uiLanguage || 'en') as Locale
 
   async function handleCreate(formData: FormData) {
     'use server'
@@ -78,6 +78,9 @@ export default async function NewCampaignPage() {
             >
               <option value="en">English</option>
               <option value="it">Italian</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
             </select>
             <p className="text-text-muted text-xs mt-1">
               {t(locale, 'campaigns.new.languageHint')}

@@ -65,6 +65,9 @@ export default function SettingsForm({ userId, name: initialName, uiLanguage: in
         >
           <option value="en">English</option>
           <option value="it">Italian</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
         </select>
       </div>
 

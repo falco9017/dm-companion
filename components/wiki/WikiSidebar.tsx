@@ -53,6 +53,7 @@ interface WikiSidebarProps {
   desktopWidth?: number
   onWidthChange?: (w: number) => void
   desktopHidden?: boolean
+  isLocked?: boolean
 }
 
 function formatDate(date: Date, format: string): string {
@@ -116,6 +117,7 @@ export default function WikiSidebar({
   desktopWidth,
   onWidthChange,
   desktopHidden,
+  isLocked,
 }: WikiSidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [sessionsDropdown, setSessionsDropdown] = useState(false)
@@ -222,23 +224,25 @@ export default function WikiSidebar({
                   <span>{t('sidebar.sessions')}</span>
                   <span className="text-text-muted text-[10px]">{recaps.length}</span>
                 </button>
-                <div className="relative">
-                  <button
-                    onClick={() => setSessionsDropdown(!sessionsDropdown)}
-                    className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                  {sessionsDropdown && (
-                    <DropdownMenu
-                      items={[
-                        { label: t('sidebar.newSession'), onClick: onCreateSessionClick },
-                        { label: t('sidebar.uploadAudio'), onClick: onUploadClick },
-                      ]}
-                      onClose={() => setSessionsDropdown(false)}
-                    />
-                  )}
-                </div>
+                {!isLocked && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setSessionsDropdown(!sessionsDropdown)}
+                      className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                    {sessionsDropdown && (
+                      <DropdownMenu
+                        items={[
+                          { label: t('sidebar.newSession'), onClick: onCreateSessionClick },
+                          { label: t('sidebar.uploadAudio'), onClick: onUploadClick },
+                        ]}
+                        onClose={() => setSessionsDropdown(false)}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               {!collapsed['_sessions'] && recaps.length > 0 && (
@@ -272,22 +276,24 @@ export default function WikiSidebar({
                   <span>{t('sidebar.wiki')}</span>
                   <span className="text-text-muted text-[10px]">{wikiEntries.length}</span>
                 </button>
-                <div className="flex items-center gap-0.5">
-                  <button
-                    onClick={onCreateClick}
-                    className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
-                    title={t('sidebar.newWikiPage')}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={onUpdateWikiClick}
-                    className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
-                    title={t('sidebar.updateWikiAI')}
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                {!isLocked && (
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      onClick={onCreateClick}
+                      className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
+                      title={t('sidebar.newWikiPage')}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={onUpdateWikiClick}
+                      className="text-text-muted hover:text-text-primary p-0.5 rounded hover:bg-white/5 transition-colors"
+                      title={t('sidebar.updateWikiAI')}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {!collapsed['_wiki'] && wikiEntries.length > 0 && (

@@ -1,7 +1,8 @@
 import { auth } from '@/lib/auth'
-import { getCampaign } from '@/actions/campaigns'
+import { getCampaign, getCampaigns } from '@/actions/campaigns'
 import { getWikiTree, getWikiEntry } from '@/actions/wiki'
 import { getUserProfile } from '@/actions/profile'
+import { getEffectiveTier, getLimits } from '@/lib/subscription'
 import { notFound } from 'next/navigation'
 import WikiPageLayout from '@/components/wiki/WikiPageLayout'
 
@@ -17,11 +18,16 @@ export default async function CampaignPage({
   const session = await auth()
   const userId = session!.user.id
 
-  const [campaign, wikiTree, profile] = await Promise.all([
+  const [campaign, wikiTree, profile, tier, allCampaigns] = await Promise.all([
     getCampaign(campaignId, userId),
     getWikiTree(campaignId, userId),
     getUserProfile(userId),
+    getEffectiveTier(userId),
+    getCampaigns(userId),
   ])
+
+  const limits = getLimits(tier)
+  const isLocked = limits.maxCampaigns !== Infinity && allCampaigns.length > limits.maxCampaigns
 
   if (!campaign) {
     notFound()
@@ -55,6 +61,7 @@ export default async function CampaignPage({
         language: campaign.language,
       }}
       wikiTree={wikiTree}
+      isLocked={isLocked}
       activeEntry={
         activeEntry
           ? {

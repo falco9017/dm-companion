@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   }
 
   const profile = await getUserProfile(session.user.id)
-  const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
+  const locale = (profile.uiLanguage || 'en') as Locale
 
   return (
     <I18nProvider locale={locale}>
