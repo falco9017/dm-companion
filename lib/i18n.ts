@@ -132,6 +132,10 @@ const en = {
   'audio.updatingWiki': 'Updating wiki...',
   'audio.wikiUpdated': 'Wiki updated! Created {created} and updated {updated} entries.',
   'audio.skip': 'Skip',
+  'audio.recapLabel': 'Session Recap',
+  'audio.aiReviseHint': 'Ask AI to revise the recap...',
+  'audio.applying': 'Applying...',
+  'audio.apply': 'Apply',
 
   // Update wiki modal
   'updateWiki.title': 'Update Wiki',
@@ -431,6 +435,10 @@ const it: Record<string, string> = {
   'audio.updatingWiki': 'Aggiornamento wiki...',
   'audio.wikiUpdated': 'Wiki aggiornata! Create {created} e aggiornate {updated} voci.',
   'audio.skip': 'Salta',
+  'audio.recapLabel': 'Riepilogo Sessione',
+  'audio.aiReviseHint': "Chiedi all'AI di rivedere il riepilogo...",
+  'audio.applying': 'Applicando...',
+  'audio.apply': 'Applica',
 
   // Update wiki modal
   'updateWiki.title': 'Aggiorna Wiki',

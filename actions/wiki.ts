@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { WikiEntryType } from '@prisma/client'
 import { getCampaignAccess, isDM } from '@/lib/permissions'
+import { getGeminiFlash } from '@/lib/gemini/client'
 
 export async function updateSessionRecapDate(entryId: string, userId: string, date: string) {
   const entry = await prisma.wikiEntry.findUnique({
@@ -27,6 +28,47 @@ export async function updateSessionRecapDate(entryId: string, userId: string, da
   })
 
   revalidatePath(`/campaigns/${entry.campaign.id}`)
+}
+
+export async function updateSessionRecapContent(entryId: string, userId: string, content: string) {
+  const entry = await prisma.wikiEntry.findUnique({
+    where: { id: entryId },
+    include: { campaign: { select: { id: true } } },
+  })
+
+  if (!entry) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  const access = await getCampaignAccess(entry.campaign.id, userId)
+  if (!access || !isDM(access)) {
+    throw new Error('Wiki entry not found or unauthorized')
+  }
+
+  await prisma.wikiEntry.update({
+    where: { id: entryId },
+    data: {
+      content,
+      excerpt: content.slice(0, 200),
+    },
+  })
+
+  revalidatePath(`/campaigns/${entry.campaign.id}`)
+}
+
+export async function reviseRecap(currentText: string, instruction: string): Promise<string> {
+  const model = getGeminiFlash()
+  const prompt = `You are editing a tabletop RPG session recap. Apply the following revision instruction to the recap text.
+
+REVISION INSTRUCTION: ${instruction}
+
+CURRENT RECAP TEXT:
+${currentText}
+
+Return ONLY the revised recap text with no additional commentary, explanations, or formatting markers. Preserve the general structure and markdown formatting of the original text.`
+
+  const result = await model.generateContent(prompt)
+  return result.response.text().trim()
 }
 
 export async function createSessionEntry(

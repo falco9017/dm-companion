@@ -4,10 +4,10 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { upload } from '@vercel/blob/client'
-import { Upload, Loader2, CheckCircle, AlertCircle, RefreshCw, Calendar } from 'lucide-react'
+import { Upload, Loader2, CheckCircle, AlertCircle, RefreshCw, Calendar, Send } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 import { useSession } from 'next-auth/react'
-import { updateSessionRecapDate } from '@/actions/wiki'
+import { updateSessionRecapDate, updateSessionRecapContent, reviseRecap } from '@/actions/wiki'
 
 interface AudioUploaderProps {
   campaignId: string
@@ -30,10 +30,14 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
+  const [recapText, setRecapText] = useState<string>('')
   const [recapEntryId, setRecapEntryId] = useState<string | null>(null)
   const [sessionDate, setSessionDate] = useState<string>('')
   const [wikiResult, setWikiResult] = useState<{ created: number; updated: number } | null>(null)
   const [wikiError, setWikiError] = useState<string | null>(null)
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { t } = useI18n()
 
@@ -52,11 +56,17 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
         const data = await res.json()
 
         if (data.status === 'PROCESSED') {
-          if (pollingRef.current) clearInterval(pollingRef.current)
-          setSummary(data.summary ?? null)
-          setRecapEntryId(data.recapEntryId ?? null)
-          setSessionDate(toDateInputValue(new Date(fileLastModified)))
-          setStage('review')
+          // Only transition to review once the recap entry is created
+          if (data.recapEntryId) {
+            if (pollingRef.current) clearInterval(pollingRef.current)
+            const summaryText = data.summary ?? ''
+            setSummary(summaryText)
+            setRecapText(summaryText)
+            setRecapEntryId(data.recapEntryId)
+            setSessionDate(toDateInputValue(new Date(fileLastModified)))
+            setStage('review')
+          }
+          // else: keep polling — recap entry not yet written
         } else if (data.status === 'FAILED') {
           if (pollingRef.current) clearInterval(pollingRef.current)
           setStage('error')
@@ -158,8 +168,33 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
       try {
         await updateSessionRecapDate(recapEntryId, session.user.id, sessionDate)
       } catch {
-        // Non-fatal — date save failure shouldn't block close
+        // Non-fatal
       }
+    }
+  }
+
+  const saveRecapContent = async () => {
+    if (recapEntryId && session?.user?.id && recapText) {
+      try {
+        await updateSessionRecapContent(recapEntryId, session.user.id, recapText)
+      } catch {
+        // Non-fatal
+      }
+    }
+  }
+
+  const handleRevise = async () => {
+    if (!chatInput.trim() || chatLoading) return
+    setChatLoading(true)
+    setChatError(null)
+    try {
+      const revised = await reviseRecap(recapText, chatInput)
+      setRecapText(revised)
+      setChatInput('')
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Revision failed')
+    } finally {
+      setChatLoading(false)
     }
   }
 
@@ -167,6 +202,7 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
     setStage('updatingWiki')
     setWikiError(null)
     await saveDate()
+    await saveRecapContent()
 
     try {
       const res = await fetch('/api/wiki/generate', {
@@ -189,6 +225,7 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
 
   const handleSkip = async () => {
     await saveDate()
+    await saveRecapContent()
     router.refresh()
     onClose?.()
   }
@@ -197,9 +234,9 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
 
   if (stage === 'review' || stage === 'updatingWiki' || stage === 'done') {
     return (
-      <div className="w-full space-y-4">
+      <div className="flex flex-col h-full gap-4">
         {/* Header */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
           <div>
             <p className="text-text-primary font-semibold">{t('audio.reviewTitle')}</p>
@@ -207,15 +244,8 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
           </div>
         </div>
 
-        {/* Summary preview */}
-        {summary && (
-          <div className="bg-surface-elevated border border-border-theme rounded-lg p-3 max-h-40 overflow-y-auto">
-            <p className="text-text-secondary text-xs leading-relaxed whitespace-pre-wrap">{summary}</p>
-          </div>
-        )}
-
         {/* Date editor */}
-        <div>
+        <div className="flex-shrink-0">
           <label className="block text-xs font-medium text-text-secondary mb-1">
             <Calendar className="w-3 h-3 inline mr-1" />
             {t('audio.sessionDate')}
@@ -229,25 +259,75 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
           />
         </div>
 
-        {/* Wiki update prompt */}
-        <p className="text-text-muted text-xs">{t('audio.updateWikiPrompt')}</p>
+        {/* Editable recap textarea */}
+        <div className="flex flex-col flex-1 min-h-0">
+          <label className="block text-xs font-medium text-text-secondary mb-1">
+            {t('audio.recapLabel')}
+          </label>
+          <textarea
+            value={recapText}
+            onChange={(e) => setRecapText(e.target.value)}
+            className="flex-1 min-h-0 w-full px-3 py-2 rounded-lg input-dark text-sm resize-none leading-relaxed"
+            disabled={stage === 'updatingWiki' || chatLoading}
+          />
+        </div>
 
-        {/* Errors */}
+        {/* AI revision chat bar */}
+        <div className="flex-shrink-0">
+          {chatError && (
+            <p className="text-red-400 text-xs mb-1">{chatError}</p>
+          )}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !chatLoading) {
+                  e.preventDefault()
+                  handleRevise()
+                }
+              }}
+              placeholder={t('audio.aiReviseHint')}
+              className="flex-1 px-3 py-2 rounded-lg input-dark text-sm"
+              disabled={chatLoading || stage === 'updatingWiki'}
+            />
+            <button
+              onClick={handleRevise}
+              disabled={chatLoading || !chatInput.trim() || stage === 'updatingWiki'}
+              className="px-3 py-2 rounded-lg bg-accent-purple/20 text-accent-purple-light hover:bg-accent-purple/30 transition-colors flex items-center gap-1.5 text-sm disabled:opacity-50 whitespace-nowrap"
+            >
+              {chatLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  {t('audio.applying')}
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5" />
+                  {t('audio.apply')}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Wiki update error */}
         {wikiError && (
-          <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-xs">
+          <div className="flex-shrink-0 p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-xs">
             {wikiError}
           </div>
         )}
 
         {/* Done result */}
         {stage === 'done' && wikiResult && (
-          <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-xs">
+          <div className="flex-shrink-0 p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-xs">
             {t('audio.wikiUpdated', { created: wikiResult.created, updated: wikiResult.updated })}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-1">
+        <div className="flex-shrink-0 flex justify-end gap-3">
           {stage === 'done' ? (
             <button
               onClick={() => onClose?.()}
