@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { transcribeAudio, generateSummary } from '@/lib/gemini/audio-processor'
-import { generateWikiEntries } from '@/lib/gemini/wiki-generator'
+import { createSessionRecap } from '@/lib/gemini/wiki-generator'
 import { revalidatePath } from 'next/cache'
 import { del } from '@vercel/blob'
 import { canProcessAudio, incrementAudioUsage, getEffectiveTier, getLimits } from '@/lib/subscription'
@@ -111,9 +111,10 @@ async function processAudioInBackground(audioFileId: string, blobUrl: string, ca
       console.error(`Failed to delete audio blob (non-fatal):`, blobError)
     }
 
-    // Generate wiki entries
-    console.log(`Generating wiki entries for audio file ${audioFileId}...`)
-    await generateWikiEntries(campaignId, audioFileId, transcription, summary, language, userId, recordingDate)
+    // Create session recap entry only — wiki entity extraction happens
+    // later when the user explicitly clicks "Update Wiki" in the review stage
+    console.log(`Creating session recap for audio file ${audioFileId}...`)
+    await createSessionRecap(campaignId, audioFileId, summary, transcription, recordingDate)
 
     revalidatePath(`/campaigns/${campaignId}`)
     console.log(`Successfully processed audio file ${audioFileId}`)

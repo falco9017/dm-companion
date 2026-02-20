@@ -42,7 +42,7 @@ export async function generateWikiEntries(
   }
 }
 
-async function createSessionRecap(
+export async function createSessionRecap(
   campaignId: string,
   audioFileId: string,
   summary: string,
