@@ -1,13 +1,26 @@
 import { auth } from '@/lib/auth'
-import { createCampaign } from '@/actions/campaigns'
+import { createCampaign, getCampaigns } from '@/actions/campaigns'
 import { getUserProfile } from '@/actions/profile'
+import { getEffectiveTier, getLimits } from '@/lib/subscription'
 import { t, type Locale } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 export default async function NewCampaignPage() {
   const session = await auth()
-  const profile = await getUserProfile(session!.user.id)
+  const userId = session!.user.id
+
+  const [profile, tier, campaigns] = await Promise.all([
+    getUserProfile(userId),
+    getEffectiveTier(userId),
+    getCampaigns(userId),
+  ])
+
+  const limits = getLimits(tier)
+  if (limits.maxCampaigns !== Infinity && campaigns.length >= limits.maxCampaigns) {
+    redirect('/campaigns')
+  }
+
   const locale = (profile.uiLanguage === 'it' ? 'it' : 'en') as Locale
 
   async function handleCreate(formData: FormData) {
@@ -16,7 +29,7 @@ export default async function NewCampaignPage() {
     const description = formData.get('description') as string
     const language = formData.get('language') as string || 'en'
 
-    const campaign = await createCampaign(session!.user.id, name, description, language)
+    const campaign = await createCampaign(userId, name, description, language)
     redirect(`/campaigns/${campaign.id}`)
   }
 

@@ -42,7 +42,7 @@ export async function createCampaign(userId: string, name: string, description?:
 export async function getCampaigns(userId: string) {
   return await prisma.campaign.findMany({
     where: { ownerId: userId },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: 'asc' },
   })
 }
 
