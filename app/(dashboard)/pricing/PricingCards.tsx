@@ -64,7 +64,7 @@ export default function PricingCards({ userId, currentTier }: PricingCardsProps)
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
         {/* Basic card */}
-        <div className={`rounded-xl p-6 sm:p-8 bg-surface border transition-colors ${
+        <div className={`flex flex-col rounded-xl p-6 sm:p-8 bg-surface border transition-colors ${
           !isPro ? 'border-accent-purple/50' : 'border-border-theme'
         }`}>
           <h3 className="text-xl font-bold text-text-primary mb-1">{t('pricing.basicName')}</h3>
@@ -80,31 +80,27 @@ export default function PricingCards({ userId, currentTier }: PricingCardsProps)
             <FeatureNo text={t('pricing.basicNoChat')} />
           </ul>
 
-          {!isPro ? (
-            <div className="w-full py-2.5 rounded-lg border border-accent-purple/30 text-center text-sm font-medium text-accent-purple-light">
-              {t('pricing.currentPlan')}
-            </div>
-          ) : (
-            <button
-              onClick={handleToggle}
-              disabled={loading}
-              className="w-full py-2.5 rounded-lg border border-border-theme text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors disabled:opacity-50"
-            >
-              {loading ? '...' : t('subscription.downgradToBasic')}
-            </button>
-          )}
+          <div className="mt-auto">
+            {!isPro ? (
+              <div className="w-full py-2.5 rounded-lg border border-accent-purple/30 text-center text-sm font-medium text-accent-purple-light">
+                {t('pricing.currentPlan')}
+              </div>
+            ) : (
+              <button
+                onClick={handleToggle}
+                disabled={loading}
+                className="w-full py-2.5 rounded-lg border border-border-theme text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors disabled:opacity-50"
+              >
+                {loading ? '...' : t('subscription.downgradToBasic')}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Pro card */}
-        <div className={`rounded-xl p-6 sm:p-8 bg-surface border-2 transition-colors ${
+        <div className={`flex flex-col rounded-xl p-6 sm:p-8 bg-surface border-2 transition-colors ${
           isPro ? 'border-yellow-400/50' : 'border-accent-purple'
-        } relative`}>
-          {isPro && (
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-semibold flex items-center gap-1">
-              <Crown className="w-3 h-3" />
-              {t('pricing.currentPlan')}
-            </div>
-          )}
+        }`}>
           <h3 className="text-xl font-bold text-text-primary mb-1">{t('pricing.proName')}</h3>
           <div className="mb-6">
             <span className="text-3xl font-bold text-text-primary">
@@ -124,20 +120,22 @@ export default function PricingCards({ userId, currentTier }: PricingCardsProps)
             <Feature text={t('pricing.proFeature6')} />
           </ul>
 
-          {isPro ? (
-            <div className="w-full py-2.5 rounded-lg border border-yellow-400/30 text-center text-sm font-medium text-yellow-400">
-              {t('pricing.currentPlan')}
-            </div>
-          ) : (
-            <button
-              onClick={handleToggle}
-              disabled={loading}
-              className="w-full btn-primary py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Crown className="w-4 h-4" />
-              {loading ? '...' : t('pricing.subscribe')}
-            </button>
-          )}
+          <div className="mt-auto">
+            {isPro ? (
+              <div className="w-full py-2.5 rounded-lg border border-yellow-400/30 text-center text-sm font-medium text-yellow-400">
+                {t('pricing.currentPlan')}
+              </div>
+            ) : (
+              <button
+                onClick={handleToggle}
+                disabled={loading}
+                className="w-full btn-primary py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Crown className="w-4 h-4" />
+                {loading ? '...' : t('pricing.subscribe')}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
