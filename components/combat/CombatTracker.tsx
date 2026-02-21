@@ -1,0 +1,551 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import {
+  Plus, ChevronRight, ChevronLeft, RotateCcw, Swords,
+  Skull, Minus, Heart, Shield, Eye, Trash2, Dices, GripVertical,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import type { Combatant } from '@/types/combat'
+import AddCombatantDialog from './AddCombatantDialog'
+import CombatantStatsSheet from './CombatantStatsSheet'
+
+interface WikiTreeEntry {
+  id: string
+  title: string
+  type: string
+}
+
+interface CombatTrackerProps {
+  campaignId: string
+  userId: string
+  wikiEntries: WikiTreeEntry[]
+}
+
+let nextId = 1
+function genId() {
+  return `c-${nextId++}`
+}
+
+function rollD20() {
+  return Math.floor(Math.random() * 20) + 1
+}
+
+function hpColor(current: number, max: number) {
+  if (max === 0) return 'bg-muted'
+  const pct = current / max
+  if (current <= 0) return 'bg-gray-400'
+  if (pct > 0.5) return 'bg-green-500'
+  if (pct > 0.25) return 'bg-amber-500'
+  return 'bg-red-500'
+}
+
+function hpTextColor(current: number, max: number) {
+  if (current <= 0) return 'text-muted-foreground line-through'
+  const pct = max > 0 ? current / max : 1
+  if (pct <= 0.25) return 'text-red-600 dark:text-red-400 font-semibold'
+  return ''
+}
+
+function typeBadge(type: Combatant['type']) {
+  if (type === 'player') return { label: 'PC', variant: 'default' as const }
+  if (type === 'npc') return { label: 'NPC', variant: 'secondary' as const }
+  return { label: 'MON', variant: 'destructive' as const }
+}
+
+// Editable HP cell — click number to edit inline
+function HpCell({
+  current,
+  max,
+  temporary,
+  onAdjust,
+  onSetCurrent,
+}: {
+  current: number
+  max: number
+  temporary: number
+  onAdjust: (delta: number) => void
+  onSetCurrent: (val: number) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [editVal, setEditVal] = useState('')
+
+  function startEdit() {
+    setEditVal(String(current))
+    setEditing(true)
+  }
+
+  function commitEdit() {
+    const val = parseInt(editVal)
+    if (!isNaN(val)) onSetCurrent(val)
+    setEditing(false)
+  }
+
+  const pct = max > 0 ? Math.max(0, current) / max : 0
+
+  return (
+    <div className="flex items-center gap-1 min-w-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 flex-shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+        onClick={() => onAdjust(-1)}
+        title="Damage (−1)"
+      >
+        <Minus className="w-3 h-3" />
+      </Button>
+
+      <div className="flex flex-col items-center min-w-[52px]">
+        {editing ? (
+          <Input
+            autoFocus
+            type="number"
+            value={editVal}
+            onChange={(e) => setEditVal(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitEdit()
+              if (e.key === 'Escape') setEditing(false)
+            }}
+            className="h-6 w-14 text-center text-xs p-0"
+          />
+        ) : (
+          <button
+            onClick={startEdit}
+            className={cn('text-sm tabular-nums leading-none hover:underline cursor-pointer', hpTextColor(current, max))}
+            title="Click to set HP"
+          >
+            {current}
+            <span className="text-muted-foreground text-xs">/{max}</span>
+          </button>
+        )}
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-0.5">
+          <div
+            className={cn('h-full rounded-full transition-all', hpColor(current, max))}
+            style={{ width: `${pct * 100}%` }}
+          />
+        </div>
+        {temporary > 0 && (
+          <span className="text-xs text-blue-500">+{temporary}</span>
+        )}
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 flex-shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
+        onClick={() => onAdjust(1)}
+        title="Heal (+1)"
+      >
+        <Heart className="w-3 h-3" />
+      </Button>
+    </div>
+  )
+}
+
+// Initiative cell — click to edit
+function InitiativeCell({
+  value,
+  onChange,
+  onReroll,
+  initiativeModifier,
+}: {
+  value: number
+  onChange: (v: number) => void
+  onReroll: () => void
+  initiativeModifier: number
+}) {
+  const [editing, setEditing] = useState(false)
+  const [editVal, setEditVal] = useState('')
+
+  function startEdit() {
+    setEditVal(String(value))
+    setEditing(true)
+  }
+
+  function commit() {
+    const v = parseInt(editVal)
+    if (!isNaN(v)) onChange(v)
+    setEditing(false)
+  }
+
+  return (
+    <div className="flex items-center gap-0.5 min-w-[56px]">
+      {editing ? (
+        <Input
+          autoFocus
+          type="number"
+          value={editVal}
+          onChange={(e) => setEditVal(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit()
+            if (e.key === 'Escape') setEditing(false)
+          }}
+          className="h-6 w-12 text-center text-xs p-0"
+        />
+      ) : (
+        <button
+          onClick={startEdit}
+          className="text-sm font-bold tabular-nums hover:underline cursor-pointer"
+          title="Click to edit initiative"
+        >
+          {value}
+        </button>
+      )}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 opacity-50 hover:opacity-100"
+            onClick={onReroll}
+          >
+            <Dices className="w-3 h-3" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Reroll (d20{initiativeModifier >= 0 ? `+${initiativeModifier}` : initiativeModifier})
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
+
+export default function CombatTracker({ campaignId, userId, wikiEntries }: CombatTrackerProps) {
+  const [combatants, setCombatants] = useState<Combatant[]>([])
+  const [round, setRound] = useState(1)
+  const [currentTurnIdx, setCurrentTurnIdx] = useState(0)
+  const [isCombatActive, setIsCombatActive] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [statsTarget, setStatsTarget] = useState<Combatant | null>(null)
+  const [isStatsOpen, setIsStatsOpen] = useState(false)
+
+  // Sort combatants by initiative descending
+  const sorted = [...combatants].sort((a, b) => b.initiative - a.initiative)
+  const currentCombatant = isCombatActive ? sorted[currentTurnIdx] : null
+
+  function addCombatant(data: Omit<Combatant, 'id'>) {
+    setCombatants((prev) => [...prev, { ...data, id: genId() }])
+  }
+
+  function removeCombatant(id: string) {
+    setCombatants((prev) => {
+      const next = prev.filter((c) => c.id !== id)
+      return next
+    })
+    // Adjust turn if needed
+    setCurrentTurnIdx((prev) => Math.max(0, Math.min(prev, sorted.length - 2)))
+  }
+
+  function updateCombatant(id: string, patch: Partial<Combatant>) {
+    setCombatants((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch } : c))
+    )
+  }
+
+  function adjustHp(id: string, delta: number) {
+    setCombatants((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, currentHp: Math.min(c.maxHp, Math.max(-99, c.currentHp + delta)) }
+          : c
+      )
+    )
+  }
+
+  function setCurrentHp(id: string, val: number) {
+    setCombatants((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, currentHp: Math.min(c.maxHp, val) } : c
+      )
+    )
+  }
+
+  function startCombat() {
+    setIsCombatActive(true)
+    setRound(1)
+    setCurrentTurnIdx(0)
+  }
+
+  function endCombat() {
+    setIsCombatActive(false)
+    setRound(1)
+    setCurrentTurnIdx(0)
+  }
+
+  function resetCombat() {
+    setCombatants([])
+    setIsCombatActive(false)
+    setRound(1)
+    setCurrentTurnIdx(0)
+  }
+
+  function nextTurn() {
+    setCurrentTurnIdx((prev) => {
+      const next = prev + 1
+      if (next >= sorted.length) {
+        setRound((r) => r + 1)
+        return 0
+      }
+      return next
+    })
+  }
+
+  function prevTurn() {
+    setCurrentTurnIdx((prev) => {
+      if (prev === 0) {
+        if (round > 1) {
+          setRound((r) => r - 1)
+          return sorted.length - 1
+        }
+        return 0
+      }
+      return prev - 1
+    })
+  }
+
+  function rollAllInitiative() {
+    setCombatants((prev) =>
+      prev.map((c) => ({
+        ...c,
+        initiative: rollD20() + c.initiativeModifier,
+      }))
+    )
+  }
+
+  function openStats(combatant: Combatant) {
+    setStatsTarget(combatant)
+    setIsStatsOpen(true)
+  }
+
+  const isEmpty = combatants.length === 0
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header / Controls */}
+      <div className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b bg-muted/30">
+        {/* Round & turn info */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-md border bg-background px-2 py-1">
+            <Swords className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-sm font-semibold">Round {round}</span>
+          </div>
+          {isCombatActive && currentCombatant && (
+            <span className="text-sm text-muted-foreground">
+              → <span className="font-medium text-foreground">{currentCombatant.name}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 ml-auto">
+          {/* Prev / Next turn */}
+          {isCombatActive && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-7 w-7" onClick={prevTurn} disabled={sorted.length === 0}>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Previous turn</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="default" size="sm" className="h-7 gap-1.5" onClick={nextTurn} disabled={sorted.length === 0}>
+                    Next <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Next turn</TooltipContent>
+              </Tooltip>
+            </>
+          )}
+
+          {!isCombatActive && combatants.length > 0 && (
+            <Button variant="default" size="sm" className="h-7" onClick={startCombat}>
+              Start Combat
+            </Button>
+          )}
+
+          {isCombatActive && (
+            <Button variant="outline" size="sm" className="h-7" onClick={endCombat}>
+              End Combat
+            </Button>
+          )}
+
+          {/* Roll all initiative */}
+          {combatants.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={rollAllInitiative}>
+                  <Dices className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Roll initiative for all</TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Reset */}
+          {combatants.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={resetCombat}>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Reset combat</TooltipContent>
+            </Tooltip>
+          )}
+
+          <Button variant="outline" size="sm" className="h-7 gap-1" onClick={() => setShowAddDialog(true)}>
+            <Plus className="w-3.5 h-3.5" /> Add
+          </Button>
+        </div>
+      </div>
+
+      {/* Combatants list */}
+      <ScrollArea className="flex-1">
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+            <Swords className="w-10 h-10 opacity-20" />
+            <p className="text-sm">No combatants yet</p>
+            <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Combatant
+            </Button>
+          </div>
+        ) : (
+          <div className="p-2 space-y-1">
+            {/* Column headers */}
+            <div className="grid grid-cols-[24px_32px_1fr_140px_48px_auto] items-center gap-2 px-2 py-1 text-xs text-muted-foreground uppercase tracking-wide">
+              <span />
+              <span>Init</span>
+              <span>Name</span>
+              <span className="text-center">HP</span>
+              <span className="text-center">AC</span>
+              <span />
+            </div>
+            <Separator />
+
+            {sorted.map((combatant, idx) => {
+              const isCurrentTurn = isCombatActive && idx === currentTurnIdx
+              const isDead = combatant.currentHp <= 0
+              const { label, variant } = typeBadge(combatant.type)
+
+              return (
+                <div
+                  key={combatant.id}
+                  className={cn(
+                    'grid grid-cols-[24px_32px_1fr_140px_48px_auto] items-center gap-2 px-2 py-2 rounded-lg transition-colors',
+                    isCurrentTurn
+                      ? 'bg-primary/10 border border-primary/30 ring-1 ring-primary/20'
+                      : 'hover:bg-muted/50',
+                    isDead && 'opacity-50'
+                  )}
+                >
+                  {/* Current turn indicator */}
+                  <div className="flex items-center justify-center">
+                    {isCurrentTurn ? (
+                      <ChevronRight className="w-4 h-4 text-primary" />
+                    ) : (
+                      <GripVertical className="w-4 h-4 text-muted-foreground/30" />
+                    )}
+                  </div>
+
+                  {/* Initiative */}
+                  <InitiativeCell
+                    value={combatant.initiative}
+                    onChange={(v) => updateCombatant(combatant.id, { initiative: v })}
+                    onReroll={() =>
+                      updateCombatant(combatant.id, {
+                        initiative: rollD20() + combatant.initiativeModifier,
+                      })
+                    }
+                    initiativeModifier={combatant.initiativeModifier}
+                  />
+
+                  {/* Name & type */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {isDead && <Skull className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
+                    <span className={cn('text-sm font-medium truncate', isDead && 'line-through text-muted-foreground')}>
+                      {combatant.name}
+                    </span>
+                    <Badge variant={variant} className="text-xs flex-shrink-0 h-4 px-1">
+                      {label}
+                    </Badge>
+                  </div>
+
+                  {/* HP */}
+                  <HpCell
+                    current={combatant.currentHp}
+                    max={combatant.maxHp}
+                    temporary={combatant.temporaryHp}
+                    onAdjust={(delta) => adjustHp(combatant.id, delta)}
+                    onSetCurrent={(val) => setCurrentHp(combatant.id, val)}
+                  />
+
+                  {/* AC */}
+                  <div className="flex items-center justify-center gap-0.5">
+                    <Shield className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm font-medium tabular-nums">{combatant.ac}</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-0.5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => openStats(combatant)}
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View stats</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-destructive hover:text-destructive"
+                          onClick={() => removeCombatant(combatant.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Remove from combat</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </ScrollArea>
+
+      {/* Add combatant dialog */}
+      <AddCombatantDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        wikiEntries={wikiEntries}
+        userId={userId}
+        onAdd={addCombatant}
+      />
+
+      {/* Stats sheet */}
+      <CombatantStatsSheet
+        combatant={statsTarget}
+        open={isStatsOpen}
+        onOpenChange={setIsStatsOpen}
+      />
+    </div>
+  )
+}

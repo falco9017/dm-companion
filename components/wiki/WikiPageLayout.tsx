@@ -8,6 +8,7 @@ import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
 import ChatView from './ChatView'
+import CombatTracker from '@/components/combat/CombatTracker'
 import { useI18n } from '@/lib/i18n-context'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -202,6 +203,7 @@ export default function WikiPageLayout({
           <TabsList variant="line" className="h-10">
             <TabsTrigger value="sessions">{t('tabs.sessions')}</TabsTrigger>
             <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
+            <TabsTrigger value="combat">{t('tabs.combat')}</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -270,6 +272,14 @@ export default function WikiPageLayout({
               isLocked={isLocked}
               onUnsavedChange={handleUnsavedChange}
               onNavigate={handleNavigate}
+            />
+          )}
+
+          {currentTab === 'combat' && (
+            <CombatTracker
+              campaignId={campaignId}
+              userId={userId}
+              wikiEntries={wikiTree}
             />
           )}
         </div>

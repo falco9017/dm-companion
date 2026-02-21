@@ -338,6 +338,7 @@ const en = {
   'tabs.sessions': 'Sessions',
   'tabs.campaignData': 'Campaign',
   'tabs.chat': 'Chat',
+  'tabs.combat': 'Combat',
 
   // Empty states
   'empty.sessions': 'No sessions yet',
@@ -692,6 +693,7 @@ const it: Record<string, string> = {
   'tabs.sessions': 'Sessioni',
   'tabs.campaignData': 'Campagna',
   'tabs.chat': 'Chat',
+  'tabs.combat': 'Combattimento',
 
   // Empty states
   'empty.sessions': 'Nessuna sessione',
@@ -1046,6 +1048,7 @@ const fr: Record<string, string> = {
   'tabs.sessions': 'Sessions',
   'tabs.campaignData': 'Campagne',
   'tabs.chat': 'Chat',
+  'tabs.combat': 'Combat',
 
   // Empty states
   'empty.sessions': 'Aucune session',
@@ -1400,6 +1403,7 @@ const de: Record<string, string> = {
   'tabs.sessions': 'Sitzungen',
   'tabs.campaignData': 'Kampagne',
   'tabs.chat': 'Chat',
+  'tabs.combat': 'Kampf',
 
   // Empty states
   'empty.sessions': 'Keine Sitzungen',
@@ -1754,6 +1758,7 @@ const es: Record<string, string> = {
   'tabs.sessions': 'Sesiones',
   'tabs.campaignData': 'Campaña',
   'tabs.chat': 'Chat',
+  'tabs.combat': 'Combate',
 
   // Empty states
   'empty.sessions': 'Sin sesiones',
