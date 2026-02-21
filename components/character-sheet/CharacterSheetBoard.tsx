@@ -693,15 +693,10 @@ function IdentityBadge({
   label: string
   value: string
 }) {
-  const colorMap = {
-    emerald: 'bg-emerald-500/20 text-emerald-300',
-    blue: 'bg-blue-500/20 text-blue-300',
-    amber: 'bg-amber-500/20 text-amber-300',
-    neutral: 'bg-white/5 text-muted-foreground',
-  }
+  void color // all badges use the same primary color
   return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${colorMap[color]}`}>
-      <span className="opacity-60 text-[10px]">{label}</span>
+    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20">
+      <span className="opacity-70 text-[10px]">{label}</span>
       {value}
     </span>
   )

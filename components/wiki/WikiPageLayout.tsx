@@ -3,15 +3,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Settings, AlertTriangle, ArrowLeft } from 'lucide-react'
+import { Settings, AlertTriangle, ArrowLeft, MessageSquare, Maximize2, Minimize2, X } from 'lucide-react'
 import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
 import ChatView from './ChatView'
 import { useI18n } from '@/lib/i18n-context'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,11 +77,18 @@ export default function WikiPageLayout({
 }: WikiPageLayoutProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const currentTab = searchParams.get('tab') || 'sessions'
+  // 'chat' tab no longer exists — treat it as 'sessions'
+  const rawTab = searchParams.get('tab') || 'sessions'
+  const currentTab = rawTab === 'chat' ? 'sessions' : rawTab
   const [pendingTab, setPendingTab] = useState<string | null>(null)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
   const isDirtyRef = useRef(false)
   const { t } = useI18n()
+
+  // Chat side panel state
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [chatWidth, setChatWidth] = useState(360)
+  const [isChatMaximized, setIsChatMaximized] = useState(false)
 
   const handleUnsavedChange = useCallback((isDirty: boolean) => {
     isDirtyRef.current = isDirty
@@ -131,6 +139,33 @@ export default function WikiPageLayout({
     setPendingNav(null)
   }, [])
 
+  // Resize handler for the chat panel
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = chatWidth
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = startX - e.clientX
+      setChatWidth(Math.max(260, Math.min(700, startWidth + delta)))
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }, [chatWidth])
+
+  const toggleChat = useCallback(() => {
+    setIsChatOpen((prev) => {
+      if (prev) setIsChatMaximized(false)
+      return !prev
+    })
+  }, [])
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Locked plan banner */}
@@ -167,11 +202,27 @@ export default function WikiPageLayout({
           <TabsList variant="line" className="h-10">
             <TabsTrigger value="sessions">{t('tabs.sessions')}</TabsTrigger>
             <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
-            {!isLocked && (
-              <TabsTrigger value="chat">{t('tabs.chat')}</TabsTrigger>
-            )}
           </TabsList>
         </Tabs>
+
+        {/* Chat toggle button */}
+        {!isLocked && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isChatOpen ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-8 w-8 flex-shrink-0"
+                onClick={toggleChat}
+              >
+                <MessageSquare className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isChatOpen ? t('chat.closePanel') : t('chat.openPanel')}
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -190,37 +241,86 @@ export default function WikiPageLayout({
         </Tooltip>
       </div>
 
-      {/* Tab content */}
+      {/* Tab content + chat side panel */}
       <div className="flex-1 flex overflow-hidden">
-        {currentTab === 'sessions' && (
-          <SessionsView
-            campaignId={campaignId}
-            userId={userId}
-            entries={wikiTree}
-            activeEntry={activeEntry}
-            dateFormat={dateFormat}
-            isLocked={isLocked}
-            onUnsavedChange={handleUnsavedChange}
-            onNavigate={handleNavigate}
-          />
-        )}
+        {/* Main content — hidden when chat is maximized */}
+        <div className={cn(
+          'flex-1 flex overflow-hidden min-w-0',
+          isChatOpen && isChatMaximized ? 'hidden' : ''
+        )}>
+          {currentTab === 'sessions' && (
+            <SessionsView
+              campaignId={campaignId}
+              userId={userId}
+              entries={wikiTree}
+              activeEntry={activeEntry}
+              dateFormat={dateFormat}
+              isLocked={isLocked}
+              onUnsavedChange={handleUnsavedChange}
+              onNavigate={handleNavigate}
+            />
+          )}
 
-        {currentTab === 'wiki' && (
-          <WikiDataView
-            campaignId={campaignId}
-            userId={userId}
-            entries={wikiTree}
-            activeEntry={activeEntry}
-            isLocked={isLocked}
-            onUnsavedChange={handleUnsavedChange}
-            onNavigate={handleNavigate}
-          />
-        )}
-
-        {/* Chat stays mounted but hidden to preserve conversation state */}
-        <div className={`flex-1 flex flex-col ${currentTab === 'chat' ? '' : 'hidden'}`}>
-          <ChatView campaignId={campaignId} />
+          {currentTab === 'wiki' && (
+            <WikiDataView
+              campaignId={campaignId}
+              userId={userId}
+              entries={wikiTree}
+              activeEntry={activeEntry}
+              isLocked={isLocked}
+              onUnsavedChange={handleUnsavedChange}
+              onNavigate={handleNavigate}
+            />
+          )}
         </div>
+
+        {/* Resize handle */}
+        {isChatOpen && !isChatMaximized && (
+          <div
+            onMouseDown={handleResizeMouseDown}
+            className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden sm:block"
+          />
+        )}
+
+        {/* Chat side panel */}
+        {isChatOpen && (
+          <div
+            style={!isChatMaximized ? { width: chatWidth } : undefined}
+            className={cn(
+              'flex flex-col border-l border-border overflow-hidden flex-shrink-0',
+              isChatMaximized ? 'flex-1' : 'hidden sm:flex'
+            )}
+          >
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border flex-shrink-0">
+              <span className="text-sm font-semibold">{t('chat.title')}</span>
+              <div className="flex items-center gap-0.5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setIsChatMaximized((v) => !v)}
+                  title={isChatMaximized ? t('chat.restorePanel') : t('chat.maximizePanel')}
+                >
+                  {isChatMaximized
+                    ? <Minimize2 className="w-3.5 h-3.5" />
+                    : <Maximize2 className="w-3.5 h-3.5" />
+                  }
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => { setIsChatOpen(false); setIsChatMaximized(false) }}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+
+            <ChatView campaignId={campaignId} />
+          </div>
+        )}
       </div>
 
       {/* Unsaved changes confirmation */}

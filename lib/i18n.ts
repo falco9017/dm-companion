@@ -12,7 +12,7 @@ const en = {
   'sidebar.newPage': 'New Page',
   'sidebar.update': 'Update',
   'sidebar.sessionRecaps': 'Session Recaps',
-  'sidebar.campaignWiki': 'Campaign Data',
+  'sidebar.campaignWiki': 'Campaign',
   'sidebar.noEntries': 'No entries yet',
   'sidebar.campaignSettings': 'Campaign settings',
 
@@ -336,7 +336,7 @@ const en = {
 
   // Tabs
   'tabs.sessions': 'Sessions',
-  'tabs.campaignData': 'Campaign Data',
+  'tabs.campaignData': 'Campaign',
   'tabs.chat': 'Chat',
 
   // Empty states
@@ -366,7 +366,7 @@ const it: Record<string, string> = {
   'sidebar.newPage': 'Nuova Pagina',
   'sidebar.update': 'Aggiorna',
   'sidebar.sessionRecaps': 'Riepiloghi Sessione',
-  'sidebar.campaignWiki': 'Dati Campagna',
+  'sidebar.campaignWiki': 'Campagna',
   'sidebar.noEntries': 'Nessuna voce',
   'sidebar.campaignSettings': 'Impostazioni campagna',
 
@@ -690,7 +690,7 @@ const it: Record<string, string> = {
 
   // Tabs
   'tabs.sessions': 'Sessioni',
-  'tabs.campaignData': 'Dati Campagna',
+  'tabs.campaignData': 'Campagna',
   'tabs.chat': 'Chat',
 
   // Empty states
@@ -720,7 +720,7 @@ const fr: Record<string, string> = {
   'sidebar.newPage': 'Nouvelle Page',
   'sidebar.update': 'Mettre à jour',
   'sidebar.sessionRecaps': 'Résumés de Session',
-  'sidebar.campaignWiki': 'Données de Campagne',
+  'sidebar.campaignWiki': 'Campagne',
   'sidebar.noEntries': 'Aucune entrée',
   'sidebar.campaignSettings': 'Paramètres de campagne',
 
@@ -1044,7 +1044,7 @@ const fr: Record<string, string> = {
 
   // Tabs
   'tabs.sessions': 'Sessions',
-  'tabs.campaignData': 'Données de Campagne',
+  'tabs.campaignData': 'Campagne',
   'tabs.chat': 'Chat',
 
   // Empty states
@@ -1074,7 +1074,7 @@ const de: Record<string, string> = {
   'sidebar.newPage': 'Neue Seite',
   'sidebar.update': 'Aktualisieren',
   'sidebar.sessionRecaps': 'Sitzungszusammenfassungen',
-  'sidebar.campaignWiki': 'Kampagnendaten',
+  'sidebar.campaignWiki': 'Kampagne',
   'sidebar.noEntries': 'Noch keine Einträge',
   'sidebar.campaignSettings': 'Kampagneneinstellungen',
 
@@ -1398,7 +1398,7 @@ const de: Record<string, string> = {
 
   // Tabs
   'tabs.sessions': 'Sitzungen',
-  'tabs.campaignData': 'Kampagnendaten',
+  'tabs.campaignData': 'Kampagne',
   'tabs.chat': 'Chat',
 
   // Empty states
@@ -1428,7 +1428,7 @@ const es: Record<string, string> = {
   'sidebar.newPage': 'Nueva Página',
   'sidebar.update': 'Actualizar',
   'sidebar.sessionRecaps': 'Resúmenes de Sesión',
-  'sidebar.campaignWiki': 'Datos de Campaña',
+  'sidebar.campaignWiki': 'Campaña',
   'sidebar.noEntries': 'Sin entradas aún',
   'sidebar.campaignSettings': 'Ajustes de campaña',
 
@@ -1752,7 +1752,7 @@ const es: Record<string, string> = {
 
   // Tabs
   'tabs.sessions': 'Sesiones',
-  'tabs.campaignData': 'Datos de Campaña',
+  'tabs.campaignData': 'Campaña',
   'tabs.chat': 'Chat',
 
   // Empty states
