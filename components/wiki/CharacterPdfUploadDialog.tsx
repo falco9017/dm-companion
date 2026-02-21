@@ -5,9 +5,15 @@ import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { FileText, Upload, Loader2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 
-interface CharacterPdfUploadSheetProps {
+interface CharacterPdfUploadDialogProps {
   campaignId: string
   userId: string
   wikiEntryId: string
@@ -18,13 +24,13 @@ interface CharacterPdfUploadSheetProps {
 
 type Stage = 'idle' | 'uploading' | 'processing' | 'done' | 'error'
 
-export default function CharacterPdfUploadSheet({
+export default function CharacterPdfUploadDialog({
   campaignId,
   wikiEntryId,
   wikiEntryTitle,
   isOpen,
   onClose,
-}: CharacterPdfUploadSheetProps) {
+}: CharacterPdfUploadDialogProps) {
   const [stage, setStage] = useState<Stage>('idle')
   const [error, setError] = useState('')
   const [characterName, setCharacterName] = useState('')
@@ -85,27 +91,27 @@ export default function CharacterPdfUploadSheet({
   })
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => {
+    <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open && (stage === 'idle' || stage === 'error')) onClose()
     }}>
-      <SheetContent side="right" className="sm:max-w-lg">
-        <SheetHeader>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
               <FileText className="w-4 h-4 text-blue-500" />
             </div>
             <div>
-              <SheetTitle>{t('characterSheet.importTitle')}</SheetTitle>
-              <SheetDescription>
+              <DialogTitle>{t('characterSheet.importTitle')}</DialogTitle>
+              <DialogDescription>
                 {wikiEntryTitle
                   ? t('characterSheet.importForEntry', { name: wikiEntryTitle })
                   : t('characterSheet.importSubtitle')}
-              </SheetDescription>
+              </DialogDescription>
             </div>
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
-        <div className="mt-6">
+        <div>
           {stage === 'idle' || stage === 'error' ? (
             <>
               <div
@@ -155,7 +161,7 @@ export default function CharacterPdfUploadSheet({
             </div>
           ) : null}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

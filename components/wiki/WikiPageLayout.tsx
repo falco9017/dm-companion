@@ -1,24 +1,17 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Menu, Upload, Plus, AlertTriangle } from 'lucide-react'
+import { Settings, AlertTriangle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import WikiSidebar from './WikiSidebar'
-import WikiEntryEditor from './WikiEntryEditor'
-import SettingsSheet from './SettingsSheet'
-import AudioUploadSheet from './AudioUploadSheet'
-import WikiEntryForm from './WikiEntryForm'
-import CreateSessionSheet from './CreateSessionSheet'
-import ChatPopup from '@/components/chat/ChatPopup'
-import ChatPanel from '@/components/chat/ChatPanel'
-import UpdateWikiSheet from './UpdateWikiSheet'
-import CharacterPdfUploadSheet from './CharacterPdfUploadSheet'
-import VoiceProfilesSheet from './VoiceProfilesSheet'
+import SessionsView from './SessionsView'
+import WikiDataView from './WikiDataView'
+import ChatView from './ChatView'
 import { useI18n } from '@/lib/i18n-context'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,17 +75,10 @@ export default function WikiPageLayout({
   isLocked,
 }: WikiPageLayoutProps) {
   const router = useRouter()
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [uploadOpen, setUploadOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
-  const [createSessionOpen, setCreateSessionOpen] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pdfImportOpen, setPdfImportOpen] = useState(false)
-  const [voiceProfilesOpen, setVoiceProfilesOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const currentTab = searchParams.get('tab') || 'sessions'
+  const [pendingTab, setPendingTab] = useState<string | null>(null)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
-  const [sidebarWidth, setSidebarWidth] = useState(256)
-  const [chatFullScreen, setChatFullScreen] = useState(false)
   const isDirtyRef = useRef(false)
   const { t } = useI18n()
 
@@ -100,11 +86,18 @@ export default function WikiPageLayout({
     isDirtyRef.current = isDirty
   }, [])
 
+  const handleTabChange = useCallback((newTab: string) => {
+    if (isDirtyRef.current) {
+      setPendingTab(newTab)
+    } else {
+      router.push(`/campaigns/${campaignId}?tab=${newTab}`)
+    }
+  }, [router, campaignId])
+
   const handleNavigate = useCallback((href: string) => {
     if (isDirtyRef.current) {
       setPendingNav(href)
     } else {
-      setSidebarOpen(false)
       router.push(href)
     }
   }, [router])
@@ -118,6 +111,24 @@ export default function WikiPageLayout({
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  const confirmNavigation = useCallback(() => {
+    isDirtyRef.current = false
+    if (pendingTab) {
+      const tab = pendingTab
+      setPendingTab(null)
+      router.push(`/campaigns/${campaignId}?tab=${tab}`)
+    } else if (pendingNav) {
+      const href = pendingNav
+      setPendingNav(null)
+      router.push(href)
+    }
+  }, [pendingTab, pendingNav, router, campaignId])
+
+  const cancelNavigation = useCallback(() => {
+    setPendingTab(null)
+    setPendingNav(null)
   }, [])
 
   return (
@@ -138,143 +149,82 @@ export default function WikiPageLayout({
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-      {/* Mobile sidebar toggle */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setSidebarOpen(true)}
-        className="fixed top-[4.5rem] left-3 z-30 md:hidden"
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
-
-      <WikiSidebar
-        campaignId={campaignId}
-        campaignName={campaign.name}
-        entries={wikiTree}
-        activeEntryId={activeEntry?.id}
-        dateFormat={dateFormat}
-        onSettingsClick={() => setSettingsOpen(true)}
-        onUploadClick={() => setUploadOpen(true)}
-        onCreateClick={() => setCreateOpen(true)}
-        onUpdateWikiClick={() => setUpdateWikiOpen(true)}
-        onCreateSessionClick={() => setCreateSessionOpen(true)}
-        onNavigate={handleNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        desktopWidth={sidebarWidth}
-        onWidthChange={setSidebarWidth}
-        desktopHidden={chatFullScreen}
-        isLocked={isLocked}
-      />
-
-      {/* Main content */}
-      {!chatFullScreen && (activeEntry ? (
-        <WikiEntryEditor
-          campaignId={campaignId}
-          userId={userId}
-          entry={activeEntry}
-          onImportPdf={() => setPdfImportOpen(true)}
-          onUnsavedChange={handleUnsavedChange}
-          isReadOnly={isLocked}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <p className="text-lg mb-2">
-              {wikiTree.length === 0
-                ? t('wiki.noEntriesYet')
-                : t('wiki.selectEntry')}
-            </p>
-            {!isLocked && (
-              <>
-                <p className="text-muted-foreground text-sm mb-6">
-                  {t('wiki.uploadHint')}
-                </p>
-                <div className="flex justify-center gap-3">
-                  <Button variant="outline" onClick={() => setUploadOpen(true)}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    {t('audio.uploadAudio')}
-                  </Button>
-                  <Button onClick={() => setCreateOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('sidebar.newPage')}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
+      {/* Tab bar */}
+      <div className="flex-shrink-0 border-b px-4 flex items-center gap-3">
+        <div className="flex items-center gap-2 mr-2 py-2">
+          <Link
+            href="/campaigns"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <h2 className="text-sm font-bold truncate max-w-[140px] sm:max-w-[200px]">
+            {campaign.name}
+          </h2>
         </div>
-      ))}
 
-      {/* Chat: desktop side panel + mobile popup */}
-      {!isLocked && (
-        <>
-          <ChatPanel
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="flex-1 flex-col-reverse min-w-0">
+          <TabsList variant="line" className="h-10">
+            <TabsTrigger value="sessions">{t('tabs.sessions')}</TabsTrigger>
+            <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
+            {!isLocked && (
+              <TabsTrigger value="chat">{t('tabs.chat')}</TabsTrigger>
+            )}
+          </TabsList>
+        </Tabs>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              asChild
+            >
+              <Link href={`/campaigns/${campaignId}/settings`}>
+                <Settings className="w-4 h-4" />
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('sidebar.campaignSettings')}</TooltipContent>
+        </Tooltip>
+      </div>
+
+      {/* Tab content */}
+      <div className="flex-1 flex overflow-hidden">
+        {currentTab === 'sessions' && (
+          <SessionsView
             campaignId={campaignId}
-            isFullScreen={chatFullScreen}
-            onFullScreenChange={setChatFullScreen}
+            userId={userId}
+            entries={wikiTree}
+            activeEntry={activeEntry}
+            dateFormat={dateFormat}
+            isLocked={isLocked}
+            onUnsavedChange={handleUnsavedChange}
+            onNavigate={handleNavigate}
           />
-          <div className="md:hidden">
-            <ChatPopup campaignId={campaignId} />
-          </div>
-        </>
-      )}
-      </div>{/* end inner flex */}
+        )}
 
-      {/* Sheets (slide-over panels) */}
-      <SettingsSheet
-        campaignId={campaignId}
-        userId={userId}
-        campaign={campaign}
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        onVoiceProfilesClick={() => setVoiceProfilesOpen(true)}
-      />
+        {currentTab === 'wiki' && (
+          <WikiDataView
+            campaignId={campaignId}
+            userId={userId}
+            entries={wikiTree}
+            activeEntry={activeEntry}
+            isLocked={isLocked}
+            onUnsavedChange={handleUnsavedChange}
+            onNavigate={handleNavigate}
+          />
+        )}
 
-      <VoiceProfilesSheet
-        campaignId={campaignId}
-        userId={userId}
-        isOpen={voiceProfilesOpen}
-        onClose={() => setVoiceProfilesOpen(false)}
-      />
-
-      <AudioUploadSheet
-        campaignId={campaignId}
-        isOpen={uploadOpen}
-        onClose={() => setUploadOpen(false)}
-      />
-
-      <UpdateWikiSheet
-        campaignId={campaignId}
-        isOpen={updateWikiOpen}
-        onClose={() => setUpdateWikiOpen(false)}
-      />
-
-      <CreateSessionSheet
-        campaignId={campaignId}
-        userId={userId}
-        isOpen={createSessionOpen}
-        onClose={() => setCreateSessionOpen(false)}
-      />
-
-      <CharacterPdfUploadSheet
-        campaignId={campaignId}
-        userId={userId}
-        wikiEntryId={activeEntry?.id || ''}
-        wikiEntryTitle={activeEntry?.title || ''}
-        isOpen={pdfImportOpen}
-        onClose={() => setPdfImportOpen(false)}
-      />
+        {/* Chat stays mounted but hidden to preserve conversation state */}
+        <div className={`flex-1 flex flex-col ${currentTab === 'chat' ? '' : 'hidden'}`}>
+          <ChatView campaignId={campaignId} />
+        </div>
+      </div>
 
       {/* Unsaved changes confirmation */}
-      <AlertDialog open={!!pendingNav} onOpenChange={(open) => !open && setPendingNav(null)}>
+      <AlertDialog open={!!pendingTab || !!pendingNav} onOpenChange={(open) => !open && cancelNavigation()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('unsaved.title')}</AlertDialogTitle>
@@ -284,35 +234,13 @@ export default function WikiPageLayout({
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                const href = pendingNav!
-                isDirtyRef.current = false
-                setPendingNav(null)
-                setSidebarOpen(false)
-                router.push(href)
-              }}
+              onClick={confirmNavigation}
             >
               {t('unsaved.leave')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Create entry sheet */}
-      <Sheet open={createOpen} onOpenChange={(open) => !open && setCreateOpen(false)}>
-        <SheetContent side="right" className="sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>{t('wiki.createEntry')}</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            <WikiEntryForm
-              campaignId={campaignId}
-              userId={userId}
-              onDone={() => setCreateOpen(false)}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   )
 }

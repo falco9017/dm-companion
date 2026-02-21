@@ -7,7 +7,7 @@ import type { CharacterSheetData } from '@/types/character-sheet'
 import CharacterSheetBoard from '@/components/character-sheet/CharacterSheetBoard'
 import PartyOverview from './PartyOverview'
 import { createPlayerCharacter } from '@/actions/campaign-members'
-import CharacterPdfUploadSheet from '@/components/wiki/CharacterPdfUploadSheet'
+import CharacterPdfUploadDialog from '@/components/wiki/CharacterPdfUploadDialog'
 
 interface PartySheet {
   id: string
@@ -196,7 +196,7 @@ export default function PlayerCampaignView({
 
       {/* PDF import modal — only usable after character is created */}
       {currentMyWikiEntryId && (
-        <CharacterPdfUploadSheet
+        <CharacterPdfUploadDialog
           campaignId={campaignId}
           userId={userId}
           wikiEntryId={currentMyWikiEntryId}

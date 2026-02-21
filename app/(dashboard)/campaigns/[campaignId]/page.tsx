@@ -11,10 +11,10 @@ export default async function CampaignPage({
   searchParams,
 }: {
   params: Promise<{ campaignId: string }>
-  searchParams: Promise<{ entry?: string }>
+  searchParams: Promise<{ entry?: string; tab?: string }>
 }) {
   const { campaignId } = await params
-  const { entry: entryParam } = await searchParams
+  const { entry: entryParam, tab } = await searchParams
   const session = await auth()
   const userId = session!.user.id
 
@@ -33,14 +33,20 @@ export default async function CampaignPage({
     notFound()
   }
 
-  // Determine which entry to show
+  // Determine which entry to show based on active tab
   let activeEntry = null
   let activeEntryId = entryParam
 
   if (!activeEntryId && wikiTree.length > 0) {
-    // Default to latest SESSION_RECAP, or first entry
-    const sessionRecap = wikiTree.find((e) => e.type === 'SESSION_RECAP')
-    activeEntryId = sessionRecap?.id || wikiTree[0].id
+    if (tab === 'wiki') {
+      // Default to first non-session entry
+      const wikiEntry = wikiTree.find((e) => e.type !== 'SESSION_RECAP')
+      activeEntryId = wikiEntry?.id
+    } else {
+      // Default to latest SESSION_RECAP
+      const sessionRecap = wikiTree.find((e) => e.type === 'SESSION_RECAP')
+      activeEntryId = sessionRecap?.id
+    }
   }
 
   if (activeEntryId) {

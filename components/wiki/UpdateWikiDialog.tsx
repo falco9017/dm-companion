@@ -4,22 +4,28 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RefreshCw, Loader2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-interface UpdateWikiSheetProps {
+interface UpdateWikiDialogProps {
   campaignId: string
   isOpen: boolean
   onClose: () => void
 }
 
-export default function UpdateWikiSheet({
+export default function UpdateWikiDialog({
   campaignId,
   isOpen,
   onClose,
-}: UpdateWikiSheetProps) {
+}: UpdateWikiDialogProps) {
   const router = useRouter()
   const [instructions, setInstructions] = useState('')
   const [loading, setLoading] = useState(false)
@@ -65,19 +71,19 @@ export default function UpdateWikiSheet({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent side="right" className="sm:max-w-lg">
-        <SheetHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-primary" />
             </div>
-            <SheetTitle>{t('updateWiki.title')}</SheetTitle>
+            <DialogTitle>{t('updateWiki.title')}</DialogTitle>
           </div>
-          <SheetDescription>{t('updateWiki.description')}</SheetDescription>
-        </SheetHeader>
+          <DialogDescription>{t('updateWiki.description')}</DialogDescription>
+        </DialogHeader>
 
-        <div className="space-y-4 mt-6">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t('updateWiki.instructions')}</Label>
             <Textarea
@@ -117,7 +123,7 @@ export default function UpdateWikiSheet({
             )}
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

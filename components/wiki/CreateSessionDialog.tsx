@@ -4,20 +4,25 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSessionEntry } from '@/actions/wiki'
 import { useI18n } from '@/lib/i18n-context'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
-interface CreateSessionSheetProps {
+interface CreateSessionDialogProps {
   campaignId: string
   userId: string
   isOpen: boolean
   onClose: () => void
 }
 
-export default function CreateSessionSheet({ campaignId, userId, isOpen, onClose }: CreateSessionSheetProps) {
+export default function CreateSessionDialog({ campaignId, userId, isOpen, onClose }: CreateSessionDialogProps) {
   const router = useRouter()
   const { t } = useI18n()
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -41,12 +46,12 @@ export default function CreateSessionSheet({ campaignId, userId, isOpen, onClose
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{t('session.createTitle')}</SheetTitle>
-        </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('session.createTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="sessionDate">{t('session.date')} *</Label>
             <Input
@@ -71,7 +76,7 @@ export default function CreateSessionSheet({ campaignId, userId, isOpen, onClose
             {creating ? t('common.creating') : t('session.create')}
           </Button>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -333,6 +333,25 @@ const en = {
   'session.title': 'Session Title',
   'session.titlePlaceholder': 'Leave blank to use date as title',
   'session.create': 'Create',
+
+  // Tabs
+  'tabs.sessions': 'Sessions',
+  'tabs.campaignData': 'Campaign Data',
+  'tabs.chat': 'Chat',
+
+  // Empty states
+  'empty.sessions': 'No sessions yet',
+  'empty.sessionsHint': 'Upload a session recording or create one manually to get started.',
+  'empty.wiki': 'No entries yet',
+  'empty.wikiHint': 'Create an entry manually or generate them from session recaps.',
+  'empty.selectSession': 'Select a session from the list',
+  'empty.selectEntry': 'Select an entry from the list',
+
+  // Settings page
+  'settings.backToCampaign': 'Back to campaign',
+  'settings.general': 'General',
+  'settings.voiceProfilesSection': 'Voice Profiles',
+  'settings.dangerZoneSection': 'Danger Zone',
 } as const
 
 const it: Record<string, string> = {
@@ -668,6 +687,25 @@ const it: Record<string, string> = {
   'session.title': 'Titolo Sessione',
   'session.titlePlaceholder': 'Lascia vuoto per usare la data come titolo',
   'session.create': 'Crea',
+
+  // Tabs
+  'tabs.sessions': 'Sessioni',
+  'tabs.campaignData': 'Dati Campagna',
+  'tabs.chat': 'Chat',
+
+  // Empty states
+  'empty.sessions': 'Nessuna sessione',
+  'empty.sessionsHint': 'Carica una registrazione o creane una manualmente per iniziare.',
+  'empty.wiki': 'Nessuna voce',
+  'empty.wikiHint': 'Crea una voce manualmente o generale dai riassunti delle sessioni.',
+  'empty.selectSession': 'Seleziona una sessione dalla lista',
+  'empty.selectEntry': 'Seleziona una voce dalla lista',
+
+  // Settings page
+  'settings.backToCampaign': 'Torna alla campagna',
+  'settings.general': 'Generale',
+  'settings.voiceProfilesSection': 'Profili Vocali',
+  'settings.dangerZoneSection': 'Zona Pericolosa',
 }
 
 const fr: Record<string, string> = {
@@ -1003,6 +1041,25 @@ const fr: Record<string, string> = {
   'session.title': 'Titre de la Session',
   'session.titlePlaceholder': 'Laisser vide pour utiliser la date comme titre',
   'session.create': 'Créer',
+
+  // Tabs
+  'tabs.sessions': 'Sessions',
+  'tabs.campaignData': 'Données de Campagne',
+  'tabs.chat': 'Chat',
+
+  // Empty states
+  'empty.sessions': 'Aucune session',
+  'empty.sessionsHint': 'Téléchargez un enregistrement ou créez-en un manuellement pour commencer.',
+  'empty.wiki': 'Aucune entrée',
+  'empty.wikiHint': 'Créez une entrée manuellement ou générez-les à partir des résumés de session.',
+  'empty.selectSession': 'Sélectionnez une session dans la liste',
+  'empty.selectEntry': 'Sélectionnez une entrée dans la liste',
+
+  // Settings page
+  'settings.backToCampaign': 'Retour à la campagne',
+  'settings.general': 'Général',
+  'settings.voiceProfilesSection': 'Profils Vocaux',
+  'settings.dangerZoneSection': 'Zone Dangereuse',
 }
 
 const de: Record<string, string> = {
@@ -1338,6 +1395,25 @@ const de: Record<string, string> = {
   'session.title': 'Sitzungstitel',
   'session.titlePlaceholder': 'Leer lassen, um Datum als Titel zu verwenden',
   'session.create': 'Erstellen',
+
+  // Tabs
+  'tabs.sessions': 'Sitzungen',
+  'tabs.campaignData': 'Kampagnendaten',
+  'tabs.chat': 'Chat',
+
+  // Empty states
+  'empty.sessions': 'Keine Sitzungen',
+  'empty.sessionsHint': 'Laden Sie eine Aufnahme hoch oder erstellen Sie eine manuell.',
+  'empty.wiki': 'Keine Einträge',
+  'empty.wikiHint': 'Erstellen Sie einen Eintrag manuell oder generieren Sie sie aus Sitzungszusammenfassungen.',
+  'empty.selectSession': 'Wählen Sie eine Sitzung aus der Liste',
+  'empty.selectEntry': 'Wählen Sie einen Eintrag aus der Liste',
+
+  // Settings page
+  'settings.backToCampaign': 'Zurück zur Kampagne',
+  'settings.general': 'Allgemein',
+  'settings.voiceProfilesSection': 'Stimmprofile',
+  'settings.dangerZoneSection': 'Gefahrenzone',
 }
 
 const es: Record<string, string> = {
@@ -1673,6 +1749,25 @@ const es: Record<string, string> = {
   'session.title': 'Título de la Sesión',
   'session.titlePlaceholder': 'Dejar en blanco para usar la fecha como título',
   'session.create': 'Crear',
+
+  // Tabs
+  'tabs.sessions': 'Sesiones',
+  'tabs.campaignData': 'Datos de Campaña',
+  'tabs.chat': 'Chat',
+
+  // Empty states
+  'empty.sessions': 'Sin sesiones',
+  'empty.sessionsHint': 'Sube una grabación o crea una manualmente para empezar.',
+  'empty.wiki': 'Sin entradas',
+  'empty.wikiHint': 'Crea una entrada manualmente o genéralas a partir de los resúmenes de sesión.',
+  'empty.selectSession': 'Selecciona una sesión de la lista',
+  'empty.selectEntry': 'Selecciona una entrada de la lista',
+
+  // Settings page
+  'settings.backToCampaign': 'Volver a la campaña',
+  'settings.general': 'General',
+  'settings.voiceProfilesSection': 'Perfiles de Voz',
+  'settings.dangerZoneSection': 'Zona de Peligro',
 }
 
 type TranslationKey = keyof typeof en
