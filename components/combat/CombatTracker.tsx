@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Plus, ChevronRight, ChevronLeft, RotateCcw, Swords,
-  Skull, Minus, Shield, Eye, Trash2, Dices, GripVertical, Loader2,
+  Skull, Minus, Shield, Trash2, Dices, GripVertical, Loader2, User,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,7 @@ import { getWikiEntry } from '@/actions/wiki'
 import type { Combatant } from '@/types/combat'
 import type { CharacterSheetData } from '@/types/character-sheet'
 import AddCombatantDialog from './AddCombatantDialog'
-import CombatantStatsSheet from './CombatantStatsSheet'
+import CombatantStatsPanel from './CombatantStatsPanel'
 
 interface WikiTreeEntry {
   id: string
@@ -97,7 +97,7 @@ function HpCell({
         variant="ghost"
         size="icon"
         className="h-6 w-6 flex-shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-        onClick={() => onAdjust(-1)}
+        onClick={(e) => { e.stopPropagation(); onAdjust(-1) }}
         title="Damage (−1)"
       >
         <Minus className="w-3 h-3" />
@@ -111,6 +111,7 @@ function HpCell({
             value={editVal}
             onChange={(e) => setEditVal(e.target.value)}
             onBlur={commitEdit}
+            onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
               if (e.key === 'Enter') commitEdit()
               if (e.key === 'Escape') setEditing(false)
@@ -119,7 +120,7 @@ function HpCell({
           />
         ) : (
           <button
-            onClick={startEdit}
+            onClick={(e) => { e.stopPropagation(); startEdit() }}
             className={cn('text-sm tabular-nums leading-none hover:underline cursor-pointer', hpTextColor(current, max))}
             title="Click to set HP"
           >
@@ -142,7 +143,7 @@ function HpCell({
         variant="ghost"
         size="icon"
         className="h-6 w-6 flex-shrink-0 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
-        onClick={() => onAdjust(1)}
+        onClick={(e) => { e.stopPropagation(); onAdjust(1) }}
         title="Heal (+1)"
       >
         <Plus className="w-3 h-3" />
@@ -186,6 +187,7 @@ function InitiativeCell({
           value={editVal}
           onChange={(e) => setEditVal(e.target.value)}
           onBlur={commit}
+          onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit()
             if (e.key === 'Escape') setEditing(false)
@@ -194,7 +196,7 @@ function InitiativeCell({
         />
       ) : (
         <button
-          onClick={startEdit}
+          onClick={(e) => { e.stopPropagation(); startEdit() }}
           className="text-sm font-bold tabular-nums hover:underline cursor-pointer"
           title="Click to edit initiative"
         >
@@ -207,7 +209,7 @@ function InitiativeCell({
             variant="ghost"
             size="icon"
             className="h-5 w-5 opacity-50 hover:opacity-100"
-            onClick={onReroll}
+            onClick={(e) => { e.stopPropagation(); onReroll() }}
           >
             <Dices className="w-3 h-3" />
           </Button>
@@ -227,8 +229,7 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
   const [currentTurnIdx, setCurrentTurnIdx] = useState(0)
   const [isCombatActive, setIsCombatActive] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [statsTarget, setStatsTarget] = useState<Combatant | null>(null)
-  const [isStatsOpen, setIsStatsOpen] = useState(false)
+  const [selectedCombatantId, setSelectedCombatantId] = useState<string | null>(null)
   const hasAutoLoaded = useRef(false)
 
   // Auto-add all CHARACTER party members on first mount
@@ -286,12 +287,43 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
   const sorted = [...combatants].sort((a, b) => b.initiative - a.initiative)
   const currentCombatant = isCombatActive ? sorted[currentTurnIdx] : null
 
+  // Auto-select first combatant when list becomes non-empty
+  useEffect(() => {
+    if (combatants.length > 0 && !selectedCombatantId) {
+      setSelectedCombatantId(sorted[0]?.id ?? null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [combatants.length])
+
+  // Auto-select active turn combatant during combat
+  useEffect(() => {
+    if (isCombatActive && sorted[currentTurnIdx]) {
+      setSelectedCombatantId(sorted[currentTurnIdx].id)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTurnIdx, isCombatActive])
+
+  // Resolve selected combatant from live state (so HP updates are reflected)
+  const selectedCombatant =
+    (selectedCombatantId ? combatants.find((c) => c.id === selectedCombatantId) : null) ??
+    sorted[0] ??
+    null
+
   function addCombatant(data: Omit<Combatant, 'id'>) {
-    setCombatants((prev) => [...prev, { ...data, id: genId() }])
+    const newCombatant = { ...data, id: genId() }
+    setCombatants((prev) => [...prev, newCombatant])
+    setSelectedCombatantId(newCombatant.id)
   }
 
   function removeCombatant(id: string) {
-    setCombatants((prev) => prev.filter((c) => c.id !== id))
+    setCombatants((prev) => {
+      const next = prev.filter((c) => c.id !== id)
+      // If we removed the selected one, pick first remaining
+      if (id === selectedCombatantId) {
+        setSelectedCombatantId(next[0]?.id ?? null)
+      }
+      return next
+    })
     setCurrentTurnIdx((prev) => Math.max(0, Math.min(prev, sorted.length - 2)))
   }
 
@@ -323,6 +355,7 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
     setIsCombatActive(true)
     setRound(1)
     setCurrentTurnIdx(0)
+    if (sorted[0]) setSelectedCombatantId(sorted[0].id)
   }
 
   function endCombat() {
@@ -336,6 +369,7 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
     setIsCombatActive(false)
     setRound(1)
     setCurrentTurnIdx(0)
+    setSelectedCombatantId(null)
     hasAutoLoaded.current = false
   }
 
@@ -370,11 +404,6 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
         initiative: rollD20() + c.initiativeModifier,
       }))
     )
-  }
-
-  function openStats(combatant: Combatant) {
-    setStatsTarget(combatant)
-    setIsStatsOpen(true)
   }
 
   const isEmpty = combatants.length === 0
@@ -457,125 +486,131 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
         </div>
       </div>
 
-      {/* Combatants list */}
-      <ScrollArea className="flex-1">
-        {isLoadingParty ? (
-          <div className="flex items-center justify-center gap-2 h-40 text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">Loading party...</span>
-          </div>
-        ) : isEmpty ? (
-          <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
-            <Swords className="w-10 h-10 opacity-20" />
-            <p className="text-sm">No combatants yet</p>
-            <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Combatant
-            </Button>
-          </div>
-        ) : (
-          <div className="p-2 space-y-1">
-            <div className="grid grid-cols-[24px_32px_1fr_140px_48px_auto] items-center gap-2 px-2 py-1 text-xs text-muted-foreground uppercase tracking-wide">
-              <span />
-              <span>Init</span>
-              <span>Name</span>
-              <span className="text-center">HP</span>
-              <span className="text-center">AC</span>
-              <span />
-            </div>
-            <Separator />
-
-            {sorted.map((combatant, idx) => {
-              const isCurrentTurn = isCombatActive && idx === currentTurnIdx
-              const isDead = combatant.currentHp <= 0
-              const { label, variant } = typeBadge(combatant.type)
-
-              return (
-                <div
-                  key={combatant.id}
-                  className={cn(
-                    'grid grid-cols-[24px_32px_1fr_140px_48px_auto] items-center gap-2 px-2 py-2 rounded-lg transition-colors',
-                    isCurrentTurn
-                      ? 'bg-primary/10 border border-primary/30 ring-1 ring-primary/20'
-                      : 'hover:bg-muted/50',
-                    isDead && 'opacity-50'
-                  )}
-                >
-                  <div className="flex items-center justify-center">
-                    {isCurrentTurn ? (
-                      <ChevronRight className="w-4 h-4 text-primary" />
-                    ) : (
-                      <GripVertical className="w-4 h-4 text-muted-foreground/30" />
-                    )}
-                  </div>
-
-                  <InitiativeCell
-                    value={combatant.initiative}
-                    onChange={(v) => updateCombatant(combatant.id, { initiative: v })}
-                    onReroll={() =>
-                      updateCombatant(combatant.id, {
-                        initiative: rollD20() + combatant.initiativeModifier,
-                      })
-                    }
-                    initiativeModifier={combatant.initiativeModifier}
-                  />
-
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    {isDead && <Skull className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
-                    <span className={cn('text-sm font-medium truncate', isDead && 'line-through text-muted-foreground')}>
-                      {combatant.name}
-                    </span>
-                    <Badge variant={variant} className="text-xs flex-shrink-0 h-4 px-1">
-                      {label}
-                    </Badge>
-                  </div>
-
-                  <HpCell
-                    current={combatant.currentHp}
-                    max={combatant.maxHp}
-                    temporary={combatant.temporaryHp}
-                    onAdjust={(delta) => adjustHp(combatant.id, delta)}
-                    onSetCurrent={(val) => setCurrentHp(combatant.id, val)}
-                  />
-
-                  <div className="flex items-center justify-center gap-0.5">
-                    <Shield className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-sm font-medium tabular-nums">{combatant.ac}</span>
-                  </div>
-
-                  <div className="flex items-center gap-0.5">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => openStats(combatant)}
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>View stats</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-destructive hover:text-destructive"
-                          onClick={() => removeCombatant(combatant.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Remove from combat</TooltipContent>
-                    </Tooltip>
-                  </div>
+      {/* Main area — split pane */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: Initiative order list */}
+        <div className="w-[360px] flex-shrink-0 border-r flex flex-col overflow-hidden">
+          <ScrollArea className="flex-1">
+            {isLoadingParty ? (
+              <div className="flex items-center justify-center gap-2 h-40 text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Loading party...</span>
+              </div>
+            ) : isEmpty ? (
+              <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+                <Swords className="w-10 h-10 opacity-20" />
+                <p className="text-sm">No combatants yet</p>
+                <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
+                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Combatant
+                </Button>
+              </div>
+            ) : (
+              <div className="p-2 space-y-1">
+                <div className="grid grid-cols-[20px_48px_1fr_130px_44px_28px] items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground uppercase tracking-wide">
+                  <span />
+                  <span>Init</span>
+                  <span>Name</span>
+                  <span className="text-center">HP</span>
+                  <span className="text-center">AC</span>
+                  <span />
                 </div>
-              )
-            })}
-          </div>
-        )}
-      </ScrollArea>
+                <Separator />
+
+                {sorted.map((combatant, idx) => {
+                  const isCurrentTurn = isCombatActive && idx === currentTurnIdx
+                  const isSelected = combatant.id === selectedCombatant?.id
+                  const isDead = combatant.currentHp <= 0
+                  const { label, variant } = typeBadge(combatant.type)
+
+                  return (
+                    <div
+                      key={combatant.id}
+                      onClick={() => setSelectedCombatantId(combatant.id)}
+                      className={cn(
+                        'grid grid-cols-[20px_48px_1fr_130px_44px_28px] items-center gap-1.5 px-2 py-2 rounded-lg transition-colors cursor-pointer',
+                        isCurrentTurn
+                          ? 'bg-primary/10 border border-primary/30 ring-1 ring-primary/20'
+                          : isSelected
+                          ? 'bg-muted/70 border border-muted-foreground/20'
+                          : 'hover:bg-muted/40 border border-transparent',
+                        isDead && 'opacity-50'
+                      )}
+                    >
+                      <div className="flex items-center justify-center">
+                        {isCurrentTurn ? (
+                          <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                        ) : (
+                          <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30" />
+                        )}
+                      </div>
+
+                      <InitiativeCell
+                        value={combatant.initiative}
+                        onChange={(v) => updateCombatant(combatant.id, { initiative: v })}
+                        onReroll={() =>
+                          updateCombatant(combatant.id, {
+                            initiative: rollD20() + combatant.initiativeModifier,
+                          })
+                        }
+                        initiativeModifier={combatant.initiativeModifier}
+                      />
+
+                      <div className="flex items-center gap-1 min-w-0">
+                        {isDead && <Skull className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+                        <span className={cn('text-sm font-medium truncate', isDead && 'line-through text-muted-foreground')}>
+                          {combatant.name}
+                        </span>
+                        <Badge variant={variant} className="text-xs flex-shrink-0 h-4 px-1">
+                          {label}
+                        </Badge>
+                      </div>
+
+                      <HpCell
+                        current={combatant.currentHp}
+                        max={combatant.maxHp}
+                        temporary={combatant.temporaryHp}
+                        onAdjust={(delta) => adjustHp(combatant.id, delta)}
+                        onSetCurrent={(val) => setCurrentHp(combatant.id, val)}
+                      />
+
+                      <div className="flex items-center justify-center gap-0.5">
+                        <Shield className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-sm font-medium tabular-nums">{combatant.ac}</span>
+                      </div>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive hover:text-destructive"
+                            onClick={(e) => { e.stopPropagation(); removeCombatant(combatant.id) }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Remove from combat</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+
+        {/* Right: Always-visible stats panel */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {selectedCombatant ? (
+            <CombatantStatsPanel combatant={selectedCombatant} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+              <User className="w-8 h-8 opacity-20" />
+              <p className="text-sm">Select a combatant to view stats</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       <AddCombatantDialog
         open={showAddDialog}
@@ -583,12 +618,6 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
         wikiEntries={wikiEntries}
         userId={userId}
         onAdd={addCombatant}
-      />
-
-      <CombatantStatsSheet
-        combatant={statsTarget}
-        open={isStatsOpen}
-        onOpenChange={setIsStatsOpen}
       />
     </div>
   )
