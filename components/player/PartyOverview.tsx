@@ -26,7 +26,7 @@ function hpColor(current: number, max: number) {
 export default function PartyOverview({ sheets, mySheetId }: PartyOverviewProps) {
   if (sheets.length === 0) {
     return (
-      <div className="text-center py-8 text-text-muted text-sm">
+      <div className="text-center py-8 text-muted-foreground text-sm">
         No characters in the party yet.
       </div>
     )
@@ -42,30 +42,30 @@ export default function PartyOverview({ sheets, mySheetId }: PartyOverviewProps)
             key={sheet.id}
             className={`p-4 rounded-xl border transition-colors ${
               isMe
-                ? 'border-accent-purple/50 bg-accent-purple/5'
-                : 'border-border-theme bg-surface-elevated'
+                ? 'border-primary/50 bg-primary/5'
+                : 'border-border bg-card'
             }`}
           >
             {/* Name row */}
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-text-primary">
+                  <h3 className="text-sm font-bold text-foreground">
                     {d.characterName || sheet.wikiEntry.title}
                   </h3>
                   {isMe && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-purple/20 text-accent-purple-light">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">
                       You
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-text-muted">
+                <p className="text-xs text-muted-foreground">
                   {[d.race, d.class, d.level ? `Level ${d.level}` : null]
                     .filter(Boolean)
                     .join(' · ')}
                 </p>
                 {sheet.assignedPlayer && (
-                  <p className="text-[11px] text-text-muted mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     {sheet.assignedPlayer.name || sheet.assignedPlayer.email}
                   </p>
                 )}
@@ -75,10 +75,10 @@ export default function PartyOverview({ sheets, mySheetId }: PartyOverviewProps)
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-2">
               {/* HP */}
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-surface border border-border-theme">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border">
                 <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                 <div>
-                  <p className="text-[9px] text-text-muted uppercase tracking-wide">HP</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wide">HP</p>
                   <p className={`text-xs font-bold ${hpColor(d.hitPoints.current, d.hitPoints.maximum)}`}>
                     {d.hitPoints.current}/{d.hitPoints.maximum}
                     {d.hitPoints.temporary > 0 && (
@@ -89,20 +89,20 @@ export default function PartyOverview({ sheets, mySheetId }: PartyOverviewProps)
               </div>
 
               {/* AC */}
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-surface border border-border-theme">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border">
                 <Shield className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <div>
-                  <p className="text-[9px] text-text-muted uppercase tracking-wide">AC</p>
-                  <p className="text-xs font-bold text-text-primary">{d.armorClass}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wide">AC</p>
+                  <p className="text-xs font-bold text-foreground">{d.armorClass}</p>
                 </div>
               </div>
 
               {/* Initiative */}
-              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-surface border border-border-theme">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border">
                 <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <div>
-                  <p className="text-[9px] text-text-muted uppercase tracking-wide">Init</p>
-                  <p className="text-xs font-bold text-text-primary">
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-wide">Init</p>
+                  <p className="text-xs font-bold text-foreground">
                     {d.initiative >= 0 ? '+' : ''}{d.initiative}
                   </p>
                 </div>
@@ -123,10 +123,10 @@ export default function PartyOverview({ sheets, mySheetId }: PartyOverviewProps)
               ).map(([label, mod]) => (
                 <div
                   key={label}
-                  className="text-center p-1 rounded bg-surface border border-border-theme"
+                  className="text-center p-1 rounded bg-card border border-border"
                 >
-                  <p className="text-[8px] text-text-muted">{label}</p>
-                  <p className="text-[11px] font-semibold text-text-primary">
+                  <p className="text-[8px] text-muted-foreground">{label}</p>
+                  <p className="text-[11px] font-semibold text-foreground">
                     {mod >= 0 ? '+' : ''}{mod}
                   </p>
                 </div>

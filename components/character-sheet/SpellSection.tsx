@@ -20,7 +20,7 @@ function SpellSlotTracker({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-text-muted w-8">Lv {slot.level}</span>
+      <span className="text-[10px] text-muted-foreground w-8">Lv {slot.level}</span>
       <div className="flex gap-0.5">
         {Array.from({ length: slot.total }).map((_, i) => (
           <button
@@ -35,7 +35,7 @@ function SpellSlotTracker({
           />
         ))}
       </div>
-      <span className="text-[10px] text-text-muted">
+      <span className="text-[10px] text-muted-foreground">
         {slot.total - slot.used}/{slot.total}
       </span>
     </div>
@@ -54,13 +54,13 @@ function SpellCard({
   onRemove: () => void
 }) {
   return (
-    <div className={`relative p-2 rounded-lg border bg-surface-elevated transition-colors ${
-      spell.prepared ? 'border-accent-purple/40' : 'border-border-theme opacity-60'
+    <div className={`relative p-2 rounded-lg border bg-card transition-colors ${
+      spell.prepared ? 'border-primary/40' : 'border-border opacity-60'
     }`}>
       {editing && (
         <button
           onClick={onRemove}
-          className="absolute top-0.5 right-0.5 p-0.5 rounded text-text-muted hover:text-red-400 transition-colors"
+          className="absolute top-0.5 right-0.5 p-0.5 rounded text-muted-foreground hover:text-red-400 transition-colors"
         >
           <X className="w-2.5 h-2.5" />
         </button>
@@ -72,13 +72,13 @@ function SpellCard({
           title={spell.prepared ? 'Prepared' : 'Not prepared'}
         >
           {spell.prepared ? (
-            <span className="text-accent-purple-light text-xs">●</span>
+            <span className="text-primary text-xs">●</span>
           ) : (
-            <span className="text-text-muted text-xs">○</span>
+            <span className="text-muted-foreground text-xs">○</span>
           )}
         </button>
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-text-primary truncate">{spell.name}</p>
+          <p className="text-[11px] font-semibold text-foreground truncate">{spell.name}</p>
           <div className="flex items-center gap-1 mt-0.5">
             {spell.concentration && (
               <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300">C</span>
@@ -86,7 +86,7 @@ function SpellCard({
             {spell.ritual && (
               <span className="text-[9px] px-1 rounded bg-blue-500/20 text-blue-300">R</span>
             )}
-            <span className="text-[9px] text-text-muted">{spell.school}</span>
+            <span className="text-[9px] text-muted-foreground">{spell.school}</span>
           </div>
         </div>
       </div>
@@ -144,51 +144,51 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted">Spellcasting</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Spellcasting</h3>
         </div>
       </div>
 
       {/* Spell stats */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="p-2 rounded-lg border border-border-theme bg-surface-elevated text-center">
-          <p className="text-[10px] text-text-muted">Save DC</p>
+        <div className="p-2 rounded-lg border border-border bg-card text-center">
+          <p className="text-[10px] text-muted-foreground">Save DC</p>
           {editing ? (
             <input
               type="text"
               inputMode="numeric"
               value={spellcasting.saveDC}
               onChange={(e) => onChange({ ...spellcasting, saveDC: parseInt(e.target.value) || 0 })}
-              className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary mx-auto block"
+              className="w-10 text-center text-sm font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground mx-auto block"
             />
           ) : (
-            <p className="text-sm font-bold text-text-primary">{spellcasting.saveDC}</p>
+            <p className="text-sm font-bold text-foreground">{spellcasting.saveDC}</p>
           )}
         </div>
-        <div className="p-2 rounded-lg border border-border-theme bg-surface-elevated text-center">
-          <p className="text-[10px] text-text-muted">Attack</p>
+        <div className="p-2 rounded-lg border border-border bg-card text-center">
+          <p className="text-[10px] text-muted-foreground">Attack</p>
           {editing ? (
             <input
               type="text"
               inputMode="numeric"
               value={spellcasting.attackBonus}
               onChange={(e) => onChange({ ...spellcasting, attackBonus: parseInt(e.target.value) || 0 })}
-              className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary mx-auto block"
+              className="w-10 text-center text-sm font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground mx-auto block"
             />
           ) : (
-            <p className="text-sm font-bold text-text-primary">+{spellcasting.attackBonus}</p>
+            <p className="text-sm font-bold text-foreground">+{spellcasting.attackBonus}</p>
           )}
         </div>
-        <div className="p-2 rounded-lg border border-border-theme bg-surface-elevated text-center">
-          <p className="text-[10px] text-text-muted">Ability</p>
+        <div className="p-2 rounded-lg border border-border bg-card text-center">
+          <p className="text-[10px] text-muted-foreground">Ability</p>
           {editing ? (
             <input
               type="text"
               value={spellcasting.ability}
               onChange={(e) => onChange({ ...spellcasting, ability: e.target.value })}
-              className="w-12 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary mx-auto block"
+              className="w-12 text-center text-sm font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground mx-auto block"
             />
           ) : (
-            <p className="text-sm font-bold text-text-primary">{spellcasting.ability}</p>
+            <p className="text-sm font-bold text-foreground">{spellcasting.ability}</p>
           )}
         </div>
       </div>
@@ -196,7 +196,7 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
       {/* Spell slots */}
       {spellcasting.spellSlots.length > 0 && (
         <div className="space-y-1">
-          <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Spell Slots</h4>
+          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Spell Slots</h4>
           {spellcasting.spellSlots.map((slot, i) => (
             <SpellSlotTracker key={slot.level} slot={slot} onChange={(s) => updateSlot(i, s)} />
           ))}
@@ -209,7 +209,7 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
           .sort(([a], [b]) => Number(a) - Number(b))
           .map(([level, spells]) => (
             <div key={level}>
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1.5">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                 {levelLabels[Number(level)] || `Level ${level}`}
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">

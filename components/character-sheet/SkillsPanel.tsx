@@ -32,7 +32,7 @@ export default function SkillsPanel({ skills, editing, onChange }: SkillsPanelPr
 
   return (
     <div className="space-y-1.5">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2">Skills</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Skills</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5">
         {skills.map((skill, i) => {
           const modStr = skill.modifier >= 0 ? `+${skill.modifier}` : `${skill.modifier}`
@@ -50,11 +50,11 @@ export default function SkillsPanel({ skills, editing, onChange }: SkillsPanelPr
                 }
               >
                 {skill.expertise ? (
-                  <span className="text-accent-purple-light">◆◆</span>
+                  <span className="text-primary">◆◆</span>
                 ) : skill.proficient ? (
-                  <span className="text-accent-purple-light">◆</span>
+                  <span className="text-primary">◆</span>
                 ) : (
-                  <span className="text-text-muted">○</span>
+                  <span className="text-muted-foreground">○</span>
                 )}
               </button>
               {editing ? (
@@ -63,13 +63,13 @@ export default function SkillsPanel({ skills, editing, onChange }: SkillsPanelPr
                   inputMode="numeric"
                   value={skill.modifier}
                   onChange={(e) => updateModifier(i, parseInt(e.target.value) || 0)}
-                  className="w-8 text-xs text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+                  className="w-8 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
                 />
               ) : (
-                <span className="text-xs font-mono text-text-primary w-6 text-right">{modStr}</span>
+                <span className="text-xs font-mono text-foreground w-6 text-right">{modStr}</span>
               )}
-              <span className="text-xs text-text-secondary truncate">{skill.name}</span>
-              <span className="text-[9px] text-text-muted">({skill.ability})</span>
+              <span className="text-xs text-muted-foreground truncate">{skill.name}</span>
+              <span className="text-[9px] text-muted-foreground">({skill.ability})</span>
             </div>
           )
         })}

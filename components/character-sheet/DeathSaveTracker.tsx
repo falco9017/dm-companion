@@ -8,8 +8,8 @@ interface DeathSaveTrackerProps {
 
 export default function DeathSaveTracker({ successes, failures, onChange }: DeathSaveTrackerProps) {
   return (
-    <div className="flex items-center gap-4 p-2 rounded-lg border border-border-theme bg-surface-elevated">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Death Saves</span>
+    <div className="flex items-center gap-4 p-2 rounded-lg border border-border bg-card">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Death Saves</span>
       <div className="flex items-center gap-1">
         <span className="text-[10px] text-emerald-400 mr-1">S</span>
         {[0, 1, 2].map((i) => (

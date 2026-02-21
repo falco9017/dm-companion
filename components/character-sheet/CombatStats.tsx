@@ -27,7 +27,7 @@ function StatBox({
   color: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-theme bg-surface-elevated">
+    <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-card">
       <Icon className={`w-4 h-4 ${color}`} />
       {editing ? (
         <input
@@ -35,12 +35,12 @@ function StatBox({
           inputMode="numeric"
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-          className="w-12 text-center text-lg font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+          className="w-12 text-center text-lg font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
         />
       ) : (
-        <span className="text-lg font-bold text-text-primary">{value}</span>
+        <span className="text-lg font-bold text-foreground">{value}</span>
       )}
-      <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
     </div>
   )
 }
@@ -66,7 +66,7 @@ export default function CombatStats({
           onChange={(v) => onChange('armorClass', v)}
           color="text-blue-400"
         />
-        <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-theme bg-surface-elevated">
+        <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-card">
           <Zap className="w-4 h-4 text-amber-400" />
           {editing ? (
             <input
@@ -74,12 +74,12 @@ export default function CombatStats({
             inputMode="numeric"
               value={initiative}
               onChange={(e) => onChange('initiative', parseInt(e.target.value) || 0)}
-              className="w-12 text-center text-lg font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+              className="w-12 text-center text-lg font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
             />
           ) : (
-            <span className="text-lg font-bold text-text-primary">{initStr}</span>
+            <span className="text-lg font-bold text-foreground">{initStr}</span>
           )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Init</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Init</span>
         </div>
         <StatBox
           icon={Footprints}
@@ -90,18 +90,18 @@ export default function CombatStats({
           color="text-emerald-400"
         />
       </div>
-      <div className="flex items-center justify-center gap-2 p-2 rounded-lg border border-border-theme bg-surface-elevated">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Prof. Bonus</span>
+      <div className="flex items-center justify-center gap-2 p-2 rounded-lg border border-border bg-card">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prof. Bonus</span>
         {editing ? (
           <input
             type="text"
             inputMode="numeric"
             value={proficiencyBonus}
             onChange={(e) => onChange('proficiencyBonus', parseInt(e.target.value) || 0)}
-            className="w-10 text-center text-sm font-bold bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+            className="w-10 text-center text-sm font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
           />
         ) : (
-          <span className="text-sm font-bold text-accent-purple-light">
+          <span className="text-sm font-bold text-primary">
             +{proficiencyBonus}
           </span>
         )}

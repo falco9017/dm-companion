@@ -7,6 +7,18 @@ import { toggleSubscription } from '@/actions/subscription'
 import { Crown, Zap, ArrowRight, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface SubscriptionSectionProps {
   userId: string
@@ -58,72 +70,62 @@ export default function SubscriptionSection({
           {isPro ? (
             <Crown className="w-4 h-4 text-yellow-400" />
           ) : (
-            <Zap className="w-4 h-4 text-text-muted" />
+            <Zap className="w-4 h-4 text-muted-foreground" />
           )}
-          <span className="text-sm text-text-secondary">{t('subscription.currentPlan')}</span>
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-            isPro
-              ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
-              : 'bg-white/5 text-text-secondary border border-border-theme'
-          }`}>
+          <span className="text-sm text-muted-foreground">{t('subscription.currentPlan')}</span>
+          <Badge variant={isPro ? 'default' : 'secondary'} className={isPro ? 'bg-yellow-400/10 text-yellow-500 dark:text-yellow-400 border-yellow-400/30' : ''}>
             {isPro ? t('subscription.pro') : t('subscription.basic')}
-          </span>
+          </Badge>
           {isPro && subscriptionStatus && (
-            <span className="text-xs text-text-muted">({t(`subscription.${subscriptionStatus}` as string)})</span>
+            <span className="text-xs text-muted-foreground">({t(`subscription.${subscriptionStatus}` as string)})</span>
           )}
         </div>
 
         {isPro ? (
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDowngradeClick}
             disabled={loading}
-            className="text-xs px-3 py-1.5 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors disabled:opacity-50"
           >
             {loading ? '...' : t('subscription.downgradToBasic')}
-          </button>
+          </Button>
         ) : (
-          <Link
-            href="/pricing"
-            className="text-xs px-3 py-1.5 rounded-lg btn-primary flex items-center gap-1"
-          >
-            <Crown className="w-3 h-3" />
-            {t('subscription.upgradeToPro')}
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+          <Button asChild size="sm">
+            <Link href="/pricing">
+              <Crown className="w-3 h-3 mr-1" />
+              {t('subscription.upgradeToPro')}
+              <ArrowRight className="w-3 h-3 ml-1" />
+            </Link>
+          </Button>
         )}
       </div>
 
       {/* Downgrade warning dialog */}
-      {showWarning && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowWarning(false)} />
-          <div className="relative bg-surface rounded-xl w-full max-w-sm mx-4 border border-border-theme p-6 shadow-xl">
-            <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-              <h3 className="text-base font-bold text-text-primary">{t('limits.downgradeWarningTitle')}</h3>
-            </div>
-            <p className="text-sm text-text-muted mb-6">
+      <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              {t('limits.downgradeWarningTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
               {t('limits.downgradeWarningBody')
                 .replace('{count}', String(campaignCount))}
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowWarning(false)}
-                className="px-4 py-2 text-sm rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
-              >
-                {t('limits.keepPro')}
-              </button>
-              <button
-                onClick={handleDowngrade}
-                disabled={loading}
-                className="px-4 py-2 text-sm rounded-lg bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 border border-orange-500/30 transition-colors disabled:opacity-50"
-              >
-                {loading ? '...' : t('limits.downgradeConfirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('limits.keepPro')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDowngrade}
+              disabled={loading}
+              className="bg-orange-500/10 text-orange-600 dark:text-orange-300 hover:bg-orange-500/20 border border-orange-500/30"
+            >
+              {loading ? '...' : t('limits.downgradeConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

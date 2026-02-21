@@ -18,31 +18,31 @@ const sourceColors: Record<string, string> = {
 }
 
 export default function FeatureCard({ feature, editing, onUpdate, onRemove }: FeatureCardProps) {
-  const colorClass = sourceColors[feature.source] || 'text-text-muted border-border-theme'
+  const colorClass = sourceColors[feature.source] || 'text-muted-foreground border-border'
   const hasUses = feature.usesMax !== undefined && feature.usesMax > 0
 
   return (
-    <div className="relative p-3 rounded-lg border border-border-theme bg-surface-elevated">
+    <div className="relative p-3 rounded-lg border border-border bg-card">
       {editing && (
         <button
           onClick={onRemove}
-          className="absolute top-1 right-1 p-0.5 rounded text-text-muted hover:text-red-400 transition-colors"
+          className="absolute top-1 right-1 p-0.5 rounded text-muted-foreground hover:text-red-400 transition-colors"
         >
           <X className="w-3 h-3" />
         </button>
       )}
       <div className="flex items-start gap-2">
-        <Star className="w-3.5 h-3.5 text-text-muted mt-0.5 flex-shrink-0" />
+        <Star className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           {editing ? (
             <input
               type="text"
               value={feature.name}
               onChange={(e) => onUpdate({ ...feature, name: e.target.value })}
-              className="text-xs font-semibold text-text-primary bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none w-full"
+              className="text-xs font-semibold text-foreground bg-transparent border-b border-border focus:border-primary focus:outline-none w-full"
             />
           ) : (
-            <p className="text-xs font-semibold text-text-primary">{feature.name}</p>
+            <p className="text-xs font-semibold text-foreground">{feature.name}</p>
           )}
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${colorClass} inline-block mt-1`}>
             {feature.source}
@@ -52,11 +52,11 @@ export default function FeatureCard({ feature, editing, onUpdate, onRemove }: Fe
               value={feature.description}
               onChange={(e) => onUpdate({ ...feature, description: e.target.value })}
               rows={2}
-              className="w-full mt-1 text-[10px] text-text-muted bg-transparent border border-border-theme rounded p-1 focus:border-accent-purple focus:outline-none resize-none"
+              className="w-full mt-1 text-[10px] text-muted-foreground bg-transparent border border-border rounded p-1 focus:border-primary focus:outline-none resize-none"
             />
           ) : (
             feature.description && (
-              <p className="text-[10px] text-text-muted mt-1 line-clamp-3">{feature.description}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">{feature.description}</p>
             )
           )}
           {hasUses && (
@@ -83,7 +83,7 @@ export default function FeatureCard({ feature, editing, onUpdate, onRemove }: Fe
                   }}
                 />
               ))}
-              <span className="text-[10px] text-text-muted ml-1">
+              <span className="text-[10px] text-muted-foreground ml-1">
                 {feature.usesCurrent || 0}/{feature.usesMax}
               </span>
             </div>

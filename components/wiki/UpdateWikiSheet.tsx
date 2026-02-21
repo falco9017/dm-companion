@@ -4,26 +4,28 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RefreshCw, Loader2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
-interface UpdateWikiModalProps {
+interface UpdateWikiSheetProps {
   campaignId: string
   isOpen: boolean
   onClose: () => void
 }
 
-export default function UpdateWikiModal({
+export default function UpdateWikiSheet({
   campaignId,
   isOpen,
   onClose,
-}: UpdateWikiModalProps) {
+}: UpdateWikiSheetProps) {
   const router = useRouter()
   const [instructions, setInstructions] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ created: number; updated: number; deleted: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const { t } = useI18n()
-
-  if (!isOpen) return null
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -63,80 +65,59 @@ export default function UpdateWikiModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative bg-surface rounded-xl w-full max-w-lg mx-3 border border-border-theme">
-        <div className="flex items-center justify-between p-6 border-b border-border-theme">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent side="right" className="sm:max-w-lg">
+        <SheetHeader>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center">
-              <RefreshCw className="w-4 h-4 text-accent-purple-light" />
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-primary" />
             </div>
-            <h2 className="text-lg font-bold text-text-primary">{t('updateWiki.title')}</h2>
+            <SheetTitle>{t('updateWiki.title')}</SheetTitle>
           </div>
-          <button
-            onClick={handleClose}
-            className="text-text-muted hover:text-text-primary text-xl transition-colors"
-          >
-            &times;
-          </button>
-        </div>
+          <SheetDescription>{t('updateWiki.description')}</SheetDescription>
+        </SheetHeader>
 
-        <div className="p-6 space-y-4">
-          <p className="text-text-muted text-sm">
-            {t('updateWiki.description')}
-          </p>
-
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              {t('updateWiki.instructions')}
-            </label>
-            <textarea
+        <div className="space-y-4 mt-6">
+          <div className="space-y-2">
+            <Label>{t('updateWiki.instructions')}</Label>
+            <Textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder={t('updateWiki.instructionsPlaceholder')}
-              className="w-full px-3 py-2.5 rounded-lg input-dark text-sm resize-none"
               rows={3}
               disabled={loading}
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-sm">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
               {error}
             </div>
           )}
 
           {result && (
-            <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-sm">
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm">
               {t('updateWiki.done', { created: result.created, updated: result.updated, deleted: result.deleted })}
             </div>
           )}
 
           <div className="flex justify-end gap-3">
-            <button
-              onClick={handleClose}
-              className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors"
-              disabled={loading}
-            >
+            <Button variant="ghost" onClick={handleClose} disabled={loading}>
               {result ? t('common.close') : t('common.cancel')}
-            </button>
+            </Button>
             {!result && (
-              <button
-                onClick={handleGenerate}
-                disabled={loading}
-                className="btn-primary px-4 py-2 text-sm rounded-lg flex items-center gap-2"
-              >
+              <Button onClick={handleGenerate} disabled={loading}>
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : (
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="w-4 h-4 mr-2" />
                 )}
                 {loading ? t('updateWiki.analyzing') : t('updateWiki.generate')}
-              </button>
+              </Button>
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }

@@ -7,16 +7,28 @@ import { Menu, Upload, Plus, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import WikiSidebar from './WikiSidebar'
 import WikiEntryEditor from './WikiEntryEditor'
-import SettingsModal from './SettingsModal'
-import AudioUploadModal from './AudioUploadModal'
+import SettingsSheet from './SettingsSheet'
+import AudioUploadSheet from './AudioUploadSheet'
 import WikiEntryForm from './WikiEntryForm'
-import CreateSessionModal from './CreateSessionModal'
+import CreateSessionSheet from './CreateSessionSheet'
 import ChatPopup from '@/components/chat/ChatPopup'
 import ChatPanel from '@/components/chat/ChatPanel'
-import UpdateWikiModal from './UpdateWikiModal'
-import CharacterPdfUploadModal from './CharacterPdfUploadModal'
-import VoiceProfilesModal from './VoiceProfilesModal'
+import UpdateWikiSheet from './UpdateWikiSheet'
+import CharacterPdfUploadSheet from './CharacterPdfUploadSheet'
+import VoiceProfilesSheet from './VoiceProfilesSheet'
 import { useI18n } from '@/lib/i18n-context'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
 interface WikiTreeEntry {
@@ -113,13 +125,13 @@ export default function WikiPageLayout({
       {/* Locked plan banner */}
       {isLocked && (
         <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/30">
-          <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0" />
-          <p className="flex-1 text-xs sm:text-sm text-orange-200/90">
+          <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+          <p className="flex-1 text-xs sm:text-sm text-orange-700 dark:text-orange-200/90">
             {t('limits.campaignReadOnly')}
           </p>
           <Link
             href="/campaigns"
-            className="flex-shrink-0 text-xs px-3 py-1 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 hover:bg-orange-500/30 transition-colors whitespace-nowrap"
+            className="flex-shrink-0 text-xs px-3 py-1 rounded-lg bg-orange-500/20 text-orange-600 dark:text-orange-300 border border-orange-500/30 hover:bg-orange-500/30 transition-colors whitespace-nowrap"
           >
             {t('sidebar.allCampaigns')}
           </Link>
@@ -128,12 +140,14 @@ export default function WikiPageLayout({
 
       <div className="flex flex-1 overflow-hidden">
       {/* Mobile sidebar toggle */}
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-[4.5rem] left-3 z-30 md:hidden p-2 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-colors"
+        className="fixed top-[4.5rem] left-3 z-30 md:hidden"
       >
         <Menu className="w-5 h-5" />
-      </button>
+      </Button>
 
       <WikiSidebar
         campaignId={campaignId}
@@ -168,36 +182,30 @@ export default function WikiPageLayout({
       ) : (
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent-purple/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <p className="text-text-secondary text-lg mb-2">
+            <p className="text-lg mb-2">
               {wikiTree.length === 0
                 ? t('wiki.noEntriesYet')
                 : t('wiki.selectEntry')}
             </p>
             {!isLocked && (
               <>
-                <p className="text-text-muted text-sm mb-6">
+                <p className="text-muted-foreground text-sm mb-6">
                   {t('wiki.uploadHint')}
                 </p>
                 <div className="flex justify-center gap-3">
-                  <button
-                    onClick={() => setUploadOpen(true)}
-                    className="text-sm px-4 py-2.5 rounded-lg bg-surface-elevated border border-border-theme text-text-secondary hover:text-text-primary transition-all flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
+                  <Button variant="outline" onClick={() => setUploadOpen(true)}>
+                    <Upload className="w-4 h-4 mr-2" />
                     {t('audio.uploadAudio')}
-                  </button>
-                  <button
-                    onClick={() => setCreateOpen(true)}
-                    className="text-sm px-4 py-2.5 rounded-lg btn-primary flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
+                  </Button>
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
                     {t('sidebar.newPage')}
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
@@ -220,8 +228,8 @@ export default function WikiPageLayout({
       )}
       </div>{/* end inner flex */}
 
-      {/* Modals */}
-      <SettingsModal
+      {/* Sheets (slide-over panels) */}
+      <SettingsSheet
         campaignId={campaignId}
         userId={userId}
         campaign={campaign}
@@ -230,33 +238,33 @@ export default function WikiPageLayout({
         onVoiceProfilesClick={() => setVoiceProfilesOpen(true)}
       />
 
-      <VoiceProfilesModal
+      <VoiceProfilesSheet
         campaignId={campaignId}
         userId={userId}
         isOpen={voiceProfilesOpen}
         onClose={() => setVoiceProfilesOpen(false)}
       />
 
-      <AudioUploadModal
+      <AudioUploadSheet
         campaignId={campaignId}
         isOpen={uploadOpen}
         onClose={() => setUploadOpen(false)}
       />
 
-      <UpdateWikiModal
+      <UpdateWikiSheet
         campaignId={campaignId}
         isOpen={updateWikiOpen}
         onClose={() => setUpdateWikiOpen(false)}
       />
 
-      <CreateSessionModal
+      <CreateSessionSheet
         campaignId={campaignId}
         userId={userId}
         isOpen={createSessionOpen}
         onClose={() => setCreateSessionOpen(false)}
       />
 
-      <CharacterPdfUploadModal
+      <CharacterPdfUploadSheet
         campaignId={campaignId}
         userId={userId}
         wikiEntryId={activeEntry?.id || ''}
@@ -266,60 +274,45 @@ export default function WikiPageLayout({
       />
 
       {/* Unsaved changes confirmation */}
-      {pendingNav && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPendingNav(null)} />
-          <div className="relative bg-surface rounded-xl w-full max-w-sm mx-4 border border-border-theme p-6 shadow-xl">
-            <h3 className="text-base font-bold text-text-primary mb-2">{t('unsaved.title')}</h3>
-            <p className="text-sm text-text-muted mb-6">{t('unsaved.message')}</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setPendingNav(null)}
-                className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={() => {
-                  const href = pendingNav
-                  isDirtyRef.current = false
-                  setPendingNav(null)
-                  setSidebarOpen(false)
-                  router.push(href)
-                }}
-                className="px-4 py-2 text-sm rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
-              >
-                {t('unsaved.leave')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={!!pendingNav} onOpenChange={(open) => !open && setPendingNav(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('unsaved.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('unsaved.message')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                const href = pendingNav!
+                isDirtyRef.current = false
+                setPendingNav(null)
+                setSidebarOpen(false)
+                router.push(href)
+              }}
+            >
+              {t('unsaved.leave')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Create entry modal */}
-      {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setCreateOpen(false)} />
-          <div className="relative rounded-xl w-full max-w-lg mx-3 bg-surface border border-border-theme">
-            <div className="flex items-center justify-between p-6 border-b border-border-theme">
-              <h2 className="text-xl font-bold text-text-primary">{t('wiki.createEntry')}</h2>
-              <button
-                onClick={() => setCreateOpen(false)}
-                className="text-text-muted hover:text-text-primary text-xl transition-colors"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="p-6">
-              <WikiEntryForm
-                campaignId={campaignId}
-                userId={userId}
-                onDone={() => setCreateOpen(false)}
-              />
-            </div>
+      {/* Create entry sheet */}
+      <Sheet open={createOpen} onOpenChange={(open) => !open && setCreateOpen(false)}>
+        <SheetContent side="right" className="sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>{t('wiki.createEntry')}</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6">
+            <WikiEntryForm
+              campaignId={campaignId}
+              userId={userId}
+              onDone={() => setCreateOpen(false)}
+            />
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

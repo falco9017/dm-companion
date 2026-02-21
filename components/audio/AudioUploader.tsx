@@ -8,6 +8,10 @@ import { Upload, Loader2, CheckCircle, AlertCircle, RefreshCw, Calendar, Send } 
 import { useI18n } from '@/lib/i18n-context'
 import { useSession } from 'next-auth/react'
 import { updateSessionRecapDate, updateSessionRecapContent, reviseRecap } from '@/actions/wiki'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 interface AudioUploaderProps {
   campaignId: string
@@ -56,7 +60,6 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
         const data = await res.json()
 
         if (data.status === 'PROCESSED') {
-          // Only transition to review once the recap entry is created
           if (data.recapEntryId) {
             if (pollingRef.current) clearInterval(pollingRef.current)
             const summaryText = data.summary ?? ''
@@ -66,7 +69,6 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
             setSessionDate(toDateInputValue(new Date(fileLastModified)))
             setStage('review')
           }
-          // else: keep polling — recap entry not yet written
         } else if (data.status === 'FAILED') {
           if (pollingRef.current) clearInterval(pollingRef.current)
           setStage('error')
@@ -237,37 +239,34 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
       <div className="flex flex-col h-full gap-4">
         {/* Header */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           <div>
-            <p className="text-text-primary font-semibold">{t('audio.reviewTitle')}</p>
-            <p className="text-text-muted text-xs">{t('audio.reviewSubtitle')}</p>
+            <p className="font-semibold">{t('audio.reviewTitle')}</p>
+            <p className="text-muted-foreground text-xs">{t('audio.reviewSubtitle')}</p>
           </div>
         </div>
 
         {/* Date editor */}
-        <div className="flex-shrink-0">
-          <label className="block text-xs font-medium text-text-secondary mb-1">
+        <div className="flex-shrink-0 space-y-1">
+          <Label className="text-xs">
             <Calendar className="w-3 h-3 inline mr-1" />
             {t('audio.sessionDate')}
-          </label>
-          <input
+          </Label>
+          <Input
             type="date"
             value={sessionDate}
             onChange={(e) => setSessionDate(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg input-dark text-sm"
             disabled={stage === 'updatingWiki'}
           />
         </div>
 
         {/* Editable recap textarea */}
-        <div className="flex flex-col flex-1 min-h-0">
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            {t('audio.recapLabel')}
-          </label>
-          <textarea
+        <div className="flex flex-col flex-1 min-h-0 space-y-1">
+          <Label className="text-xs">{t('audio.recapLabel')}</Label>
+          <Textarea
             value={recapText}
             onChange={(e) => setRecapText(e.target.value)}
-            className="flex-1 min-h-0 w-full px-3 py-2 rounded-lg input-dark text-sm resize-none leading-relaxed"
+            className="flex-1 min-h-0 resize-none leading-relaxed"
             disabled={stage === 'updatingWiki' || chatLoading}
           />
         </div>
@@ -275,10 +274,10 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
         {/* AI revision chat bar */}
         <div className="flex-shrink-0">
           {chatError && (
-            <p className="text-red-400 text-xs mb-1">{chatError}</p>
+            <p className="text-destructive text-xs mb-1">{chatError}</p>
           )}
           <div className="flex gap-2">
-            <input
+            <Input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
@@ -289,39 +288,38 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
                 }
               }}
               placeholder={t('audio.aiReviseHint')}
-              className="flex-1 px-3 py-2 rounded-lg input-dark text-sm"
               disabled={chatLoading || stage === 'updatingWiki'}
             />
-            <button
+            <Button
+              variant="secondary"
               onClick={handleRevise}
               disabled={chatLoading || !chatInput.trim() || stage === 'updatingWiki'}
-              className="px-3 py-2 rounded-lg bg-accent-purple/20 text-accent-purple-light hover:bg-accent-purple/30 transition-colors flex items-center gap-1.5 text-sm disabled:opacity-50 whitespace-nowrap"
             >
               {chatLoading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
                   {t('audio.applying')}
                 </>
               ) : (
                 <>
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-3.5 h-3.5 mr-1.5" />
                   {t('audio.apply')}
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Wiki update error */}
         {wikiError && (
-          <div className="flex-shrink-0 p-3 bg-error/10 border border-error/20 rounded-lg text-red-400 text-xs">
+          <div className="flex-shrink-0 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-xs">
             {wikiError}
           </div>
         )}
 
         {/* Done result */}
         {stage === 'done' && wikiResult && (
-          <div className="flex-shrink-0 p-3 bg-success/10 border border-success/20 rounded-lg text-emerald-400 text-xs">
+          <div className="flex-shrink-0 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-xs">
             {t('audio.wikiUpdated', { created: wikiResult.created, updated: wikiResult.updated })}
           </div>
         )}
@@ -329,38 +327,34 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
         {/* Actions */}
         <div className="flex-shrink-0 flex justify-end gap-3">
           {stage === 'done' ? (
-            <button
-              onClick={() => onClose?.()}
-              className="btn-primary px-4 py-2 text-sm rounded-lg"
-            >
+            <Button onClick={() => onClose?.()}>
               {t('common.close')}
-            </button>
+            </Button>
           ) : (
             <>
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleSkip}
                 disabled={stage === 'updatingWiki'}
-                className="px-4 py-2 text-sm rounded-lg text-text-muted hover:text-text-primary transition-colors disabled:opacity-50"
               >
                 {t('audio.skip')}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleUpdateWiki}
                 disabled={stage === 'updatingWiki'}
-                className="btn-primary px-4 py-2 text-sm rounded-lg flex items-center gap-2"
               >
                 {stage === 'updatingWiki' ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     {t('audio.updatingWiki')}
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className="w-4 h-4 mr-2" />
                     {t('audio.updateWiki')}
                   </>
                 )}
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -374,47 +368,44 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
           isActive
-            ? 'border-border-theme bg-surface cursor-default'
+            ? 'border-border bg-card cursor-default'
             : isDragActive
-              ? 'border-accent-purple bg-accent-purple/5'
-              : 'border-border-theme bg-white/[0.02] hover:bg-white/[0.04] hover:border-accent-purple/50 cursor-pointer'
+              ? 'border-primary bg-primary/5'
+              : 'border-border hover:border-primary/50 hover:bg-muted/50 cursor-pointer'
         }`}
       >
         <input {...getInputProps()} />
         <div className="space-y-3">
           {stage === 'uploading' ? (
             <>
-              <p className="text-text-primary font-semibold">{t('audio.uploading')} {progress}%</p>
-              <div className="max-w-xs mx-auto bg-surface rounded-full h-2 overflow-hidden">
+              <p className="font-semibold">{t('audio.uploading')} {progress}%</p>
+              <div className="max-w-xs mx-auto bg-muted rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${progress}%`,
-                    background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-purple-light))',
-                  }}
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </>
           ) : stage === 'creating' || stage === 'processing' ? (
             <>
               <div className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 text-accent-purple-light animate-spin" />
-                <p className="text-text-primary font-semibold">
+                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                <p className="font-semibold">
                   {stage === 'creating' ? t('audio.creating') : t('audio.processing')}
                 </p>
               </div>
-              <p className="text-text-muted text-xs">{t('audio.waitNote')}</p>
+              <p className="text-muted-foreground text-xs">{t('audio.waitNote')}</p>
             </>
           ) : (
             <>
-              <Upload className="w-8 h-8 text-text-muted mx-auto" />
-              <p className="text-text-primary font-semibold">
+              <Upload className="w-8 h-8 text-muted-foreground mx-auto" />
+              <p className="font-semibold">
                 {isDragActive ? t('audio.dropHere') : t('audio.dragDrop')}
               </p>
               {!isDragActive && (
                 <>
-                  <p className="text-text-secondary text-sm">{t('audio.orBrowse')}</p>
-                  <p className="text-text-muted text-xs">{t('audio.formats')}</p>
+                  <p className="text-muted-foreground text-sm">{t('audio.orBrowse')}</p>
+                  <p className="text-muted-foreground text-xs">{t('audio.formats')}</p>
                 </>
               )}
             </>
@@ -423,13 +414,13 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
       </div>
 
       {error && (
-        <div className="mt-4 p-4 bg-error/10 border border-error/20 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-destructive text-sm">{error}</p>
             <button
               onClick={() => { setError(null); setStage('idle') }}
-              className="text-red-400/70 hover:text-red-400 text-xs mt-1 underline"
+              className="text-destructive/70 hover:text-destructive text-xs mt-1 underline"
             >
               {t('audio.tryAgain')}
             </button>

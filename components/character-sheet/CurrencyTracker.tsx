@@ -21,7 +21,7 @@ export default function CurrencyTracker({ currency, onChange }: CurrencyTrackerP
       {coinConfig.map(({ key, label, color }) => (
         <div
           key={key}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border-theme bg-surface-elevated"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-card"
         >
           <span className={`text-[10px] font-bold ${color}`}>{label}</span>
           <input
@@ -29,7 +29,7 @@ export default function CurrencyTracker({ currency, onChange }: CurrencyTrackerP
             inputMode="numeric"
             value={currency[key]}
             onChange={(e) => onChange({ ...currency, [key]: parseInt(e.target.value) || 0 })}
-            className="w-12 text-xs text-center bg-transparent border-none focus:outline-none text-text-primary"
+            className="w-12 text-xs text-center bg-transparent border-none focus:outline-none text-foreground"
             min={0}
           />
         </div>

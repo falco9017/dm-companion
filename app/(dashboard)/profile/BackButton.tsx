@@ -2,16 +2,19 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function BackButton() {
   const router = useRouter()
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={() => router.back()}
-      className="text-text-muted hover:text-text-secondary p-1 -ml-1 mb-3 transition-colors"
+      className="-ml-1 mb-3"
     >
       <ArrowLeft className="w-5 h-5" />
-    </button>
+    </Button>
   )
 }

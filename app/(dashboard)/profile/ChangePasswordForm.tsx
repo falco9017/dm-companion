@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function ChangePasswordForm() {
   const [current, setCurrent] = useState('')
@@ -58,25 +61,23 @@ export default function ChangePasswordForm() {
         { id: 'next', label: 'New password', value: next, setter: setNext, show: showNext, toggleShow: () => setShowNext(v => !v) },
         { id: 'confirm', label: 'Confirm new password', value: confirm, setter: setConfirm, show: showConfirm, toggleShow: () => setShowConfirm(v => !v) },
       ].map(({ id, label, value, setter, show, toggleShow }) => (
-        <div key={id}>
-          <label htmlFor={id} className="block text-sm font-medium text-text-secondary mb-1">
-            {label}
-          </label>
+        <div key={id} className="space-y-2">
+          <Label htmlFor={id}>{label}</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-            <input
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
               id={id}
               type={show ? 'text' : 'password'}
               value={value}
               onChange={e => setter(e.target.value)}
               required
               minLength={id !== 'current' ? 8 : undefined}
-              className="w-full pl-10 pr-10 py-2.5 rounded-lg input-dark text-sm"
+              className="pl-10 pr-10"
             />
             <button
               type="button"
               onClick={toggleShow}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -85,22 +86,18 @@ export default function ChangePasswordForm() {
       ))}
 
       {error && (
-        <p className="text-sm text-red-400">{error}</p>
+        <p className="text-sm text-destructive">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="w-full btn-primary px-6 py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={saving} className="w-full">
         {saving ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+          <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Saving...</>
         ) : saved ? (
           'Password updated!'
         ) : (
           'Update password'
         )}
-      </button>
+      </Button>
     </form>
   )
 }

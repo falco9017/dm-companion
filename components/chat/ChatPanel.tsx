@@ -6,6 +6,7 @@ import { PanelRightClose, Crown, Lock, Maximize2, Minimize2 } from 'lucide-react
 import ChatInterface from './ChatInterface'
 import { useI18n } from '@/lib/i18n-context'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 function GeminiIcon({ className }: { className?: string }) {
   return (
@@ -67,14 +68,14 @@ export default function ChatPanel({ campaignId, isFullScreen, onFullScreenChange
 
   if (!isOpen) {
     return (
-      <div className="hidden md:flex flex-col items-center w-10 border-l border-border-theme bg-surface flex-shrink-0">
+      <div className="hidden md:flex flex-col items-center w-10 border-l border-border bg-card flex-shrink-0">
         <button
           onClick={() => setIsOpen(true)}
-          className="mt-3 p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors relative"
+          className="mt-3 p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors relative"
           title={t('chat.openPanel')}
         >
           <GeminiIcon className="w-5 h-5" />
-          {isLocked && <Lock className="w-3 h-3 absolute -top-0.5 -right-0.5 text-text-muted" />}
+          {isLocked && <Lock className="w-3 h-3 absolute -top-0.5 -right-0.5 text-muted-foreground" />}
         </button>
       </div>
     )
@@ -82,61 +83,64 @@ export default function ChatPanel({ campaignId, isFullScreen, onFullScreenChange
 
   return (
     <div
-      className={`hidden md:flex flex-col border-l border-border-theme bg-surface flex-shrink-0 relative ${isFullScreen ? 'flex-1' : ''}`}
+      className={`hidden md:flex flex-col border-l border-border bg-card flex-shrink-0 relative ${isFullScreen ? 'flex-1' : ''}`}
       style={isFullScreen ? undefined : { width: panelWidth }}
     >
-      {/* Drag handle — left edge, only when not fullscreen */}
+      {/* Drag handle */}
       {!isFullScreen && (
         <div
           className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-10 group/resize"
           onMouseDown={handleDragStart}
         >
-          <div className="absolute inset-y-0 left-0 w-px bg-transparent group-hover/resize:bg-accent-purple/50 transition-colors duration-150" />
+          <div className="absolute inset-y-0 left-0 w-px bg-transparent group-hover/resize:bg-primary/50 transition-colors duration-150" />
         </div>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border-theme flex-shrink-0">
-        <span className="text-sm font-semibold text-text-primary flex items-center gap-2">
-          <GeminiIcon className="w-4 h-4 text-accent-purple-light" />
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-border flex-shrink-0">
+        <span className="text-sm font-semibold flex items-center gap-2">
+          <GeminiIcon className="w-4 h-4 text-primary" />
           {t('chat.title')}
-          {isLocked && <Lock className="w-3 h-3 text-text-muted" />}
+          {isLocked && <Lock className="w-3 h-3 text-muted-foreground" />}
         </span>
         <div className="flex items-center gap-1">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
             onClick={() => onFullScreenChange?.(!isFullScreen)}
-            className="p-1 text-text-muted hover:text-text-primary transition-colors"
             title={isFullScreen ? t('chat.restorePanel') : t('chat.maximizePanel')}
           >
             {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
             onClick={() => {
               if (isFullScreen) onFullScreenChange?.(false)
               setIsOpen(false)
             }}
-            className="p-1 text-text-muted hover:text-text-primary transition-colors"
             title={t('chat.closePanel')}
           >
             <PanelRightClose className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Chat body or locked overlay */}
       {isLocked ? (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-accent-purple/10 flex items-center justify-center">
-            <Crown className="w-6 h-6 text-accent-purple-light" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Crown className="w-6 h-6 text-primary" />
           </div>
-          <p className="text-sm text-text-secondary">{t('limits.chatLocked')}</p>
-          <Link
-            href="/pricing"
-            className="btn-primary px-5 py-2 rounded-lg text-sm flex items-center gap-2"
-          >
-            <Crown className="w-4 h-4" />
-            {t('limits.upgrade')}
-          </Link>
+          <p className="text-sm text-muted-foreground">{t('limits.chatLocked')}</p>
+          <Button asChild>
+            <Link href="/pricing">
+              <Crown className="w-4 h-4 mr-2" />
+              {t('limits.upgrade')}
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="flex-1 min-h-0">

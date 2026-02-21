@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { Pencil, Save, X, Trash2, Plus, FileText } from 'lucide-react'
 import type { CharacterSheetData, EquipmentItem, Feature, Spellcasting, Skill, Currency } from '@/types/character-sheet'
 import { updateCharacterSheet, deleteCharacterSheet } from '@/actions/character-sheet'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import AbilityScoreCard from './AbilityScoreCard'
 import CombatStats from './CombatStats'
 import HitPointTracker from './HitPointTracker'
@@ -102,6 +104,7 @@ export default function CharacterSheetBoard({
   const [data, setData] = useState<CharacterSheetData>(initialData)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const { t } = useI18n()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -140,19 +143,18 @@ export default function CharacterSheetBoard({
       setEditing(false)
       onUnsavedChange?.(false)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to save')
+      toast.error(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this character sheet? The wiki entry will remain.')) return
     try {
       await deleteCharacterSheet(characterSheetId, userId)
       onBack()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
     }
   }
 
@@ -212,7 +214,7 @@ export default function CharacterSheetBoard({
       <div className="max-w-5xl mx-auto">
 
         {/* ── Identity Card ─────────────────────────────────────────────────── */}
-        <div className="mb-4 p-4 rounded-xl border border-border-theme bg-surface-elevated">
+        <div className="mb-4 p-4 rounded-xl border border-border bg-card">
           <div className="flex items-start justify-between gap-3 mb-3">
             {/* Character Name */}
             <div className="flex-1 min-w-0">
@@ -221,11 +223,11 @@ export default function CharacterSheetBoard({
                   type="text"
                   value={data.characterName}
                   onChange={(e) => updateData({ characterName: e.target.value })}
-                  className="text-2xl font-bold text-text-primary bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none w-full"
+                  className="text-2xl font-bold text-foreground bg-transparent border-b border-border focus:border-primary focus:outline-none w-full"
                   placeholder={t('characterSheet.characterNamePlaceholder')}
                 />
               ) : (
-                <h1 className="text-2xl font-bold text-text-primary text-glow truncate">
+                <h1 className="text-2xl font-bold text-foreground text-glow truncate">
                   {data.characterName || t('characterSheet.unnamedCharacter')}
                 </h1>
               )}
@@ -238,14 +240,14 @@ export default function CharacterSheetBoard({
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                     title={saving ? t('common.saving') : t('common.save')}
                   >
                     <Save className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => { setEditing(false); setData(initialData); onUnsavedChange?.(false) }}
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                     title={t('common.cancel')}
                   >
                     <X className="w-4 h-4" />
@@ -258,7 +260,7 @@ export default function CharacterSheetBoard({
                       href={pdfBlobUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+                      className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                       title="View original PDF"
                     >
                       <FileText className="w-4 h-4" />
@@ -266,14 +268,14 @@ export default function CharacterSheetBoard({
                   )}
                   <button
                     onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
-                    className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                     title={t('common.edit')}
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={handleDelete}
-                    className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors"
+                    onClick={() => setConfirmDeleteOpen(true)}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-destructive/10 transition-colors"
                     title={t('common.delete')}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -341,8 +343,8 @@ export default function CharacterSheetBoard({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Left Column: Ability Scores */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="p-3 rounded-xl border border-border-theme bg-surface-elevated">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-3 text-center">
+            <div className="p-3 rounded-xl border border-border bg-card">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3 text-center">
                 {t('characterSheet.abilities')}
               </h3>
               <div className="flex flex-row lg:flex-col items-center justify-center gap-3 flex-wrap">
@@ -364,7 +366,7 @@ export default function CharacterSheetBoard({
           {/* Center Column: Combat + Skills (expanded without personality column) */}
           <div className="lg:col-span-10 space-y-4">
             {/* Combat Stats */}
-            <div className="p-4 rounded-xl border border-border-theme bg-surface-elevated">
+            <div className="p-4 rounded-xl border border-border bg-card">
               <CombatStats
                 armorClass={data.armorClass}
                 initiative={data.initiative}
@@ -388,8 +390,8 @@ export default function CharacterSheetBoard({
                   failures={data.deathSaves.failures}
                   onChange={(saves) => updateData({ deathSaves: saves })}
                 />
-                <div className="flex items-center gap-2 p-2 rounded-lg border border-border-theme bg-surface-elevated">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-card">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     {t('characterSheet.hitDice')}
                   </span>
                   {editing ? (
@@ -398,18 +400,18 @@ export default function CharacterSheetBoard({
                         type="text"
                         value={data.hitDice.remaining}
                         onChange={(e) => updateData({ hitDice: { ...data.hitDice, remaining: e.target.value } })}
-                        className="w-12 text-xs text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+                        className="w-12 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
                       />
-                      <span className="text-[10px] text-text-muted">/</span>
+                      <span className="text-[10px] text-muted-foreground">/</span>
                       <input
                         type="text"
                         value={data.hitDice.total}
                         onChange={(e) => updateData({ hitDice: { ...data.hitDice, total: e.target.value } })}
-                        className="w-12 text-xs text-center bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none text-text-primary"
+                        className="w-12 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
                       />
                     </>
                   ) : (
-                    <span className="text-xs text-text-primary">
+                    <span className="text-xs text-foreground">
                       {data.hitDice.remaining} / {data.hitDice.total}
                     </span>
                   )}
@@ -418,7 +420,7 @@ export default function CharacterSheetBoard({
             </div>
 
             {/* Skills */}
-            <div className="p-4 rounded-xl border border-border-theme bg-surface-elevated">
+            <div className="p-4 rounded-xl border border-border bg-card">
               <SkillsPanel
                 skills={data.skills}
                 editing={editing}
@@ -429,14 +431,14 @@ export default function CharacterSheetBoard({
         </div>
 
         {/* ── Equipment ─────────────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 rounded-xl border border-border-theme bg-surface-elevated">
+        <div className="mt-4 p-4 rounded-xl border border-border bg-card">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {t('characterSheet.equipment')}
             </h3>
             <button
               onClick={addEquipment}
-              className="flex items-center gap-1 text-xs text-accent-purple-light hover:text-accent-purple transition-colors"
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary transition-colors"
             >
               <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addItem')}
             </button>
@@ -452,12 +454,12 @@ export default function CharacterSheetBoard({
               />
             ))}
             {data.equipment.length === 0 && (
-              <p className="text-xs text-text-muted col-span-full text-center py-4">
+              <p className="text-xs text-muted-foreground col-span-full text-center py-4">
                 {t('characterSheet.noEquipment')}
               </p>
             )}
           </div>
-          <div className="mt-3 pt-3 border-t border-border-theme">
+          <div className="mt-3 pt-3 border-t border-border">
             <CurrencyTracker
               currency={data.currency}
               onChange={(currency: Currency) => updateData({ currency })}
@@ -466,15 +468,15 @@ export default function CharacterSheetBoard({
         </div>
 
         {/* ── Features & Traits ─────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 rounded-xl border border-border-theme bg-surface-elevated">
+        <div className="mt-4 p-4 rounded-xl border border-border bg-card">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {t('characterSheet.features')}
             </h3>
             {editing && (
               <button
                 onClick={addFeature}
-                className="flex items-center gap-1 text-xs text-accent-purple-light hover:text-accent-purple transition-colors"
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addFeature')}
               </button>
@@ -491,7 +493,7 @@ export default function CharacterSheetBoard({
               />
             ))}
             {data.features.length === 0 && (
-              <p className="text-xs text-text-muted col-span-full text-center py-4">
+              <p className="text-xs text-muted-foreground col-span-full text-center py-4">
                 {t('characterSheet.noFeatures')}
               </p>
             )}
@@ -500,7 +502,7 @@ export default function CharacterSheetBoard({
 
         {/* ── Spellcasting ──────────────────────────────────────────────────── */}
         {(data.spellcasting || editing) && (
-          <div className="mt-4 p-4 rounded-xl border border-border-theme bg-surface-elevated">
+          <div className="mt-4 p-4 rounded-xl border border-border bg-card">
             {data.spellcasting ? (
               <SpellSection
                 spellcasting={data.spellcasting}
@@ -521,7 +523,7 @@ export default function CharacterSheetBoard({
                     },
                   })
                 }
-                className="flex items-center gap-2 text-sm text-accent-purple-light hover:text-accent-purple transition-colors mx-auto py-4"
+                className="flex items-center gap-2 text-sm text-primary hover:text-primary transition-colors mx-auto py-4"
               >
                 <Plus className="w-4 h-4" /> {t('characterSheet.addSpellcasting')}
               </button>
@@ -530,20 +532,20 @@ export default function CharacterSheetBoard({
         )}
 
         {/* ── Notes & Background ────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 rounded-xl border border-border-theme bg-surface-elevated">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-3">
+        <div className="mt-4 p-4 rounded-xl border border-border bg-card">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
             {t('characterSheet.notesAndBackground')}
           </h3>
           <div className="space-y-3">
-            <div className="p-2 rounded-lg border border-border-theme bg-surface border-l-2 border-l-amber-400">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">
+            <div className="p-2 rounded-lg border border-border bg-card border-l-2 border-l-amber-400">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                 {t('characterSheet.background')}
               </label>
               <input
                 list="cs-backgrounds"
                 value={data.background}
                 onChange={(e) => updateData({ background: e.target.value })}
-                className="w-full text-sm text-text-primary bg-transparent border-none focus:outline-none"
+                className="w-full text-sm text-foreground bg-transparent border-none focus:outline-none"
                 placeholder={t('characterSheet.backgroundPlaceholder')}
               />
               <datalist id="cs-backgrounds">
@@ -555,14 +557,14 @@ export default function CharacterSheetBoard({
 
             {/* General Notes */}
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                 {t('characterSheet.notes')}
               </p>
               <textarea
                 value={data.notes}
                 onChange={(e) => updateData({ notes: e.target.value })}
                 rows={4}
-                className="w-full text-sm text-text-secondary bg-transparent border border-border-theme rounded-lg p-3 focus:border-accent-purple focus:outline-none resize-y"
+                className="w-full text-sm text-muted-foreground bg-transparent border border-border rounded-lg p-3 focus:border-primary focus:outline-none resize-y"
                 placeholder={t('characterSheet.notesPlaceholder')}
               />
             </div>
@@ -570,6 +572,16 @@ export default function CharacterSheetBoard({
         </div>
 
       </div>
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Delete Character Sheet"
+        description="Delete this character sheet? The wiki entry will remain."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }
@@ -592,7 +604,7 @@ function IdentityField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-0.5">
+      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
         {label}
       </label>
       <input
@@ -600,7 +612,7 @@ function IdentityField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-sm text-text-primary bg-surface border border-border-theme rounded-lg px-2 py-1.5 focus:border-accent-purple focus:outline-none"
+        className="w-full text-sm text-foreground bg-card border border-border rounded-lg px-2 py-1.5 focus:border-primary focus:outline-none"
       />
     </div>
   )
@@ -624,7 +636,7 @@ function ComboField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-0.5">
+      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
         {label}
       </label>
       <input
@@ -632,7 +644,7 @@ function ComboField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-sm text-text-primary bg-surface border border-border-theme rounded-lg px-2 py-1.5 focus:border-accent-purple focus:outline-none"
+        className="w-full text-sm text-foreground bg-card border border-border rounded-lg px-2 py-1.5 focus:border-primary focus:outline-none"
       />
       <datalist id={listId}>
         {options.map((o) => (
@@ -655,13 +667,13 @@ function LevelField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-0.5">
+      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value))}
-        className="w-full text-sm text-text-primary bg-surface border border-border-theme rounded-lg px-2 py-1.5 focus:border-accent-purple focus:outline-none appearance-none"
+        className="w-full text-sm text-foreground bg-card border border-border rounded-lg px-2 py-1.5 focus:border-primary focus:outline-none appearance-none"
       >
         {Array.from({ length: 20 }, (_, i) => i + 1).map((lv) => (
           <option key={lv} value={lv}>{lv}</option>
@@ -685,7 +697,7 @@ function IdentityBadge({
     emerald: 'bg-emerald-500/20 text-emerald-300',
     blue: 'bg-blue-500/20 text-blue-300',
     amber: 'bg-amber-500/20 text-amber-300',
-    neutral: 'bg-white/5 text-text-muted',
+    neutral: 'bg-white/5 text-muted-foreground',
   }
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${colorMap[color]}`}>
@@ -709,13 +721,13 @@ function PersonalityField({
 }) {
   if (!value && !onChange) return null
   return (
-    <div className={`p-2 rounded-lg border border-border-theme bg-surface border-l-2 ${color}`}>
-      <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">{label}</p>
+    <div className={`p-2 rounded-lg border border-border bg-card border-l-2 ${color}`}>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        className="w-full text-xs text-text-secondary bg-transparent border-none focus:outline-none resize-none"
+        className="w-full text-xs text-muted-foreground bg-transparent border-none focus:outline-none resize-none"
         placeholder={`${label}...`}
       />
     </div>

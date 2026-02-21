@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateUserProfile } from '@/actions/profile'
 import { useI18n } from '@/lib/i18n-context'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface SettingsFormProps {
   userId: string
@@ -31,7 +35,7 @@ export default function SettingsForm({ userId, name: initialName, uiLanguage: in
       router.refresh()
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to save')
+      toast.error(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -39,29 +43,23 @@ export default function SettingsForm({ userId, name: initialName, uiLanguage: in
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1">
-          {t('profile.displayName')}
-        </label>
-        <input
-          type="text"
+      <div className="space-y-2">
+        <Label htmlFor="name">{t('profile.displayName')}</Label>
+        <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg input-dark"
           placeholder={t('profile.displayNamePlaceholder')}
         />
       </div>
 
-      <div>
-        <label htmlFor="uiLanguage" className="block text-sm font-medium text-text-secondary mb-1">
-          {t('profile.uiLanguage')}
-        </label>
+      <div className="space-y-2">
+        <Label htmlFor="uiLanguage">{t('profile.uiLanguage')}</Label>
         <select
           id="uiLanguage"
           value={uiLanguage}
           onChange={(e) => setUiLanguage(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg input-dark"
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="en">English</option>
           <option value="it">Italian</option>
@@ -71,15 +69,13 @@ export default function SettingsForm({ userId, name: initialName, uiLanguage: in
         </select>
       </div>
 
-      <div>
-        <label htmlFor="dateFormat" className="block text-sm font-medium text-text-secondary mb-1">
-          {t('profile.dateFormat')}
-        </label>
+      <div className="space-y-2">
+        <Label htmlFor="dateFormat">{t('profile.dateFormat')}</Label>
         <select
           id="dateFormat"
           value={dateFormat}
           onChange={(e) => setDateFormat(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg input-dark"
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="DD.MM.YY">DD.MM.YY</option>
           <option value="MM/DD/YY">MM/DD/YY</option>
@@ -87,13 +83,9 @@ export default function SettingsForm({ userId, name: initialName, uiLanguage: in
         </select>
       </div>
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="w-full btn-primary px-6 py-3 rounded-lg"
-      >
+      <Button type="submit" disabled={saving} className="w-full">
         {saving ? t('common.saving') : saved ? t('profile.saved') : t('settings.saveChanges')}
-      </button>
+      </Button>
     </form>
   )
 }

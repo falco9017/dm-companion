@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation'
 import { createWikiEntry } from '@/actions/wiki'
 import { Save } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 const ENTRY_TYPES = [
   'CHARACTER', 'NPC', 'LOCATION', 'ITEM', 'FACTION',
@@ -54,28 +58,22 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-text-secondary mb-1">
-            {t('wiki.form.title')}
-          </label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="title">{t('wiki.form.title')}</Label>
+          <Input
             id="title"
             name="title"
             required
-            className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
             placeholder={t('wiki.form.titlePlaceholder')}
           />
         </div>
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-text-secondary mb-1">
-            {t('wiki.form.type')}
-          </label>
+        <div className="space-y-2">
+          <Label htmlFor="type">{t('wiki.form.type')}</Label>
           <select
             id="type"
             name="type"
             required
-            className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {ENTRY_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -86,54 +84,39 @@ export default function WikiEntryForm({ campaignId, userId, onDone }: WikiEntryF
         </div>
       </div>
 
-      <div>
-        <label htmlFor="content" className="block text-sm font-medium text-text-secondary mb-1">
-          {t('wiki.form.content')}
-        </label>
-        <textarea
+      <div className="space-y-2">
+        <Label htmlFor="content">{t('wiki.form.content')}</Label>
+        <Textarea
           id="content"
           name="content"
           required
           rows={5}
-          className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           placeholder={t('wiki.form.contentPlaceholder')}
         />
       </div>
 
-      <div>
-        <label htmlFor="tags" className="block text-sm font-medium text-text-secondary mb-1">
-          {t('wiki.form.tags')}
-        </label>
-        <input
-          type="text"
+      <div className="space-y-2">
+        <Label htmlFor="tags">{t('wiki.form.tags')}</Label>
+        <Input
           id="tags"
           name="tags"
-          className="w-full px-3 py-2.5 rounded-lg input-dark text-sm"
           placeholder={t('wiki.form.tagsPlaceholder')}
         />
       </div>
 
       {error && (
-        <p className="text-red-400 text-sm">{error}</p>
+        <p className="text-destructive text-sm">{error}</p>
       )}
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="btn-primary px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm"
-        >
-          <Save className="w-4 h-4" />
+        <Button type="submit" disabled={saving}>
+          <Save className="w-4 h-4 mr-2" />
           {saving ? t('common.saving') : t('common.createEntry')}
-        </button>
+        </Button>
         {onDone && (
-          <button
-            type="button"
-            onClick={onDone}
-            className="px-5 py-2.5 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors text-sm"
-          >
+          <Button type="button" variant="outline" onClick={onDone}>
             {t('common.cancel')}
-          </button>
+          </Button>
         )}
       </div>
     </form>

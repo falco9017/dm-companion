@@ -9,19 +9,24 @@ import { Pencil, Trash2, Save, X, Sparkles, Music, LayoutGrid, FileText, Plus, U
 import { useI18n } from '@/lib/i18n-context'
 import CharacterSheetBoard from '@/components/character-sheet/CharacterSheetBoard'
 import { createEmptyCharacterSheet } from '@/types/character-sheet'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
 const typeColors: Record<WikiEntryType, string> = {
-  SESSION_RECAP: 'bg-accent-purple/20 text-accent-purple-light',
-  CHARACTER: 'bg-blue-500/20 text-blue-300',
-  LOCATION: 'bg-emerald-500/20 text-emerald-300',
-  EVENT: 'bg-red-500/20 text-red-300',
-  ITEM: 'bg-amber-500/20 text-amber-300',
-  NPC: 'bg-pink-500/20 text-pink-300',
-  FACTION: 'bg-cyan-500/20 text-cyan-300',
-  LORE: 'bg-indigo-500/20 text-indigo-300',
-  QUEST: 'bg-orange-500/20 text-orange-300',
-  OTHER: 'bg-gray-500/20 text-gray-300',
+  SESSION_RECAP: 'bg-primary/20 text-primary',
+  CHARACTER: 'bg-blue-500/20 text-blue-600 dark:text-blue-300',
+  LOCATION: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300',
+  EVENT: 'bg-red-500/20 text-red-600 dark:text-red-300',
+  ITEM: 'bg-amber-500/20 text-amber-600 dark:text-amber-300',
+  NPC: 'bg-pink-500/20 text-pink-600 dark:text-pink-300',
+  FACTION: 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300',
+  LORE: 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300',
+  QUEST: 'bg-orange-500/20 text-orange-600 dark:text-orange-300',
+  OTHER: 'bg-gray-500/20 text-gray-600 dark:text-gray-300',
 }
 
 interface WikiEntryEditorProps {
@@ -56,6 +61,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
   const [content, setContent] = useState(entry.content)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'board' | 'wiki'>(entry.characterSheet ? 'board' : 'wiki')
   const [creatingSheet, setCreatingSheet] = useState(false)
   const { t } = useI18n()
@@ -63,7 +69,6 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
   const isCharacter = entry.type === 'CHARACTER'
   const hasSheet = !!entry.characterSheet
 
-  // Ref so we can call onUnsavedChange inside effects without it being a dep
   const onUnsavedChangeRef = useRef(onUnsavedChange)
   onUnsavedChangeRef.current = onUnsavedChange
 
@@ -88,21 +93,20 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
       onUnsavedChange?.(false)
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to save')
+      toast.error(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) return
     setDeleting(true)
     try {
       await deleteWikiEntry(entry.id, userId)
       router.push(`/campaigns/${campaignId}`)
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
       setDeleting(false)
     }
   }
@@ -116,7 +120,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
       setViewMode('board')
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create character sheet')
+      toast.error(err instanceof Error ? err.message : 'Failed to create character sheet')
     } finally {
       setCreatingSheet(false)
     }
@@ -127,22 +131,26 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
     return (
       <div className="flex-1 overflow-y-auto">
         {/* View toggle bar */}
-        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-sm border-b border-border-theme px-4 py-2 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setViewMode('board')}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors bg-accent-purple/20 text-accent-purple-light"
+              className="gap-1"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               {t('characterSheet.boardView')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setViewMode('wiki')}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors text-text-muted hover:text-text-primary"
+              className="gap-1 text-muted-foreground"
             >
               <FileText className="w-3.5 h-3.5" />
               {t('characterSheet.wikiView')}
-            </button>
+            </Button>
           </div>
         </div>
         <CharacterSheetBoard
@@ -164,19 +172,19 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
       {/* View toggle for characters with sheet */}
       {isCharacter && hasSheet && viewMode === 'wiki' && (
         <div className="mb-4 flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setViewMode('board')}
-            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
+            className="gap-1 text-muted-foreground"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
             {t('characterSheet.boardView')}
-          </button>
-          <button
-            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-accent-purple/20 text-accent-purple-light"
-          >
+          </Button>
+          <Button variant="secondary" size="sm" className="gap-1">
             <FileText className="w-3.5 h-3.5" />
             {t('characterSheet.wikiView')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -190,10 +198,10 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-2xl sm:text-3xl font-bold text-text-primary bg-transparent border-b border-border-theme focus:border-accent-purple focus:outline-none w-full pb-1"
+                  className="text-2xl sm:text-3xl font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none w-full pb-1"
                 />
               ) : (
-                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{entry.title}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">{entry.title}</h1>
               )}
             </div>
 
@@ -202,44 +210,49 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
               <div className="flex items-center gap-1 flex-shrink-0 pt-1">
                 {editing ? (
                   <>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={handleSave}
                       disabled={saving}
-                      className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
                       title={saving ? t('common.saving') : t('common.save')}
                     >
                       <Save className="w-4 h-4" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => {
                         setEditing(false)
                         setTitle(entry.title)
                         setContent(entry.content)
                         onUnsavedChange?.(false)
                       }}
-                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
                       title={t('common.cancel')}
                     >
                       <X className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
-                      className="p-2 rounded-lg text-text-muted hover:text-accent-purple-light hover:bg-accent-purple/10 transition-colors"
                       title={t('common.edit')}
                     >
                       <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={handleDelete}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setConfirmDeleteOpen(true)}
                       disabled={deleting}
-                      className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-error/10 transition-colors"
                       title={deleting ? t('common.deleting') : t('common.delete')}
+                      className="hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
@@ -247,47 +260,39 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className={`text-xs font-medium px-3 py-1 rounded-full ${typeColors[entry.type]}`}>
+            <Badge variant="secondary" className={typeColors[entry.type]}>
               {t(`wiki.typeSingle.${entry.type}`)}
-            </span>
+            </Badge>
             {entry.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs bg-white/5 text-text-muted px-3 py-1 rounded-full border border-border-theme"
-              >
-                {tag}
-              </span>
+              <Badge key={tag} variant="outline">{tag}</Badge>
             ))}
             {entry.isAutoGenerated && (
-              <span className="text-xs bg-accent-purple/10 text-accent-purple-light px-3 py-1 rounded-full flex items-center gap-1">
+              <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
                 <Sparkles className="w-3 h-3" />
                 {t('wiki.autoGenerated')}
-              </span>
+              </Badge>
             )}
           </div>
         </div>
 
         {/* Character sheet prompt for CHARACTER entries without a sheet */}
         {isCharacter && !hasSheet && !editing && !isReadOnly && (
-          <div className="mb-6 p-4 rounded-lg bg-surface-elevated border border-dashed border-accent-purple/30">
-            <p className="text-sm text-text-secondary mb-3">{t('characterSheet.addPrompt')}</p>
+          <div className="mb-6 p-4 rounded-lg bg-muted border border-dashed border-primary/30">
+            <p className="text-sm text-muted-foreground mb-3">{t('characterSheet.addPrompt')}</p>
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
+                size="sm"
                 onClick={handleCreateBlankSheet}
                 disabled={creatingSheet}
-                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg btn-primary"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
                 {creatingSheet ? t('common.creating') : t('characterSheet.createBlank')}
-              </button>
+              </Button>
               {onImportPdf && (
-                <button
-                  onClick={onImportPdf}
-                  className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-surface border border-border-theme text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  <Upload className="w-3.5 h-3.5" />
+                <Button variant="outline" size="sm" onClick={onImportPdf}>
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
                   {t('characterSheet.importPdf')}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -295,24 +300,24 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
 
         {/* Source audio */}
         {entry.audioFile && (
-          <div className="mb-6 p-3 rounded-lg bg-surface-elevated border border-border-theme flex items-center gap-2">
-            <Music className="w-4 h-4 text-text-muted" />
-            <p className="text-sm text-text-muted">
-              {t('wiki.source')}: <span className="text-text-secondary">{entry.audioFile.filename}</span>
+          <div className="mb-6 p-3 rounded-lg bg-muted border flex items-center gap-2">
+            <Music className="w-4 h-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              {t('wiki.source')}: <span className="text-foreground">{entry.audioFile.filename}</span>
             </p>
           </div>
         )}
 
         {/* Content */}
         {editing ? (
-          <textarea
+          <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={20}
-            className="w-full px-4 py-3 rounded-lg input-dark leading-relaxed resize-y text-sm sm:text-base"
+            className="leading-relaxed resize-y text-sm sm:text-base"
           />
         ) : (
-          <div className="text-text-secondary whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
+          <div className="text-muted-foreground whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
             {entry.content}
           </div>
         )}
@@ -320,17 +325,17 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
         {/* Related entries */}
         {!editing && entry.children.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold text-text-primary mb-3">{t('wiki.relatedEntries')}</h2>
+            <h2 className="text-xl font-bold mb-3">{t('wiki.relatedEntries')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {entry.children.map((child) => (
                 <a
                   key={child.id}
                   href={`/campaigns/${campaignId}?entry=${child.id}`}
-                  className="bg-surface-elevated border border-border-theme rounded-lg p-3 hover:bg-white/5 transition-all"
+                  className="bg-muted border rounded-lg p-3 hover:bg-accent transition-all"
                 >
-                  <h3 className="text-text-primary font-semibold">{child.title}</h3>
+                  <h3 className="font-semibold">{child.title}</h3>
                   {child.excerpt && (
-                    <p className="text-sm text-text-muted mt-1 line-clamp-2">{child.excerpt}</p>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{child.excerpt}</p>
                   )}
                 </a>
               ))}
@@ -339,14 +344,25 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
         )}
 
         {/* Timestamps */}
-        <div className="mt-8 pt-6 border-t border-border-theme">
-          <span className="text-xs text-text-muted">
+        <div className="mt-8 pt-6 border-t">
+          <span className="text-xs text-muted-foreground">
             Created: {new Date(entry.createdAt).toLocaleDateString()}
             {' \u2022 '}
             Updated: {new Date(entry.updatedAt).toLocaleDateString()}
           </span>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={t('common.delete')}
+        description="Are you sure you want to delete this entry? This cannot be undone."
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

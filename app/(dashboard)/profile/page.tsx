@@ -10,6 +10,10 @@ import BackButton from './BackButton'
 import { EmailVerificationBanner } from '../EmailVerificationBanner'
 import { LogOut } from 'lucide-react'
 import Image from 'next/image'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -34,75 +38,80 @@ export default async function ProfilePage() {
       )}
       <div>
         <BackButton />
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary text-glow">{t(locale, 'profile.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{t(locale, 'profile.title')}</h1>
       </div>
 
       {/* Profile header card */}
-      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
-        <div className="flex items-center gap-4">
-          {profile.image && (
-            <Image
-              src={profile.image}
-              alt=""
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-full ring-2 ring-accent-purple/30"
-            />
-          )}
-          <div>
-            <p className="text-lg font-semibold text-text-primary">{profile.name || t(locale, 'profile.noName')}</p>
-            <p className="text-sm text-text-secondary">{profile.email}</p>
-            <p className="text-xs text-text-muted mt-1">
-              {t(locale, 'profile.memberSince')} {new Date(profile.createdAt).toLocaleDateString()}
-            </p>
+      <Card>
+        <CardContent className="p-6 sm:p-8">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16">
+              {profile.image && <AvatarImage src={profile.image} alt="" />}
+              <AvatarFallback className="text-lg">
+                {(profile.name || profile.email || '?')[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-lg font-semibold">{profile.name || t(locale, 'profile.noName')}</p>
+              <p className="text-sm text-muted-foreground">{profile.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t(locale, 'profile.memberSince')} {new Date(profile.createdAt).toLocaleDateString()}
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Settings section */}
-      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
-        <h2 className="text-lg font-semibold text-text-primary mb-5">{t(locale, 'profile.settings')}</h2>
-        <SettingsForm
-          userId={session!.user.id}
-          name={profile.name || ''}
-          uiLanguage={profile.uiLanguage}
-          dateFormat={profile.dateFormat}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t(locale, 'profile.settings')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsForm
+            userId={session!.user.id}
+            name={profile.name || ''}
+            uiLanguage={profile.uiLanguage}
+            dateFormat={profile.dateFormat}
+          />
+        </CardContent>
+      </Card>
 
       {/* Account section */}
-      <div className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme space-y-6">
-        <h2 className="text-lg font-semibold text-text-primary">{t(locale, 'profile.account')}</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t(locale, 'profile.account')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Current plan */}
+          <SubscriptionSection
+            userId={session!.user.id}
+            subscriptionTier={effectiveTier}
+            subscriptionStatus={profile.subscriptionStatus || null}
+            campaignCount={campaigns.length}
+          />
 
-        {/* Current plan */}
-        <SubscriptionSection
-          userId={session!.user.id}
-          subscriptionTier={effectiveTier}
-          subscriptionStatus={profile.subscriptionStatus || null}
-          campaignCount={campaigns.length}
-        />
+          {/* Change password (credentials users only) */}
+          {profile.password && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-sm font-semibold mb-4">Change password</h3>
+                <ChangePasswordForm />
+              </div>
+            </>
+          )}
 
-        {/* Change password (credentials users only) */}
-        {profile.password && (
-          <div className="border-t border-border-theme pt-5">
-            <h3 className="text-sm font-semibold text-text-secondary mb-4">Change password</h3>
-            <ChangePasswordForm />
-          </div>
-        )}
-
-        {/* Sign out */}
-        <div className="border-t border-border-theme pt-5">
+          {/* Sign out */}
+          <Separator />
           <form action={handleSignOut}>
-            <button
-              type="submit"
-              className="w-full px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
+            <Button variant="outline" type="submit" className="w-full">
+              <LogOut className="w-4 h-4 mr-2" />
               {t(locale, 'nav.signOut')}
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -5,6 +5,11 @@ import { getEffectiveTier, getLimits } from '@/lib/subscription'
 import { t, type Locale } from '@/lib/i18n'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 export default async function NewCampaignPage() {
   const session = await auth()
@@ -35,74 +40,62 @@ export default async function NewCampaignPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-6 text-glow">{t(locale, 'campaigns.new.title')}</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">{t(locale, 'campaigns.new.title')}</h1>
 
-      <form action={handleCreate} className="rounded-xl p-6 sm:p-8 bg-surface border border-border-theme">
-        <div className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">
-              {t(locale, 'campaigns.new.name')}
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              required
-              className="w-full px-4 py-3 rounded-lg input-dark"
-              placeholder={t(locale, 'campaigns.new.namePlaceholder')}
-            />
-          </div>
+      <Card>
+        <CardContent className="p-6 sm:p-8">
+          <form action={handleCreate} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t(locale, 'campaigns.new.name')}</Label>
+              <Input
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder={t(locale, 'campaigns.new.namePlaceholder')}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-text-secondary mb-2">
-              {t(locale, 'campaigns.new.description')}
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              className="w-full px-4 py-3 rounded-lg input-dark"
-              placeholder={t(locale, 'campaigns.new.descPlaceholder')}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">{t(locale, 'campaigns.new.description')}</Label>
+              <Textarea
+                id="description"
+                name="description"
+                rows={4}
+                placeholder={t(locale, 'campaigns.new.descPlaceholder')}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="language" className="block text-sm font-medium text-text-secondary mb-2">
-              {t(locale, 'campaigns.new.language')}
-            </label>
-            <select
-              id="language"
-              name="language"
-              defaultValue="en"
-              className="w-full px-4 py-3 rounded-lg input-dark"
-            >
-              <option value="en">English</option>
-              <option value="it">Italian</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="es">Español</option>
-            </select>
-            <p className="text-text-muted text-xs mt-1">
-              {t(locale, 'campaigns.new.languageHint')}
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="language">{t(locale, 'campaigns.new.language')}</Label>
+              <select
+                id="language"
+                name="language"
+                defaultValue="en"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="en">English</option>
+                <option value="it">Italian</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+              </select>
+              <p className="text-muted-foreground text-xs">
+                {t(locale, 'campaigns.new.languageHint')}
+              </p>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              type="submit"
-              className="flex-1 btn-primary px-6 py-3 rounded-lg"
-            >
-              {t(locale, 'campaigns.create')}
-            </button>
-            <Link
-              href="/campaigns"
-              className="px-6 py-3 rounded-lg border border-border-theme text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors text-center"
-            >
-              {t(locale, 'common.cancel')}
-            </Link>
-          </div>
-        </div>
-      </form>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button type="submit" className="flex-1">
+                {t(locale, 'campaigns.create')}
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/campaigns">{t(locale, 'common.cancel')}</Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -137,12 +137,12 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
             <Mic className="w-4 h-4" />
             {t('voiceProfiles.record')}
           </button>
-          <span className="text-text-muted text-xs">{t('voiceProfiles.or')}</span>
+          <span className="text-muted-foreground text-xs">{t('voiceProfiles.or')}</span>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated text-text-secondary hover:text-text-primary border border-border-theme transition-colors text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card text-muted-foreground hover:text-foreground border border-border transition-colors text-sm disabled:opacity-50"
           >
             <Upload className="w-4 h-4" />
             {t('voiceProfiles.uploadFile')}
@@ -169,9 +169,9 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
           </button>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-sm text-text-secondary font-mono">{formatTime(duration)}</span>
+            <span className="text-sm text-muted-foreground font-mono">{formatTime(duration)}</span>
           </div>
-          <span className="text-xs text-text-muted">{t('voiceProfiles.maxDuration')}</span>
+          <span className="text-xs text-muted-foreground">{t('voiceProfiles.maxDuration')}</span>
         </div>
       )}
 
@@ -180,7 +180,7 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
           <button
             type="button"
             onClick={togglePlayback}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-elevated text-text-secondary hover:text-text-primary border border-border-theme transition-colors text-sm"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card text-muted-foreground hover:text-foreground border border-border transition-colors text-sm"
           >
             {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             {formatTime(duration)}
@@ -188,7 +188,7 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
           <button
             type="button"
             onClick={reset}
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary transition-colors"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
             title={t('voiceProfiles.reRecord')}
           >
             <RotateCcw className="w-4 h-4" />
@@ -197,7 +197,7 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
             type="button"
             onClick={confirm}
             disabled={disabled}
-            className="btn-primary px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-primary/90 transition-colors"
           >
             {t('voiceProfiles.useRecording')}
           </button>
@@ -205,7 +205,7 @@ export default function VoiceRecorder({ onRecordingComplete, disabled }: VoiceRe
       )}
 
       {state === 'idle' && (
-        <p className="text-xs text-text-muted">{t('voiceProfiles.recordingHint')}</p>
+        <p className="text-xs text-muted-foreground">{t('voiceProfiles.recordingHint')}</p>
       )}
     </div>
   )
