@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { Sword, User, Drama, Search, Dices } from 'lucide-react'
+import { useState, useTransition, useEffect, useRef } from 'react'
+import { Sword, User, Drama, Search, Dices, Loader2, BookOpen } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,79 @@ interface AddCombatantDialogProps {
   onAdd: (combatant: Omit<Combatant, 'id'>) => void
 }
 
+interface DndMonsterSummary {
+  index: string
+  name: string
+}
+
+interface DndMonsterDetail {
+  name: string
+  size: string
+  type: string
+  hit_points: number
+  challenge_rating: number
+  xp: number
+  strength: number
+  dexterity: number
+  constitution: number
+  intelligence: number
+  wisdom: number
+  charisma: number
+  armor_class: { value: number; type: string }[]
+  special_abilities?: { name: string; desc: string }[]
+  actions?: { name: string; desc: string }[]
+  legendary_actions?: { name: string; desc: string }[]
+}
+
+const DND5E_API = 'https://www.dnd5eapi.co/api/2014'
+
+function abilityMod(score: number) {
+  const mod = Math.floor((score - 10) / 2)
+  return mod >= 0 ? `+${mod}` : String(mod)
+}
+
+function formatCr(cr: number) {
+  if (cr === 0.125) return '1/8'
+  if (cr === 0.25) return '1/4'
+  if (cr === 0.5) return '1/2'
+  return String(cr)
+}
+
+function buildMonsterWikiContent(m: DndMonsterDetail): string {
+  const lines: string[] = []
+  lines.push(`**${m.name}** · ${m.size} ${m.type}`)
+  lines.push(`CR ${formatCr(m.challenge_rating)} · XP ${m.xp ?? '—'}`)
+  lines.push('')
+  lines.push(
+    `STR ${m.strength} (${abilityMod(m.strength)}) | DEX ${m.dexterity} (${abilityMod(m.dexterity)}) | CON ${m.constitution} (${abilityMod(m.constitution)})`
+  )
+  lines.push(
+    `INT ${m.intelligence} (${abilityMod(m.intelligence)}) | WIS ${m.wisdom} (${abilityMod(m.wisdom)}) | CHA ${m.charisma} (${abilityMod(m.charisma)})`
+  )
+  if (m.special_abilities?.length) {
+    lines.push('')
+    lines.push('**Special Abilities**')
+    for (const sa of m.special_abilities.slice(0, 5)) {
+      lines.push(`${sa.name}: ${sa.desc}`)
+    }
+  }
+  if (m.actions?.length) {
+    lines.push('')
+    lines.push('**Actions**')
+    for (const a of m.actions.slice(0, 6)) {
+      lines.push(`${a.name}: ${a.desc}`)
+    }
+  }
+  if (m.legendary_actions?.length) {
+    lines.push('')
+    lines.push('**Legendary Actions**')
+    for (const la of m.legendary_actions.slice(0, 3)) {
+      lines.push(`${la.name}: ${la.desc}`)
+    }
+  }
+  return lines.join('\n')
+}
+
 function rollD20() {
   return Math.floor(Math.random() * 20) + 1
 }
@@ -40,7 +113,7 @@ export default function AddCombatantDialog({
   onAdd,
 }: AddCombatantDialogProps) {
   const [isPending, startTransition] = useTransition()
-  const [search, setSearch] = useState('')
+  const [wikiSearch, setWikiSearch] = useState('')
 
   // Wiki tab state
   const [selectedEntry, setSelectedEntry] = useState<WikiTreeEntry | null>(null)
@@ -50,18 +123,63 @@ export default function AddCombatantDialog({
   const [wikiHpMax, setWikiHpMax] = useState('')
   const [wikiAc, setWikiAc] = useState('')
 
-  // Custom monster tab state
+  // Monster tab state
+  const [dndMonsters, setDndMonsters] = useState<DndMonsterSummary[]>([])
+  const [isLoadingList, setIsLoadingList] = useState(false)
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
+  const [monsterSearch, setMonsterSearch] = useState('')
+  const [selectedDndMonster, setSelectedDndMonster] = useState<DndMonsterSummary | null>(null)
   const [monsterName, setMonsterName] = useState('')
   const [monsterHp, setMonsterHp] = useState('')
   const [monsterAc, setMonsterAc] = useState('')
   const [monsterInitMod, setMonsterInitMod] = useState('0')
   const [monsterInitiative, setMonsterInitiative] = useState('')
   const [monsterCount, setMonsterCount] = useState('1')
+  const [dndMonsterDetail, setDndMonsterDetail] = useState<DndMonsterDetail | null>(null)
+  const hasFetchedList = useRef(false)
+
+  // Load D&D monster list the first time the dialog opens
+  useEffect(() => {
+    if (!open || hasFetchedList.current || dndMonsters.length > 0) return
+    hasFetchedList.current = true
+    setIsLoadingList(true)
+    fetch(`${DND5E_API}/monsters`)
+      .then((r) => r.json())
+      .then((data) => {
+        setDndMonsters(data.results ?? [])
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingList(false))
+  }, [open, dndMonsters.length])
+
+  // When a D&D monster is selected, fetch its details
+  useEffect(() => {
+    if (!selectedDndMonster) return
+    setIsLoadingDetail(true)
+    setDndMonsterDetail(null)
+    fetch(`${DND5E_API}/monsters/${selectedDndMonster.index}`)
+      .then((r) => r.json())
+      .then((data: DndMonsterDetail) => {
+        setDndMonsterDetail(data)
+        setMonsterName(data.name)
+        setMonsterHp(String(data.hit_points))
+        setMonsterAc(String(data.armor_class?.[0]?.value ?? 10))
+        const dexMod = Math.floor((data.dexterity - 10) / 2)
+        setMonsterInitMod(String(dexMod))
+        setMonsterInitiative('')
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingDetail(false))
+  }, [selectedDndMonster])
 
   const wikiCharacters = wikiEntries.filter((e) => e.type === 'CHARACTER')
   const wikiNpcs = wikiEntries.filter((e) => e.type === 'NPC')
   const filteredWiki = [...wikiCharacters, ...wikiNpcs].filter((e) =>
-    e.title.toLowerCase().includes(search.toLowerCase())
+    e.title.toLowerCase().includes(wikiSearch.toLowerCase())
+  )
+
+  const filteredMonsters = dndMonsters.filter((m) =>
+    m.name.toLowerCase().includes(monsterSearch.toLowerCase())
   )
 
   function resetWikiForm() {
@@ -71,21 +189,23 @@ export default function AddCombatantDialog({
     setWikiHpCurrent('')
     setWikiHpMax('')
     setWikiAc('')
-    setSearch('')
+    setWikiSearch('')
   }
 
   function resetMonsterForm() {
+    setSelectedDndMonster(null)
+    setDndMonsterDetail(null)
     setMonsterName('')
     setMonsterHp('')
     setMonsterAc('')
     setMonsterInitMod('0')
     setMonsterInitiative('')
     setMonsterCount('1')
+    setMonsterSearch('')
   }
 
-  function handleSelectEntry(entry: WikiTreeEntry) {
+  function handleSelectWikiEntry(entry: WikiTreeEntry) {
     setSelectedEntry(entry)
-    // Fetch character sheet data if it's a CHARACTER
     if (entry.type === 'CHARACTER') {
       startTransition(async () => {
         try {
@@ -98,7 +218,7 @@ export default function AddCombatantDialog({
             setWikiAc(String(sheet.armorClass))
           }
         } catch {
-          // ignore — user can fill manually
+          // user can fill manually
         }
       })
     } else {
@@ -121,7 +241,6 @@ export default function AddCombatantDialog({
     startTransition(async () => {
       let wikiContent: string | undefined
       let characterSheet: CharacterSheetData | undefined
-
       try {
         const fullEntry = await getWikiEntry(selectedEntry.id, userId)
         wikiContent = fullEntry.content
@@ -153,25 +272,27 @@ export default function AddCombatantDialog({
 
   function handleAddMonster() {
     const name = monsterName.trim()
-    if (!name) return
+    if (!name || !monsterHp) return
     const maxHp = parseInt(monsterHp) || 1
     const ac = parseInt(monsterAc) || 10
     const initMod = parseInt(monsterInitMod) || 0
     const count = Math.max(1, Math.min(20, parseInt(monsterCount) || 1))
 
+    const wikiContent = dndMonsterDetail ? buildMonsterWikiContent(dndMonsterDetail) : undefined
+
     for (let i = 0; i < count; i++) {
-      const initiative = parseInt(monsterInitiative) || rollD20() + initMod
       const suffix = count > 1 ? ` ${i + 1}` : ''
       onAdd({
         name: name + suffix,
         type: 'monster',
-        initiative: count > 1 ? rollD20() + initMod : initiative,
+        initiative: rollD20() + initMod,
         initiativeModifier: initMod,
         currentHp: maxHp,
         maxHp,
         temporaryHp: 0,
         ac,
         notes: '',
+        wikiContent,
       })
     }
     resetMonsterForm()
@@ -190,17 +311,17 @@ export default function AddCombatantDialog({
         <Tabs defaultValue="wiki">
           <TabsList className="w-full">
             <TabsTrigger value="wiki" className="flex-1">From Campaign</TabsTrigger>
-            <TabsTrigger value="monster" className="flex-1">Custom Monster</TabsTrigger>
+            <TabsTrigger value="monster" className="flex-1">Monster</TabsTrigger>
           </TabsList>
 
-          {/* From Wiki */}
+          {/* ── From Wiki ── */}
           <TabsContent value="wiki" className="space-y-3 mt-3">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search characters & NPCs..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={wikiSearch}
+                onChange={(e) => setWikiSearch(e.target.value)}
                 className="pl-8"
               />
             </div>
@@ -212,7 +333,7 @@ export default function AddCombatantDialog({
                   {filteredWiki.map((entry) => (
                     <button
                       key={entry.id}
-                      onClick={() => handleSelectEntry(entry)}
+                      onClick={() => handleSelectWikiEntry(entry)}
                       className={cn(
                         'w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors',
                         selectedEntry?.id === entry.id
@@ -252,7 +373,6 @@ export default function AddCombatantDialog({
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 flex-shrink-0"
-                      title="Roll d20"
                       onClick={() => setWikiInitiative(String(rollD20() + wikiInitMod))}
                     >
                       <Dices className="w-3.5 h-3.5" />
@@ -261,49 +381,83 @@ export default function AddCombatantDialog({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Max HP</Label>
-                  <Input
-                    type="number"
-                    placeholder="HP"
-                    value={wikiHpMax}
-                    onChange={(e) => setWikiHpMax(e.target.value)}
-                    className="h-8 text-sm"
-                  />
+                  <Input type="number" placeholder="HP" value={wikiHpMax} onChange={(e) => setWikiHpMax(e.target.value)} className="h-8 text-sm" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Current HP</Label>
-                  <Input
-                    type="number"
-                    placeholder="HP"
-                    value={wikiHpCurrent}
-                    onChange={(e) => setWikiHpCurrent(e.target.value)}
-                    className="h-8 text-sm"
-                  />
+                  <Input type="number" placeholder="HP" value={wikiHpCurrent} onChange={(e) => setWikiHpCurrent(e.target.value)} className="h-8 text-sm" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">AC</Label>
-                  <Input
-                    type="number"
-                    placeholder="AC"
-                    value={wikiAc}
-                    onChange={(e) => setWikiAc(e.target.value)}
-                    className="h-8 text-sm"
-                  />
+                  <Input type="number" placeholder="AC" value={wikiAc} onChange={(e) => setWikiAc(e.target.value)} className="h-8 text-sm" />
                 </div>
               </div>
             )}
 
             <DialogFooter>
-              <Button
-                onClick={handleAddFromWiki}
-                disabled={!selectedEntry || isPending}
-              >
+              <Button onClick={handleAddFromWiki} disabled={!selectedEntry || isPending}>
                 {isPending ? 'Loading...' : 'Add to Combat'}
               </Button>
             </DialogFooter>
           </TabsContent>
 
-          {/* Custom Monster */}
+          {/* ── Monster ── */}
           <TabsContent value="monster" className="space-y-3 mt-3">
+            {/* D&D SRD search */}
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1.5">
+                <BookOpen className="w-3 h-3" /> Search D&amp;D SRD Monsters
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
+                {isLoadingList && (
+                  <Loader2 className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-muted-foreground animate-spin" />
+                )}
+                <Input
+                  placeholder="Search 334 official monsters..."
+                  value={monsterSearch}
+                  onChange={(e) => setMonsterSearch(e.target.value)}
+                  className="pl-8"
+                  disabled={isLoadingList}
+                />
+              </div>
+
+              {monsterSearch.trim().length > 0 && (
+                <ScrollArea className="h-36 border rounded-md">
+                  {filteredMonsters.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No monsters found</p>
+                  ) : (
+                    <div className="p-1">
+                      {filteredMonsters.slice(0, 50).map((m) => (
+                        <button
+                          key={m.index}
+                          onClick={() => {
+                            setSelectedDndMonster(m)
+                            setMonsterSearch(m.name)
+                          }}
+                          className={cn(
+                            'w-full text-left px-2 py-1.5 rounded text-sm transition-colors',
+                            selectedDndMonster?.index === m.index
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-muted'
+                          )}
+                        >
+                          {m.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              )}
+
+              {isLoadingDetail && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading stats...
+                </div>
+              )}
+            </div>
+
+            {/* Manual / auto-filled fields */}
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1">
                 <Label className="text-xs">Monster Name *</Label>
@@ -341,30 +495,6 @@ export default function AddCombatantDialog({
                   value={monsterInitMod}
                   onChange={(e) => setMonsterInitMod(e.target.value)}
                 />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Initiative (blank = roll)</Label>
-                <div className="flex gap-1">
-                  <Input
-                    type="number"
-                    placeholder="Roll"
-                    value={monsterInitiative}
-                    onChange={(e) => setMonsterInitiative(e.target.value)}
-                    className="h-9"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="flex-shrink-0"
-                    title="Roll d20"
-                    onClick={() =>
-                      setMonsterInitiative(String(rollD20() + (parseInt(monsterInitMod) || 0)))
-                    }
-                  >
-                    <Dices className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Count (1–20)</Label>

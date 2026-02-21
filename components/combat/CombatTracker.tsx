@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Plus, ChevronRight, ChevronLeft, RotateCcw, Swords,
-  Skull, Minus, Heart, Shield, Eye, Trash2, Dices, GripVertical,
+  Skull, Minus, Shield, Eye, Trash2, Dices, GripVertical, Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { getWikiEntry } from '@/actions/wiki'
 import type { Combatant } from '@/types/combat'
+import type { CharacterSheetData } from '@/types/character-sheet'
 import AddCombatantDialog from './AddCombatantDialog'
 import CombatantStatsSheet from './CombatantStatsSheet'
 
@@ -143,7 +145,7 @@ function HpCell({
         onClick={() => onAdjust(1)}
         title="Heal (+1)"
       >
-        <Heart className="w-3 h-3" />
+        <Plus className="w-3 h-3" />
       </Button>
     </div>
   )
@@ -218,14 +220,67 @@ function InitiativeCell({
   )
 }
 
-export default function CombatTracker({ campaignId, userId, wikiEntries }: CombatTrackerProps) {
+export default function CombatTracker({ campaignId: _campaignId, userId, wikiEntries }: CombatTrackerProps) {
   const [combatants, setCombatants] = useState<Combatant[]>([])
+  const [isLoadingParty, setIsLoadingParty] = useState(false)
   const [round, setRound] = useState(1)
   const [currentTurnIdx, setCurrentTurnIdx] = useState(0)
   const [isCombatActive, setIsCombatActive] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [statsTarget, setStatsTarget] = useState<Combatant | null>(null)
   const [isStatsOpen, setIsStatsOpen] = useState(false)
+  const hasAutoLoaded = useRef(false)
+
+  // Auto-add all CHARACTER party members on first mount
+  useEffect(() => {
+    if (hasAutoLoaded.current) return
+    hasAutoLoaded.current = true
+
+    const characters = wikiEntries.filter((e) => e.type === 'CHARACTER')
+    if (characters.length === 0) return
+
+    setIsLoadingParty(true)
+    Promise.all(
+      characters.map(async (entry) => {
+        try {
+          const fullEntry = await getWikiEntry(entry.id, userId)
+          const sheet = fullEntry.characterSheet?.data as unknown as CharacterSheetData | undefined
+          return {
+            id: genId(),
+            name: entry.title,
+            type: 'player' as const,
+            initiative: 0,
+            initiativeModifier: sheet?.initiative ?? 0,
+            currentHp: sheet?.hitPoints.current ?? sheet?.hitPoints.maximum ?? 0,
+            maxHp: sheet?.hitPoints.maximum ?? 0,
+            temporaryHp: sheet?.hitPoints.temporary ?? 0,
+            ac: sheet?.armorClass ?? 10,
+            notes: '',
+            wikiEntryId: entry.id,
+            wikiContent: fullEntry.content,
+            characterSheet: sheet,
+          } satisfies Combatant
+        } catch {
+          return {
+            id: genId(),
+            name: entry.title,
+            type: 'player' as const,
+            initiative: 0,
+            initiativeModifier: 0,
+            currentHp: 0,
+            maxHp: 0,
+            temporaryHp: 0,
+            ac: 10,
+            notes: '',
+            wikiEntryId: entry.id,
+          } satisfies Combatant
+        }
+      })
+    ).then((loaded) => {
+      setCombatants(loaded)
+      setIsLoadingParty(false)
+    })
+  }, [wikiEntries, userId])
 
   // Sort combatants by initiative descending
   const sorted = [...combatants].sort((a, b) => b.initiative - a.initiative)
@@ -236,11 +291,7 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
   }
 
   function removeCombatant(id: string) {
-    setCombatants((prev) => {
-      const next = prev.filter((c) => c.id !== id)
-      return next
-    })
-    // Adjust turn if needed
+    setCombatants((prev) => prev.filter((c) => c.id !== id))
     setCurrentTurnIdx((prev) => Math.max(0, Math.min(prev, sorted.length - 2)))
   }
 
@@ -285,6 +336,7 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
     setIsCombatActive(false)
     setRound(1)
     setCurrentTurnIdx(0)
+    hasAutoLoaded.current = false
   }
 
   function nextTurn() {
@@ -331,7 +383,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
     <div className="flex flex-col h-full">
       {/* Header / Controls */}
       <div className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b bg-muted/30">
-        {/* Round & turn info */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 rounded-md border bg-background px-2 py-1">
             <Swords className="w-3.5 h-3.5 text-muted-foreground" />
@@ -345,7 +396,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
         </div>
 
         <div className="flex items-center gap-1 ml-auto">
-          {/* Prev / Next turn */}
           {isCombatActive && (
             <>
               <Tooltip>
@@ -379,7 +429,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
             </Button>
           )}
 
-          {/* Roll all initiative */}
           {combatants.length > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -391,7 +440,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
             </Tooltip>
           )}
 
-          {/* Reset */}
           {combatants.length > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -411,7 +459,12 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
 
       {/* Combatants list */}
       <ScrollArea className="flex-1">
-        {isEmpty ? (
+        {isLoadingParty ? (
+          <div className="flex items-center justify-center gap-2 h-40 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Loading party...</span>
+          </div>
+        ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
             <Swords className="w-10 h-10 opacity-20" />
             <p className="text-sm">No combatants yet</p>
@@ -421,7 +474,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
           </div>
         ) : (
           <div className="p-2 space-y-1">
-            {/* Column headers */}
             <div className="grid grid-cols-[24px_32px_1fr_140px_48px_auto] items-center gap-2 px-2 py-1 text-xs text-muted-foreground uppercase tracking-wide">
               <span />
               <span>Init</span>
@@ -448,7 +500,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
                     isDead && 'opacity-50'
                   )}
                 >
-                  {/* Current turn indicator */}
                   <div className="flex items-center justify-center">
                     {isCurrentTurn ? (
                       <ChevronRight className="w-4 h-4 text-primary" />
@@ -457,7 +508,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
                     )}
                   </div>
 
-                  {/* Initiative */}
                   <InitiativeCell
                     value={combatant.initiative}
                     onChange={(v) => updateCombatant(combatant.id, { initiative: v })}
@@ -469,7 +519,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
                     initiativeModifier={combatant.initiativeModifier}
                   />
 
-                  {/* Name & type */}
                   <div className="flex items-center gap-1.5 min-w-0">
                     {isDead && <Skull className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
                     <span className={cn('text-sm font-medium truncate', isDead && 'line-through text-muted-foreground')}>
@@ -480,7 +529,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
                     </Badge>
                   </div>
 
-                  {/* HP */}
                   <HpCell
                     current={combatant.currentHp}
                     max={combatant.maxHp}
@@ -489,13 +537,11 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
                     onSetCurrent={(val) => setCurrentHp(combatant.id, val)}
                   />
 
-                  {/* AC */}
                   <div className="flex items-center justify-center gap-0.5">
                     <Shield className="w-3 h-3 text-muted-foreground" />
                     <span className="text-sm font-medium tabular-nums">{combatant.ac}</span>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-0.5">
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -531,7 +577,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
         )}
       </ScrollArea>
 
-      {/* Add combatant dialog */}
       <AddCombatantDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
@@ -540,7 +585,6 @@ export default function CombatTracker({ campaignId, userId, wikiEntries }: Comba
         onAdd={addCombatant}
       />
 
-      {/* Stats sheet */}
       <CombatantStatsSheet
         combatant={statsTarget}
         open={isStatsOpen}
