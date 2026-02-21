@@ -8,7 +8,6 @@ import {
   Plus, ArrowLeft, X, Settings, RefreshCw,
 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -193,8 +192,7 @@ export default function WikiSidebar({
       </div>
 
       {/* Entries */}
-      <ScrollArea className="flex-1">
-        <nav className="p-2">
+      <nav className="flex-1 overflow-y-auto min-h-0 p-2">
           {entries.length === 0 ? (
             <p className="text-muted-foreground text-xs text-center py-4">
               {t('sidebar.noEntries')}
@@ -330,8 +328,7 @@ export default function WikiSidebar({
               </div>
             </>
           )}
-        </nav>
-      </ScrollArea>
+      </nav>
     </>
   )
 
