@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
 import { WikiEntryType } from '@prisma/client'
 import { ScrollText, Upload, Plus, ArrowLeft } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import WikiEntryEditor from './WikiEntryEditor'
 import AudioUploadDialog from './AudioUploadDialog'
 import CreateSessionDialog from './CreateSessionDialog'
@@ -81,6 +81,30 @@ export default function SessionsView({
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createSessionOpen, setCreateSessionOpen] = useState(false)
   const [mobileShowDetail, setMobileShowDetail] = useState(!!activeEntry)
+  const [sidebarWidth, setSidebarWidth] = useState(280)
+  const [isDesktop, setIsDesktop] = useState(true)
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  const handleSidebarResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sidebarWidth
+    const handleMouseMove = (e: MouseEvent) => {
+      setSidebarWidth(Math.max(180, Math.min(480, startWidth + (e.clientX - startX))))
+    }
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }, [sidebarWidth])
 
   const sessions = entries
     .filter((e) => e.type === 'SESSION_RECAP')
@@ -98,17 +122,23 @@ export default function SessionsView({
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* List panel */}
-      <div className={`w-72 md:w-64 lg:w-72 flex-shrink-0 border-r bg-card flex flex-col overflow-hidden ${mobileShowDetail ? 'hidden md:flex' : 'flex w-full md:w-64 lg:w-72'}`}>
+      <div
+        style={isDesktop ? { width: sidebarWidth } : undefined}
+        className={cn(
+          'flex-shrink-0 border-r bg-card flex flex-col overflow-hidden',
+          mobileShowDetail ? 'hidden md:flex' : 'flex w-full md:w-auto'
+        )}
+      >
         {/* Actions */}
         {!isLocked && (
-          <div className="flex items-center gap-2 p-3 border-b">
-            <Button size="sm" variant="outline" onClick={() => setUploadOpen(true)} className="flex-1">
-              <Upload className="w-3.5 h-3.5 mr-1.5" />
-              {t('sidebar.uploadAudio')}
-            </Button>
-            <Button size="sm" onClick={() => setCreateSessionOpen(true)} className="flex-1">
+          <div className="flex flex-col gap-1.5 p-2 border-b">
+            <Button size="sm" onClick={() => setCreateSessionOpen(true)} className="w-full">
               <Plus className="w-3.5 h-3.5 mr-1.5" />
               {t('sidebar.newSession')}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setUploadOpen(true)} className="w-full">
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              {t('sidebar.uploadAudio')}
             </Button>
           </div>
         )}
@@ -139,6 +169,12 @@ export default function SessionsView({
           )}
         </nav>
       </div>
+
+      {/* Resize handle */}
+      <div
+        onMouseDown={handleSidebarResizeMouseDown}
+        className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden md:block"
+      />
 
       {/* Detail panel */}
       <div className={`flex-1 flex flex-col overflow-hidden ${!mobileShowDetail ? 'hidden md:flex' : 'flex'}`}>
