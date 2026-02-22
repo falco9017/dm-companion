@@ -8,32 +8,34 @@ interface DeathSaveTrackerProps {
 
 export default function DeathSaveTracker({ successes, failures, onChange }: DeathSaveTrackerProps) {
   return (
-    <div className="flex items-center gap-4 p-2 rounded-lg border border-border bg-card">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Death Saves</span>
+    <div className="flex items-center gap-4 p-2 dnd-frame-light parchment-inner">
+      <span className="dnd-section-title text-[10px]">Death Saves</span>
       <div className="flex items-center gap-1">
-        <span className="text-[10px] text-emerald-400 mr-1">S</span>
+        <span className="text-[10px] mr-1" style={{ color: 'var(--forest)' }}>S</span>
         {[0, 1, 2].map((i) => (
           <button
             key={`s-${i}`}
             onClick={() => onChange({ successes: i < successes ? i : i + 1, failures })}
             className="w-4 h-4 rounded-full border-2 transition-colors"
             style={{
-              borderColor: i < successes ? 'rgb(52, 211, 153)' : 'rgb(75, 85, 99)',
-              backgroundColor: i < successes ? 'rgb(52, 211, 153)' : 'transparent',
+              borderColor: i < successes ? 'var(--forest)' : 'var(--gold)',
+              backgroundColor: i < successes ? 'var(--forest)' : 'transparent',
+              opacity: i < successes ? 1 : 0.4,
             }}
           />
         ))}
       </div>
       <div className="flex items-center gap-1">
-        <span className="text-[10px] text-red-400 mr-1">F</span>
+        <span className="text-[10px] mr-1" style={{ color: 'var(--crimson)' }}>F</span>
         {[0, 1, 2].map((i) => (
           <button
             key={`f-${i}`}
             onClick={() => onChange({ successes, failures: i < failures ? i : i + 1 })}
             className="w-4 h-4 rounded-full border-2 transition-colors"
             style={{
-              borderColor: i < failures ? 'rgb(248, 113, 113)' : 'rgb(75, 85, 99)',
-              backgroundColor: i < failures ? 'rgb(248, 113, 113)' : 'transparent',
+              borderColor: i < failures ? 'var(--crimson)' : 'var(--gold)',
+              backgroundColor: i < failures ? 'var(--crimson)' : 'transparent',
+              opacity: i < failures ? 1 : 0.4,
             }}
           />
         ))}

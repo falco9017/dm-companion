@@ -10,41 +10,48 @@ interface FeatureCardProps {
   onRemove: () => void
 }
 
-const sourceColors: Record<string, string> = {
-  Class: 'text-blue-400 border-blue-500/30',
-  Race: 'text-emerald-400 border-emerald-500/30',
-  Background: 'text-amber-400 border-amber-500/30',
-  Feat: 'text-purple-400 border-purple-500/30',
+const sourceStyles: Record<string, { color: string; bg: string; border: string }> = {
+  Class: { color: 'var(--royal-blue)', bg: 'var(--royal-blue)', border: 'var(--royal-blue)' },
+  Race: { color: 'var(--forest)', bg: 'var(--forest)', border: 'var(--forest)' },
+  Background: { color: 'var(--gold-dark)', bg: 'var(--gold-dark)', border: 'var(--gold-dark)' },
+  Feat: { color: 'var(--mystic-purple)', bg: 'var(--mystic-purple)', border: 'var(--mystic-purple)' },
 }
 
 export default function FeatureCard({ feature, editing, onUpdate, onRemove }: FeatureCardProps) {
-  const colorClass = sourceColors[feature.source] || 'text-muted-foreground border-border'
+  const style = sourceStyles[feature.source] || { color: 'var(--ink-secondary)', bg: 'var(--ink-secondary)', border: 'var(--gold-dark)' }
   const hasUses = feature.usesMax !== undefined && feature.usesMax > 0
 
   return (
-    <div className="relative p-3 rounded-lg border border-border bg-card">
+    <div className="relative p-3 dnd-frame-light parchment-inner dnd-card-hover">
       {editing && (
         <button
           onClick={onRemove}
-          className="absolute top-1 right-1 p-0.5 rounded text-muted-foreground hover:text-red-400 transition-colors"
+          className="absolute top-1 right-1 p-0.5 rounded text-ink-secondary hover:text-crimson transition-colors"
         >
           <X className="w-3 h-3" />
         </button>
       )}
       <div className="flex items-start gap-2">
-        <Star className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+        <Star className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: style.color }} />
         <div className="flex-1 min-w-0">
           {editing ? (
             <input
               type="text"
               value={feature.name}
               onChange={(e) => onUpdate({ ...feature, name: e.target.value })}
-              className="text-xs font-semibold text-foreground bg-transparent border-b border-border focus:border-primary focus:outline-none w-full"
+              className="text-xs font-semibold text-ink bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none w-full"
             />
           ) : (
-            <p className="text-xs font-semibold text-foreground">{feature.name}</p>
+            <p className="text-xs font-semibold text-ink">{feature.name}</p>
           )}
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${colorClass} inline-block mt-1`}>
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded-full border inline-block mt-1"
+            style={{
+              color: style.color,
+              borderColor: `color-mix(in srgb, ${style.border} 40%, transparent)`,
+              backgroundColor: `color-mix(in srgb, ${style.bg} 12%, transparent)`,
+            }}
+          >
             {feature.source}
           </span>
           {editing ? (
@@ -52,11 +59,11 @@ export default function FeatureCard({ feature, editing, onUpdate, onRemove }: Fe
               value={feature.description}
               onChange={(e) => onUpdate({ ...feature, description: e.target.value })}
               rows={2}
-              className="w-full mt-1 text-[10px] text-muted-foreground bg-transparent border border-border rounded p-1 focus:border-primary focus:outline-none resize-none"
+              className="w-full mt-1 text-[10px] text-ink-secondary bg-transparent border border-gold/30 rounded p-1 focus:border-gold focus:outline-none resize-none"
             />
           ) : (
             feature.description && (
-              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">{feature.description}</p>
+              <p className="text-[10px] text-ink-secondary mt-1 line-clamp-3">{feature.description}</p>
             )
           )}
           {hasUses && (
@@ -74,16 +81,17 @@ export default function FeatureCard({ feature, editing, onUpdate, onRemove }: Fe
                   style={{
                     borderColor:
                       i < (feature.usesCurrent || 0)
-                        ? 'rgb(139, 92, 246)'
-                        : 'rgb(75, 85, 99)',
+                        ? 'var(--mystic-purple)'
+                        : 'var(--gold)',
                     backgroundColor:
                       i < (feature.usesCurrent || 0)
-                        ? 'rgb(139, 92, 246)'
+                        ? 'var(--mystic-purple)'
                         : 'transparent',
+                    opacity: i < (feature.usesCurrent || 0) ? 1 : 0.4,
                   }}
                 />
               ))}
-              <span className="text-[10px] text-muted-foreground ml-1">
+              <span className="text-[10px] text-ink-secondary ml-1">
                 {feature.usesCurrent || 0}/{feature.usesMax}
               </span>
             </div>

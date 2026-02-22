@@ -82,29 +82,29 @@ export default function SpellPicker({ characterClass, onAdd }: SpellPickerProps)
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-xs text-primary hover:text-primary transition-colors"
+        className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
       >
         <Plus className="w-3.5 h-3.5" /> Add Spell
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-2 left-0 z-50 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+        <div className="absolute bottom-full mb-2 left-0 z-50 w-80 dnd-frame parchment-inner overflow-hidden">
           {/* Search */}
-          <div className="p-2 border-b border-border">
+          <div className="p-2 border-b border-gold/30">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-secondary" />
               <input
                 autoFocus
                 type="text"
                 placeholder="Search spells…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gold/30 bg-transparent text-ink focus:outline-none focus:border-gold"
               />
               {query && (
                 <button
                   onClick={() => setQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-secondary hover:text-ink"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -117,9 +117,10 @@ export default function SpellPicker({ characterClass, onAdd }: SpellPickerProps)
                 onClick={() => setLevelFilter(null)}
                 className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                   levelFilter === null
-                    ? 'bg-primary/30 border-primary/50 text-primary'
-                    : 'border-border text-muted-foreground hover:text-muted-foreground'
+                    ? 'border-gold text-gold-dark'
+                    : 'border-gold/30 text-ink-secondary hover:text-ink'
                 }`}
+                style={levelFilter === null ? { backgroundColor: 'color-mix(in srgb, var(--gold) 20%, transparent)' } : undefined}
               >
                 All
               </button>
@@ -129,9 +130,10 @@ export default function SpellPicker({ characterClass, onAdd }: SpellPickerProps)
                   onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}
                   className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                     levelFilter === lvl
-                      ? 'bg-primary/30 border-primary/50 text-primary'
-                      : 'border-border text-muted-foreground hover:text-muted-foreground'
+                      ? 'border-gold text-gold-dark'
+                      : 'border-gold/30 text-ink-secondary hover:text-ink'
                   }`}
+                  style={levelFilter === lvl ? { backgroundColor: 'color-mix(in srgb, var(--gold) 20%, transparent)' } : undefined}
                 >
                   {LEVEL_LABELS[lvl]}
                 </button>
@@ -142,46 +144,46 @@ export default function SpellPicker({ characterClass, onAdd }: SpellPickerProps)
           {/* Results */}
           <div className="max-h-64 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="text-center text-muted-foreground text-xs py-4">No spells found</p>
+              <p className="text-center text-ink-secondary text-xs py-4">No spells found</p>
             ) : (
               filtered.map((spell) => (
                 <button
                   key={spell.name}
                   type="button"
                   onClick={() => handleSelect(spell)}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 transition-colors text-left group"
+                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gold/10 transition-colors text-left group"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-foreground truncate">{spell.name}</span>
+                      <span className="text-xs font-medium text-ink truncate">{spell.name}</span>
                       {spell.concentration && (
-                        <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300 shrink-0">C</span>
+                        <span className="text-[9px] px-1 rounded border shrink-0" style={{ borderColor: 'var(--gold)', color: 'var(--gold-dark)', backgroundColor: 'color-mix(in srgb, var(--gold) 15%, transparent)' }}>C</span>
                       )}
                       {spell.ritual && (
-                        <span className="text-[9px] px-1 rounded bg-blue-500/20 text-blue-300 shrink-0">R</span>
+                        <span className="text-[9px] px-1 rounded border shrink-0" style={{ borderColor: 'var(--royal-blue)', color: 'var(--royal-blue)', backgroundColor: 'color-mix(in srgb, var(--royal-blue) 15%, transparent)' }}>R</span>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[10px] text-ink-secondary">
                         {spell.level === 0 ? 'Cantrip' : `${LEVEL_LABELS[spell.level]}-level`} {spell.school}
                       </span>
                       {characterClass && spell.classes.some(
                         (c) => c.toLowerCase() === characterClass.toLowerCase()
                       ) && (
-                        <span className="text-[9px] px-1 rounded bg-green-500/20 text-green-300">
+                        <span className="text-[9px] px-1 rounded border" style={{ borderColor: 'var(--forest)', color: 'var(--forest)', backgroundColor: 'color-mix(in srgb, var(--forest) 15%, transparent)' }}>
                           {characterClass}
                         </span>
                       )}
                     </div>
                   </div>
-                  <Plus className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                  <Plus className="w-3 h-3 text-ink-secondary group-hover:text-gold-dark transition-colors shrink-0" />
                 </button>
               ))
             )}
           </div>
 
           {filtered.length === 50 && (
-            <p className="text-center text-muted-foreground text-[10px] py-1.5 border-t border-border">
+            <p className="text-center text-ink-secondary text-[10px] py-1.5 border-t border-gold/30">
               Showing first 50 results — type to narrow down
             </p>
           )}

@@ -24,23 +24,34 @@ export default function AbilityScoreCard({
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{name}</span>
-      <div className="relative w-16 h-20 flex flex-col items-center justify-center rounded-lg border-2 border-border bg-card hover:border-primary/40 transition-colors">
-        <span className="text-xl font-bold text-foreground">{modStr}</span>
-        {editing ? (
-          <input
-            type="text"
-            inputMode="numeric"
-            value={ability.score}
-            onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-            className="w-10 text-center text-xs text-muted-foreground bg-transparent border-b border-border focus:border-primary focus:outline-none"
-          />
-        ) : (
-          <span className="text-xs text-muted-foreground">{ability.score}</span>
-        )}
+      <span className="dnd-section-title text-[10px]">{name}</span>
+      {/* Shield outer (gold border layer) */}
+      <div className="relative w-16 h-20 sm:w-[4.5rem] sm:h-[5.5rem]">
+        <div
+          className="absolute inset-0 shield-border"
+          style={{ background: 'var(--gold-dark)' }}
+        />
+        {/* Shield inner (parchment fill) */}
+        <div
+          className="absolute shield-shape parchment-inner flex flex-col items-center justify-center"
+          style={{ inset: '2px' }}
+        >
+          <span className="text-xl sm:text-2xl font-bold text-ink leading-none">{modStr}</span>
+          {editing ? (
+            <input
+              type="text"
+              inputMode="numeric"
+              value={ability.score}
+              onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+              className="w-10 text-center text-xs text-ink-secondary bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none mt-0.5"
+            />
+          ) : (
+            <span className="text-xs text-ink-secondary mt-0.5">{ability.score}</span>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-        <span className={saveProficient ? 'text-primary font-semibold' : ''}>
+      <div className="flex items-center gap-1 text-[10px] text-ink-secondary">
+        <span style={{ color: saveProficient ? 'var(--gold)' : undefined }} className={saveProficient ? 'font-semibold' : ''}>
           {saveProficient ? '◆' : '○'}
         </span>
         <span>Save {saveStr}</span>

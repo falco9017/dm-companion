@@ -18,6 +18,7 @@ function StatBox({
   editing,
   onChange,
   color,
+  displayValue,
 }: {
   icon: React.ComponentType<{ className?: string }>
   label: string
@@ -25,22 +26,26 @@ function StatBox({
   editing: boolean
   onChange: (v: number) => void
   color: string
+  displayValue?: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-card">
-      <Icon className={`w-4 h-4 ${color}`} />
+    <div className="relative flex flex-col items-center gap-1 p-3 pt-5 dnd-frame-light parchment-inner">
+      {/* Floating icon badge */}
+      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 border-gold-dark flex items-center justify-center parchment-inner`}>
+        <Icon className={`w-3 h-3 ${color}`} />
+      </div>
       {editing ? (
         <input
           type="text"
           inputMode="numeric"
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-          className="w-12 text-center text-lg font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
+          className="w-12 text-center text-lg font-bold bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
         />
       ) : (
-        <span className="text-lg font-bold text-foreground">{value}</span>
+        <span className="text-lg font-bold text-ink">{displayValue ?? value}</span>
       )}
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="dnd-section-title text-[10px]">{label}</span>
     </div>
   )
 }
@@ -57,51 +62,45 @@ export default function CombatStats({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <StatBox
           icon={Shield}
           label="AC"
           value={armorClass}
           editing={editing}
           onChange={(v) => onChange('armorClass', v)}
-          color="text-blue-400"
+          color="text-royal-blue"
         />
-        <div className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-card">
-          <Zap className="w-4 h-4 text-amber-400" />
-          {editing ? (
-            <input
-              type="text"
-            inputMode="numeric"
-              value={initiative}
-              onChange={(e) => onChange('initiative', parseInt(e.target.value) || 0)}
-              className="w-12 text-center text-lg font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
-            />
-          ) : (
-            <span className="text-lg font-bold text-foreground">{initStr}</span>
-          )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Init</span>
-        </div>
+        <StatBox
+          icon={Zap}
+          label="Init"
+          value={initiative}
+          editing={editing}
+          onChange={(v) => onChange('initiative', v)}
+          color="text-gold-dark"
+          displayValue={initStr}
+        />
         <StatBox
           icon={Footprints}
           label="Speed"
           value={speed}
           editing={editing}
           onChange={(v) => onChange('speed', v)}
-          color="text-emerald-400"
+          color="text-forest"
         />
       </div>
-      <div className="flex items-center justify-center gap-2 p-2 rounded-lg border border-border bg-card">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Prof. Bonus</span>
+      <div className="flex items-center justify-center gap-2 px-3 py-1.5 dnd-frame-light parchment-inner rounded-full mx-auto w-fit">
+        <span className="dnd-section-title text-[10px]">Prof. Bonus</span>
         {editing ? (
           <input
             type="text"
             inputMode="numeric"
             value={proficiencyBonus}
             onChange={(e) => onChange('proficiencyBonus', parseInt(e.target.value) || 0)}
-            className="w-10 text-center text-sm font-bold bg-transparent border-b border-border focus:border-primary focus:outline-none text-foreground"
+            className="w-10 text-center text-sm font-bold bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
           />
         ) : (
-          <span className="text-sm font-bold text-primary">
+          <span className="text-sm font-bold text-gold-dark">
             +{proficiencyBonus}
           </span>
         )}

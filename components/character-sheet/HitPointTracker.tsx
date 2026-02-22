@@ -18,32 +18,33 @@ export default function HitPointTracker({
   onChange,
 }: HitPointTrackerProps) {
   const percentage = maximum > 0 ? Math.max(0, Math.min(100, (current / maximum) * 100)) : 0
-  const barColor =
+  const hpColor =
     percentage > 50
-      ? 'bg-emerald-500'
+      ? 'var(--forest)'
       : percentage > 25
-        ? 'bg-amber-500'
-        : 'bg-red-500'
+        ? 'var(--gold-dark)'
+        : 'var(--crimson)'
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Hit Points</span>
+        <span className="dnd-section-title text-[10px]">Hit Points</span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onChange({ current: Math.max(0, current - 1), maximum, temporary })}
-            className="p-0.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
+            className="w-6 h-6 rounded-full border border-gold-dark/50 flex items-center justify-center text-ink-secondary hover:text-crimson hover:border-crimson/50 transition-colors"
           >
-            <Minus className="w-3.5 h-3.5" />
+            <Minus className="w-3 h-3" />
           </button>
-          <span className="text-sm font-bold text-foreground min-w-[60px] text-center">
+          <span className="text-sm font-bold min-w-[60px] text-center" style={{ color: hpColor }}>
             {current} / {editing ? (
               <input
                 type="text"
                 inputMode="numeric"
                 value={maximum}
                 onChange={(e) => onChange({ current, maximum: parseInt(e.target.value) || 0, temporary })}
-                className="w-10 text-center bg-transparent border-b border-border focus:border-primary focus:outline-none"
+                className="w-10 text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none"
+                style={{ color: hpColor }}
               />
             ) : (
               maximum
@@ -51,27 +52,30 @@ export default function HitPointTracker({
           </span>
           <button
             onClick={() => onChange({ current: Math.min(maximum, current + 1), maximum, temporary })}
-            className="p-0.5 rounded text-muted-foreground hover:text-emerald-400 hover:bg-emerald-400/10 transition-colors"
+            className="w-6 h-6 rounded-full border border-gold-dark/50 flex items-center justify-center text-ink-secondary hover:text-forest hover:border-forest/50 transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3 h-3" />
           </button>
         </div>
       </div>
-      <div className="h-3 rounded-full bg-card border border-border overflow-hidden">
+      <div className="h-3 rounded-full border border-gold-dark/50 overflow-hidden parchment-inner">
         <div
-          className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-          style={{ width: `${percentage}%` }}
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${percentage}%`,
+            background: `linear-gradient(90deg, ${hpColor}, ${hpColor}dd)`,
+          }}
         />
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground">Temp HP:</span>
+        <span className="text-[10px] text-ink-secondary" style={{ borderBottom: '1px dashed var(--gold-dark)', paddingBottom: '1px' }}>Temp HP:</span>
         {editing ? (
           <input
             type="text"
             inputMode="numeric"
             value={temporary}
             onChange={(e) => onChange({ current, maximum, temporary: parseInt(e.target.value) || 0 })}
-            className="w-10 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none text-muted-foreground"
+            className="w-10 text-xs text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink-secondary"
           />
         ) : (
           <button
@@ -79,7 +83,7 @@ export default function HitPointTracker({
               const val = prompt('Temporary HP:', String(temporary))
               if (val !== null) onChange({ current, maximum, temporary: parseInt(val) || 0 })
             }}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="text-xs text-ink-secondary hover:text-gold-dark transition-colors"
           >
             {temporary}
           </button>
