@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { getWikiEntry } from '@/actions/wiki'
-import type { Combatant, CombatantType } from '@/types/combat'
+import type { Combatant, CombatantType, MonsterData } from '@/types/combat'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
 interface WikiTreeEntry {
@@ -279,6 +279,26 @@ export default function AddCombatantDialog({
     const count = Math.max(1, Math.min(20, parseInt(monsterCount) || 1))
 
     const wikiContent = dndMonsterDetail ? buildMonsterWikiContent(dndMonsterDetail) : undefined
+    const monsterData: MonsterData | undefined = dndMonsterDetail
+      ? {
+          size: dndMonsterDetail.size,
+          type: dndMonsterDetail.type,
+          challengeRating: dndMonsterDetail.challenge_rating,
+          xp: dndMonsterDetail.xp ?? 0,
+          abilities: {
+            strength: dndMonsterDetail.strength,
+            dexterity: dndMonsterDetail.dexterity,
+            constitution: dndMonsterDetail.constitution,
+            intelligence: dndMonsterDetail.intelligence,
+            wisdom: dndMonsterDetail.wisdom,
+            charisma: dndMonsterDetail.charisma,
+          },
+          armorClass: dndMonsterDetail.armor_class?.[0]?.value ?? ac,
+          specialAbilities: dndMonsterDetail.special_abilities,
+          actions: dndMonsterDetail.actions,
+          legendaryActions: dndMonsterDetail.legendary_actions,
+        }
+      : undefined
 
     for (let i = 0; i < count; i++) {
       const suffix = count > 1 ? ` ${i + 1}` : ''
@@ -293,6 +313,7 @@ export default function AddCombatantDialog({
         ac,
         notes: '',
         wikiContent,
+        monsterData,
       })
     }
     resetMonsterForm()

@@ -602,7 +602,10 @@ export default function CombatTracker({ campaignId: _campaignId, userId, wikiEnt
         {/* Right: Always-visible stats panel */}
         <div className="flex-1 min-w-0 overflow-hidden">
           {selectedCombatant ? (
-            <CombatantStatsPanel combatant={selectedCombatant} />
+            <CombatantStatsPanel
+              combatant={selectedCombatant}
+              onUpdate={(patch) => updateCombatant(selectedCombatant.id, patch)}
+            />
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
               <User className="w-8 h-8 opacity-20" />

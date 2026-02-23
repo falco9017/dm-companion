@@ -51,15 +51,15 @@
   --success: #10B981;
   --error: #EF4444;
 
-  /* D&D Theme - Light */
-  --parchment: #f4e8d1;
-  --parchment-dark: #e8d5b0;
-  --parchment-edge: #d4bc8b;
-  --ink: #2c1810;
-  --ink-secondary: #5c4033;
-  --gold: #c9a84c;
-  --gold-dark: #a07c2a;
-  --gold-light: #e4cc7a;
+  /* D&D Theme - aligned with main UI palette */
+  --parchment: oklch(0.98 0.005 80);
+  --parchment-dark: oklch(0.995 0.002 80);
+  --parchment-edge: oklch(0.88 0.015 75);
+  --ink: oklch(0.22 0.02 55);
+  --ink-secondary: oklch(0.5 0.02 55);
+  --gold: oklch(0.65 0.2 45);
+  --gold-dark: oklch(0.52 0.18 45);
+  --gold-light: oklch(0.75 0.15 55);
   --crimson: #8b1a1a;
   --forest: #2d5a27;
   --royal-blue: #1e3a6e;
@@ -108,15 +108,15 @@
   --text-secondary: oklch(0.7 0.015 60);
   --text-muted: oklch(0.55 0.015 55);
 
-  /* D&D Theme - Dark */
-  --parchment: #2a2118;
-  --parchment-dark: #1e1712;
-  --parchment-edge: #3d2e1f;
-  --ink: #e8dcc8;
-  --ink-secondary: #b8a890;
-  --gold: #c9a84c;
-  --gold-dark: #a07c2a;
-  --gold-light: #e4cc7a;
+  /* D&D Theme - Dark aligned with main UI palette */
+  --parchment: oklch(0.18 0.015 55);
+  --parchment-dark: oklch(0.22 0.015 55);
+  --parchment-edge: oklch(0.32 0.015 55);
+  --ink: oklch(0.93 0.01 75);
+  --ink-secondary: oklch(0.63 0.015 60);
+  --gold: oklch(0.65 0.2 45);
+  --gold-dark: oklch(0.52 0.18 45);
+  --gold-light: oklch(0.75 0.15 55);
   --crimson: #cc4444;
   --forest: #4a9e42;
   --royal-blue: #5b8fd4;
