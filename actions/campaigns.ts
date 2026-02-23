@@ -107,20 +107,33 @@ export async function joinCampaignByCode(inviteCode: string, userId: string) {
     return { campaignId: campaign.id }
   }
 
-  // Already a member
-  const existing = await prisma.campaignMember.findFirst({
-    where: { campaignId: campaign.id, userId },
-  })
-  if (existing) {
-    return { campaignId: campaign.id }
-  }
-
   // Get user email for the member row
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
   })
   if (!user) return { error: 'User not found' }
+
+  // Check for existing member by userId OR email (handles prior email invites)
+  const existing = await prisma.campaignMember.findFirst({
+    where: {
+      campaignId: campaign.id,
+      OR: [{ userId }, { email: user.email }],
+    },
+  })
+
+  if (existing) {
+    // If found but still PENDING, accept it and link to this user
+    if (existing.status !== 'ACCEPTED' || !existing.userId) {
+      await prisma.campaignMember.update({
+        where: { id: existing.id },
+        data: { userId, status: 'ACCEPTED' },
+      })
+    }
+    revalidatePath('/campaigns')
+    revalidatePath(`/campaigns/${campaign.id}`)
+    return { campaignId: campaign.id }
+  }
 
   await prisma.campaignMember.create({
     data: {
@@ -133,6 +146,7 @@ export async function joinCampaignByCode(inviteCode: string, userId: string) {
   })
 
   revalidatePath('/campaigns')
+  revalidatePath(`/campaigns/${campaign.id}`)
   return { campaignId: campaign.id }
 }
 

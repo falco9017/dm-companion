@@ -245,12 +245,13 @@ export async function getWikiEntry(entryId: string, userId: string) {
     throw new Error('Wiki entry not found or unauthorized')
   }
 
-  // Players can only access their own assigned CHARACTER entry
+  // Players can read SESSION_RECAP entries and their own CHARACTER entry
   if (!isDM(access)) {
+    const isSessionRecap = entry.type === 'SESSION_RECAP'
     const isOwnCharacter =
       entry.type === 'CHARACTER' &&
       entry.characterSheet?.assignedPlayerId === userId
-    if (!isOwnCharacter) {
+    if (!isSessionRecap && !isOwnCharacter) {
       throw new Error('Wiki entry not found or unauthorized')
     }
   }

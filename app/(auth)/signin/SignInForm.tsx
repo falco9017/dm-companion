@@ -15,6 +15,7 @@ export default function SignInForm() {
   const verified = searchParams.get('verified') === 'true'
   const reset = searchParams.get('reset') === 'true'
   const errorParam = searchParams.get('error')
+  const callbackUrl = searchParams.get('callbackUrl') || '/campaigns'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,7 +48,7 @@ export default function SignInForm() {
       if (result?.error) {
         setError('Invalid email or password.')
       } else if (result?.ok) {
-        window.location.href = '/campaigns'
+        window.location.href = callbackUrl
       }
     } catch {
       setError('Something went wrong. Please try again.')
@@ -156,7 +157,7 @@ export default function SignInForm() {
 
             <Button
               variant="outline"
-              onClick={() => signIn('google', { callbackUrl: '/campaigns' })}
+              onClick={() => signIn('google', { callbackUrl })}
               className="w-full bg-white text-gray-900 hover:bg-gray-100 border-gray-200 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
