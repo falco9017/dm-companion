@@ -20,18 +20,23 @@ function SpellSlotTracker({
   slot: SpellSlot
   onChange: (slot: SpellSlot) => void
 }) {
+  const available = slot.total - slot.used
   return (
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-ink-secondary w-8 flex-shrink-0">Lv {slot.level}</span>
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex gap-1 flex-wrap flex-1">
         {Array.from({ length: slot.total }).map((_, i) => {
-          const isUsed = i < slot.used
+          const isUsed = i >= available
           return (
             <button
               key={i}
-              onClick={() => onChange({ ...slot, used: isUsed ? i : i + 1 })}
+              onClick={() =>
+                isUsed
+                  ? onChange({ ...slot, used: slot.used - 1 })
+                  : onChange({ ...slot, used: slot.used + 1 })
+              }
               className="w-4 h-4 rounded-full border-2 transition-all hover:scale-110"
-              title={isUsed ? 'Click to restore' : 'Click to use'}
+              title={isUsed ? 'Click to restore slot' : 'Click to use slot'}
               style={{
                 borderColor: 'var(--mystic-purple)',
                 backgroundColor: isUsed ? 'transparent' : 'var(--mystic-purple)',
@@ -42,7 +47,7 @@ function SpellSlotTracker({
         })}
       </div>
       <span className="text-[10px] text-ink-secondary">
-        {slot.total - slot.used}/{slot.total}
+        {available}/{slot.total}
       </span>
     </div>
   )
