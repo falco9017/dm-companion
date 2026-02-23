@@ -67,7 +67,6 @@ function FeatureRow({ feature, editing, onUpdate, onRemove, accentColor }: Featu
                 >
                   <option value="Class">Class</option>
                   <option value="Race">Race</option>
-                  <option value="Background">Background</option>
                   <option value="Feat">Feat</option>
                 </select>
               </div>

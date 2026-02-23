@@ -566,8 +566,8 @@ export default function CharacterSheetBoard({
               onToggle={() => toggleSection('features')}
             />
             {!collapsed['features'] && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-                {(['Class', 'Race', 'Background'] as const).map((src) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                {(['Class', 'Race'] as const).map((src) => (
                   <FeaturesGroupCard
                     key={src}
                     source={src}
@@ -575,7 +575,7 @@ export default function CharacterSheetBoard({
                       .map((f, i) => ({ feature: f, index: i }))
                       .filter(({ feature }) =>
                         src === 'Class'
-                          ? feature.source === 'Class' || feature.source === 'Feat'
+                          ? feature.source === 'Class' || feature.source === 'Feat' || feature.source === 'Background'
                           : feature.source === src
                       )}
                     editing={editing}
@@ -638,23 +638,18 @@ export default function CharacterSheetBoard({
               onToggle={() => toggleSection('notes')}
             />
             {!collapsed['notes'] && (
-              <div className="space-y-3 mt-2">
-                <div className="p-2 dnd-frame-light parchment-inner border-l-2 border-l-gold">
-                  <label className="block dnd-section-title text-[10px] mb-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <div>
+                  <p className="dnd-section-title text-[10px] mb-1">
                     {t('characterSheet.background')}
-                  </label>
-                  <input
-                    list="cs-backgrounds"
+                  </p>
+                  <textarea
                     value={data.background}
                     onChange={(e) => updateData({ background: e.target.value })}
-                    className="w-full text-sm text-ink bg-transparent border-none focus:outline-none"
+                    rows={5}
+                    className="w-full text-sm text-ink-secondary bg-transparent border border-gold/30 rounded-lg p-3 focus:border-gold focus:outline-none resize-y"
                     placeholder={t('characterSheet.backgroundPlaceholder')}
                   />
-                  <datalist id="cs-backgrounds">
-                    {BACKGROUNDS.map((o) => (
-                      <option key={o} value={o} />
-                    ))}
-                  </datalist>
                 </div>
                 <div>
                   <p className="dnd-section-title text-[10px] mb-1">
@@ -663,7 +658,7 @@ export default function CharacterSheetBoard({
                   <textarea
                     value={data.notes}
                     onChange={(e) => updateData({ notes: e.target.value })}
-                    rows={4}
+                    rows={5}
                     className="w-full text-sm text-ink-secondary bg-transparent border border-gold/30 rounded-lg p-3 focus:border-gold focus:outline-none resize-y"
                     placeholder={t('characterSheet.notesPlaceholder')}
                   />
