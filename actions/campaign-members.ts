@@ -152,6 +152,77 @@ export async function assignCharacterToPlayer(
 }
 
 /**
+ * Player claims an unclaimed CHARACTER wiki entry as their character.
+ */
+export async function claimCharacter(campaignId: string, userId: string, wikiEntryId: string) {
+  // Verify accepted membership
+  const member = await prisma.campaignMember.findFirst({
+    where: { campaignId, userId, status: 'ACCEPTED' },
+  })
+  if (!member) throw new Error('Not a member of this campaign')
+
+  // Verify player has no existing assigned character
+  const existing = await prisma.characterSheet.findFirst({
+    where: { campaignId, assignedPlayerId: userId },
+  })
+  if (existing) throw new Error('You already have a character in this campaign')
+
+  // Verify wiki entry is CHARACTER type in this campaign
+  const entry = await prisma.wikiEntry.findFirst({
+    where: { id: wikiEntryId, campaignId, type: 'CHARACTER' },
+    include: { characterSheet: { select: { id: true, assignedPlayerId: true } } },
+  })
+  if (!entry) throw new Error('Character not found')
+
+  if (entry.characterSheet) {
+    if (entry.characterSheet.assignedPlayerId) throw new Error('This character is already claimed')
+    // Assign existing sheet
+    await prisma.characterSheet.update({
+      where: { id: entry.characterSheet.id },
+      data: { assignedPlayerId: userId },
+    })
+  } else {
+    // Create blank sheet and assign
+    const { createEmptyCharacterSheet } = await import('@/types/character-sheet')
+    const emptyData = createEmptyCharacterSheet()
+    emptyData.characterName = entry.title
+    await prisma.characterSheet.create({
+      data: {
+        wikiEntryId: entry.id,
+        campaignId,
+        assignedPlayerId: userId,
+        data: JSON.parse(JSON.stringify(emptyData)),
+      },
+    })
+  }
+
+  revalidatePath(`/campaigns/${campaignId}`)
+}
+
+/**
+ * Returns unclaimed CHARACTER entries for a campaign (for the claim dialog).
+ */
+export async function getUnclaimedCharacters(campaignId: string, userId: string) {
+  const member = await prisma.campaignMember.findFirst({
+    where: { campaignId, userId, status: 'ACCEPTED' },
+  })
+  if (!member) throw new Error('Not a member of this campaign')
+
+  // Characters with no sheet or a sheet with no assignedPlayerId
+  const entries = await prisma.wikiEntry.findMany({
+    where: { campaignId, type: 'CHARACTER' },
+    include: {
+      characterSheet: { select: { id: true, assignedPlayerId: true } },
+    },
+    orderBy: { title: 'asc' },
+  })
+
+  return entries.filter(
+    (e) => !e.characterSheet || e.characterSheet.assignedPlayerId === null
+  )
+}
+
+/**
  * When a user logs in, accept any PENDING invites matching their email.
  * Call this on the campaigns listing page load.
  */

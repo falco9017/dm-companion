@@ -63,6 +63,7 @@ interface SessionsViewProps {
   activeEntry: ActiveEntry | null
   dateFormat: string
   isLocked?: boolean
+  isReadOnly?: boolean
   onUnsavedChange: (isDirty: boolean) => void
   onNavigate: (href: string) => void
 }
@@ -74,6 +75,7 @@ export default function SessionsView({
   activeEntry,
   dateFormat,
   isLocked,
+  isReadOnly,
   onUnsavedChange,
   onNavigate,
 }: SessionsViewProps) {
@@ -130,7 +132,7 @@ export default function SessionsView({
         )}
       >
         {/* Actions */}
-        {!isLocked && (
+        {!isLocked && !isReadOnly && (
           <div className="flex flex-col gap-1.5 p-2 border-b">
             <Button size="sm" onClick={() => setCreateSessionOpen(true)} className="w-full">
               <Plus className="w-3.5 h-3.5 mr-1.5" />
@@ -194,7 +196,7 @@ export default function SessionsView({
             userId={userId}
             entry={activeEntry}
             onUnsavedChange={onUnsavedChange}
-            isReadOnly={isLocked}
+            isReadOnly={isLocked || isReadOnly}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center px-4">
@@ -208,18 +210,22 @@ export default function SessionsView({
         )}
       </div>
 
-      {/* Dialogs */}
-      <AudioUploadDialog
-        campaignId={campaignId}
-        isOpen={uploadOpen}
-        onClose={() => setUploadOpen(false)}
-      />
-      <CreateSessionDialog
-        campaignId={campaignId}
-        userId={userId}
-        isOpen={createSessionOpen}
-        onClose={() => setCreateSessionOpen(false)}
-      />
+      {/* Dialogs — only for editable mode */}
+      {!isReadOnly && (
+        <>
+          <AudioUploadDialog
+            campaignId={campaignId}
+            isOpen={uploadOpen}
+            onClose={() => setUploadOpen(false)}
+          />
+          <CreateSessionDialog
+            campaignId={campaignId}
+            userId={userId}
+            isOpen={createSessionOpen}
+            onClose={() => setCreateSessionOpen(false)}
+          />
+        </>
+      )}
     </div>
   )
 }

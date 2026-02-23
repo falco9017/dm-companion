@@ -339,6 +339,36 @@ const en = {
   'tabs.campaignData': 'Campaign',
   'tabs.chat': 'Chat',
   'tabs.combat': 'Combat',
+  'tabs.party': 'Party',
+
+  // Party
+  'party.title': 'Party',
+  'party.noCharacter': "You haven't chosen a character yet",
+  'party.claimExisting': 'Claim an existing character',
+  'party.createNew': 'Create a new character',
+  'party.importPdf': 'Import from PDF',
+  'party.hp': 'HP',
+  'party.ac': 'AC',
+
+  // Invite
+  'invite.shareTitle': 'Invite Players',
+  'invite.code': 'Invite Code',
+  'invite.copyLink': 'Copy Link',
+  'invite.copied': 'Copied!',
+  'invite.generate': 'Generate Invite Link',
+  'invite.regenerate': 'Regenerate',
+  'invite.regenerateWarn': 'Regenerating will invalidate the old link.',
+
+  // Campaigns (shared)
+  'campaigns.joined': "Campaigns I've Joined",
+  'campaigns.hostedBy': 'Hosted by {name}',
+
+  // Join page
+  'join.title': 'Campaign Invite',
+  'join.joiningAs': 'Joining as {name}',
+  'join.joinButton': 'Join Campaign',
+  'join.alreadyMember': "You're already a member of this campaign",
+  'join.invalidCode': 'Invalid or expired invite link',
 
   // Empty states
   'empty.sessions': 'No sessions yet',
@@ -694,6 +724,36 @@ const it: Record<string, string> = {
   'tabs.campaignData': 'Campagna',
   'tabs.chat': 'Chat',
   'tabs.combat': 'Combattimento',
+  'tabs.party': 'Gruppo',
+
+  // Party
+  'party.title': 'Gruppo',
+  'party.noCharacter': 'Non hai ancora scelto un personaggio',
+  'party.claimExisting': 'Rivendica un personaggio esistente',
+  'party.createNew': 'Crea un nuovo personaggio',
+  'party.importPdf': 'Importa da PDF',
+  'party.hp': 'PF',
+  'party.ac': 'CA',
+
+  // Invite
+  'invite.shareTitle': 'Invita Giocatori',
+  'invite.code': 'Codice Invito',
+  'invite.copyLink': 'Copia Link',
+  'invite.copied': 'Copiato!',
+  'invite.generate': 'Genera Link Invito',
+  'invite.regenerate': 'Rigenera',
+  'invite.regenerateWarn': 'Rigenerando si invalida il vecchio link.',
+
+  // Campaigns (shared)
+  'campaigns.joined': 'Campagne a cui partecipo',
+  'campaigns.hostedBy': 'Gestita da {name}',
+
+  // Join page
+  'join.title': 'Invito alla Campagna',
+  'join.joiningAs': 'Entrando come {name}',
+  'join.joinButton': 'Entra nella Campagna',
+  'join.alreadyMember': 'Sei già membro di questa campagna',
+  'join.invalidCode': 'Link di invito non valido o scaduto',
 
   // Empty states
   'empty.sessions': 'Nessuna sessione',
@@ -1049,6 +1109,36 @@ const fr: Record<string, string> = {
   'tabs.campaignData': 'Campagne',
   'tabs.chat': 'Chat',
   'tabs.combat': 'Combat',
+  'tabs.party': 'Groupe',
+
+  // Party
+  'party.title': 'Groupe',
+  'party.noCharacter': "Vous n'avez pas encore choisi de personnage",
+  'party.claimExisting': 'Réclamer un personnage existant',
+  'party.createNew': 'Créer un nouveau personnage',
+  'party.importPdf': 'Importer depuis PDF',
+  'party.hp': 'PV',
+  'party.ac': 'CA',
+
+  // Invite
+  'invite.shareTitle': 'Inviter des joueurs',
+  'invite.code': "Code d'invitation",
+  'invite.copyLink': 'Copier le lien',
+  'invite.copied': 'Copié !',
+  'invite.generate': "Générer un lien d'invitation",
+  'invite.regenerate': 'Régénérer',
+  'invite.regenerateWarn': "La régénération invalidera l'ancien lien.",
+
+  // Campaigns (shared)
+  'campaigns.joined': "Campagnes auxquelles j'ai rejoint",
+  'campaigns.hostedBy': 'Hébergé par {name}',
+
+  // Join page
+  'join.title': 'Invitation de campagne',
+  'join.joiningAs': 'Rejoindre en tant que {name}',
+  'join.joinButton': 'Rejoindre la campagne',
+  'join.alreadyMember': 'Vous êtes déjà membre de cette campagne',
+  'join.invalidCode': "Lien d'invitation invalide ou expiré",
 
   // Empty states
   'empty.sessions': 'Aucune session',
@@ -1404,6 +1494,36 @@ const de: Record<string, string> = {
   'tabs.campaignData': 'Kampagne',
   'tabs.chat': 'Chat',
   'tabs.combat': 'Kampf',
+  'tabs.party': 'Gruppe',
+
+  // Party
+  'party.title': 'Gruppe',
+  'party.noCharacter': 'Du hast noch keinen Charakter gewählt',
+  'party.claimExisting': 'Einen bestehenden Charakter beanspruchen',
+  'party.createNew': 'Neuen Charakter erstellen',
+  'party.importPdf': 'Aus PDF importieren',
+  'party.hp': 'TP',
+  'party.ac': 'RK',
+
+  // Invite
+  'invite.shareTitle': 'Spieler einladen',
+  'invite.code': 'Einladungscode',
+  'invite.copyLink': 'Link kopieren',
+  'invite.copied': 'Kopiert!',
+  'invite.generate': 'Einladungslink erstellen',
+  'invite.regenerate': 'Neu generieren',
+  'invite.regenerateWarn': 'Neu generieren macht den alten Link ungültig.',
+
+  // Campaigns (shared)
+  'campaigns.joined': 'Kampagnen, denen ich beigetreten bin',
+  'campaigns.hostedBy': 'Gehostet von {name}',
+
+  // Join page
+  'join.title': 'Kampagneneinladung',
+  'join.joiningAs': 'Beitreten als {name}',
+  'join.joinButton': 'Kampagne beitreten',
+  'join.alreadyMember': 'Du bist bereits Mitglied dieser Kampagne',
+  'join.invalidCode': 'Ungültiger oder abgelaufener Einladungslink',
 
   // Empty states
   'empty.sessions': 'Keine Sitzungen',
@@ -1759,6 +1879,36 @@ const es: Record<string, string> = {
   'tabs.campaignData': 'Campaña',
   'tabs.chat': 'Chat',
   'tabs.combat': 'Combate',
+  'tabs.party': 'Grupo',
+
+  // Party
+  'party.title': 'Grupo',
+  'party.noCharacter': 'Aún no has elegido un personaje',
+  'party.claimExisting': 'Reclamar un personaje existente',
+  'party.createNew': 'Crear un nuevo personaje',
+  'party.importPdf': 'Importar desde PDF',
+  'party.hp': 'PG',
+  'party.ac': 'CA',
+
+  // Invite
+  'invite.shareTitle': 'Invitar jugadores',
+  'invite.code': 'Código de invitación',
+  'invite.copyLink': 'Copiar enlace',
+  'invite.copied': '¡Copiado!',
+  'invite.generate': 'Generar enlace de invitación',
+  'invite.regenerate': 'Regenerar',
+  'invite.regenerateWarn': 'Regenerar invalidará el enlace antiguo.',
+
+  // Campaigns (shared)
+  'campaigns.joined': 'Campañas a las que me he unido',
+  'campaigns.hostedBy': 'Organizada por {name}',
+
+  // Join page
+  'join.title': 'Invitación a la campaña',
+  'join.joiningAs': 'Uniéndose como {name}',
+  'join.joinButton': 'Unirse a la campaña',
+  'join.alreadyMember': 'Ya eres miembro de esta campaña',
+  'join.invalidCode': 'Enlace de invitación inválido o caducado',
 
   // Empty states
   'empty.sessions': 'Sin sesiones',

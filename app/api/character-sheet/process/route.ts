@@ -30,13 +30,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only PDF files are accepted' }, { status: 400 })
     }
 
-    // Verify campaign ownership
+    // Verify campaign access (DM or accepted player)
+    const userId = session.user.id
     const campaign = await prisma.campaign.findFirst({
-      where: { id: campaignId, ownerId: session.user.id },
+      where: {
+        id: campaignId,
+        OR: [
+          { ownerId: userId },
+          { members: { some: { userId, status: 'ACCEPTED' } } },
+        ],
+      },
     })
 
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found or unauthorized' }, { status: 403 })
+    }
+
+    const isDM = campaign.ownerId === userId
+
+    // Players can only create if they have no existing assigned character
+    if (!isDM) {
+      const existingSheet = await prisma.characterSheet.findFirst({
+        where: { campaignId, assignedPlayerId: userId },
+      })
+      if (existingSheet) {
+        return NextResponse.json({ error: 'You already have a character in this campaign' }, { status: 409 })
+      }
     }
 
     // If wikiEntryId provided, verify it exists and is a CHARACTER type
@@ -96,7 +115,7 @@ export async function POST(request: NextRequest) {
       entryId = entry.id
     }
 
-    // Create character sheet record
+    // Create character sheet record (auto-assign to player if not DM)
     const characterSheet = await prisma.characterSheet.create({
       data: {
         wikiEntryId: entryId,
@@ -104,6 +123,7 @@ export async function POST(request: NextRequest) {
         data: JSON.parse(JSON.stringify(characterData)),
         pdfBlobUrl: blob.url,
         pdfBlobKey: blob.pathname,
+        ...(!isDM && { assignedPlayerId: userId }),
       },
     })
 

@@ -361,6 +361,27 @@ export async function getWikiTree(campaignId: string, userId: string) {
   })
 }
 
+export async function getPlayerWikiTree(campaignId: string, userId: string) {
+  // Verify accepted membership
+  const member = await prisma.campaignMember.findFirst({
+    where: { campaignId, userId, status: 'ACCEPTED' },
+  })
+  if (!member) throw new Error('Not a member of this campaign')
+
+  return prisma.wikiEntry.findMany({
+    where: { campaignId, type: 'SESSION_RECAP' },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      type: true,
+      parentId: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
 export async function getWikiEntriesByType(
   campaignId: string,
   userId: string

@@ -1,10 +1,11 @@
 import { auth } from '@/lib/auth'
 import { getCampaigns } from '@/actions/campaigns'
+import { getSharedCampaigns } from '@/actions/campaign-members'
 import { getUserProfile } from '@/actions/profile'
 import { t, type Locale } from '@/lib/i18n'
 import { getEffectiveTier, getLimits } from '@/lib/subscription'
 import Link from 'next/link'
-import { Plus, BookOpen, Crown, AlertTriangle } from 'lucide-react'
+import { Plus, BookOpen, Crown, AlertTriangle, Users } from 'lucide-react'
 import CampaignCard from '@/components/campaign/CampaignCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,8 +14,9 @@ export default async function CampaignsPage() {
   const session = await auth()
   const userId = session!.user.id
 
-  const [campaigns, profile, tier] = await Promise.all([
+  const [campaigns, sharedCampaigns, profile, tier] = await Promise.all([
     getCampaigns(userId),
+    getSharedCampaigns(userId),
     getUserProfile(userId),
     getEffectiveTier(userId),
   ])
@@ -92,6 +94,40 @@ export default async function CampaignsPage() {
               isLocked={overCampaignLimit}
             />
           ))}
+        </div>
+      )}
+
+      {/* Shared campaigns */}
+      {sharedCampaigns.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-xl font-bold">{t(locale, 'campaigns.joined')}</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {sharedCampaigns.map((campaign) => {
+              const dmName = campaign.owner.name || campaign.owner.email
+              return (
+                <Link key={campaign.id} href={`/campaigns/${campaign.id}`}>
+                  <Card className="hover:-translate-y-0.5 hover:shadow-lg transition-all group">
+                    <CardContent className="p-5 sm:p-6">
+                      <h2 className="text-lg sm:text-xl font-bold group-hover:text-primary transition-colors mb-1">
+                        {campaign.name}
+                      </h2>
+                      {campaign.description && (
+                        <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
+                          {campaign.description}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {t(locale, 'campaigns.hostedBy').replace('{name}', dmName)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

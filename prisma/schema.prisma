@@ -124,6 +124,7 @@ model Campaign {
   description String?
   language    String   @default("en")
   ownerId     String
+  inviteCode  String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

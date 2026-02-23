@@ -3,16 +3,19 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Settings, AlertTriangle, ArrowLeft, MessageSquare, Maximize2, Minimize2, X } from 'lucide-react'
+import { Settings, AlertTriangle, ArrowLeft, MessageSquare, Maximize2, Minimize2, X, Share2, Users } from 'lucide-react'
 import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
 import ChatView from './ChatView'
 import CombatTracker from '@/components/combat/CombatTracker'
+import PartyView from './PartyView'
+import InviteCodePanel from './InviteCodePanel'
 import { useI18n } from '@/lib/i18n-context'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import {
   AlertDialog,
@@ -53,40 +56,71 @@ interface ActiveEntry {
   } | null
 }
 
+interface PartySheet {
+  id: string
+  wikiEntryId: string
+  data: CharacterSheetData
+  pdfBlobUrl: string | null
+  wikiEntry: { id: string; title: string }
+  assignedPlayer: { id: string; name: string | null; email: string } | null
+  assignedPlayerId: string | null
+}
+
+interface PlayerCharacterSheet {
+  id: string
+  data: CharacterSheetData
+  pdfBlobUrl: string | null
+  wikiEntryId: string
+}
+
+interface UnclaimedEntry {
+  id: string
+  title: string
+  characterSheet: { id: string; assignedPlayerId: string | null } | null
+}
+
 interface WikiPageLayoutProps {
   campaignId: string
   userId: string
+  userRole: 'DM' | 'PLAYER'
   campaign: {
     name: string
     description: string | null
     language: string
+    inviteCode?: string | null
   }
   wikiTree: WikiTreeEntry[]
   activeEntry: ActiveEntry | null
   dateFormat: string
   isLocked?: boolean
+  playerCharacterSheet?: PlayerCharacterSheet | null
+  partySheets?: PartySheet[]
+  unclaimedCharacters?: UnclaimedEntry[]
 }
 
 export default function WikiPageLayout({
   campaignId,
   userId,
+  userRole,
   campaign,
   wikiTree,
   activeEntry,
   dateFormat,
   isLocked,
+  playerCharacterSheet,
+  partySheets = [],
+  unclaimedCharacters = [],
 }: WikiPageLayoutProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  // 'chat' tab no longer exists — treat it as 'sessions'
-  const rawTab = searchParams.get('tab') || 'sessions'
+  const rawTab = searchParams.get('tab') || (userRole === 'PLAYER' ? 'sessions' : 'sessions')
   const currentTab = rawTab === 'chat' ? 'sessions' : rawTab
   const [pendingTab, setPendingTab] = useState<string | null>(null)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
   const isDirtyRef = useRef(false)
   const { t } = useI18n()
 
-  // Chat side panel state
+  // Chat side panel state (DM only)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [chatWidth, setChatWidth] = useState(360)
   const [isChatMaximized, setIsChatMaximized] = useState(false)
@@ -169,8 +203,8 @@ export default function WikiPageLayout({
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Locked plan banner */}
-      {isLocked && (
+      {/* Locked plan banner (DM only) */}
+      {isLocked && userRole === 'DM' && (
         <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/30">
           <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
           <p className="flex-1 text-xs sm:text-sm text-orange-700 dark:text-orange-200/90">
@@ -202,45 +236,70 @@ export default function WikiPageLayout({
         <Tabs value={currentTab} onValueChange={handleTabChange} className="flex-1 flex-col-reverse min-w-0">
           <TabsList variant="line" className="h-10">
             <TabsTrigger value="sessions">{t('tabs.sessions')}</TabsTrigger>
-            <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
-            <TabsTrigger value="combat">{t('tabs.combat')}</TabsTrigger>
+            {userRole === 'PLAYER' ? (
+              <TabsTrigger value="party">{t('tabs.party')}</TabsTrigger>
+            ) : (
+              <>
+                <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
+                <TabsTrigger value="combat">{t('tabs.combat')}</TabsTrigger>
+              </>
+            )}
           </TabsList>
         </Tabs>
 
-        {/* Chat toggle button */}
-        {!isLocked && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={isChatOpen ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-8 w-8 flex-shrink-0"
-                onClick={toggleChat}
-              >
-                <MessageSquare className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {isChatOpen ? t('chat.closePanel') : t('chat.openPanel')}
-            </TooltipContent>
-          </Tooltip>
-        )}
+        {/* DM-only: Chat toggle + Invite code + Settings */}
+        {userRole === 'DM' && (
+          <>
+            {!isLocked && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isChatOpen ? 'secondary' : 'ghost'}
+                    size="icon"
+                    className="h-8 w-8 flex-shrink-0"
+                    onClick={toggleChat}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isChatOpen ? t('chat.closePanel') : t('chat.openPanel')}
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 flex-shrink-0"
-              asChild
-            >
-              <Link href={`/campaigns/${campaignId}/settings`}>
-                <Settings className="w-4 h-4" />
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t('sidebar.campaignSettings')}</TooltipContent>
-        </Tooltip>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                  <Share2 className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <InviteCodePanel
+                  campaignId={campaignId}
+                  userId={userId}
+                  initialCode={campaign.inviteCode}
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 flex-shrink-0"
+                  asChild
+                >
+                  <Link href={`/campaigns/${campaignId}/settings`}>
+                    <Settings className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.campaignSettings')}</TooltipContent>
+            </Tooltip>
+          </>
+        )}
       </div>
 
       {/* Tab content + chat side panel */}
@@ -258,12 +317,13 @@ export default function WikiPageLayout({
               activeEntry={activeEntry}
               dateFormat={dateFormat}
               isLocked={isLocked}
+              isReadOnly={userRole === 'PLAYER'}
               onUnsavedChange={handleUnsavedChange}
               onNavigate={handleNavigate}
             />
           )}
 
-          {currentTab === 'wiki' && (
+          {currentTab === 'wiki' && userRole === 'DM' && (
             <WikiDataView
               campaignId={campaignId}
               userId={userId}
@@ -275,25 +335,35 @@ export default function WikiPageLayout({
             />
           )}
 
-          {currentTab === 'combat' && (
+          {currentTab === 'combat' && userRole === 'DM' && (
             <CombatTracker
               campaignId={campaignId}
               userId={userId}
               wikiEntries={wikiTree}
             />
           )}
+
+          {currentTab === 'party' && userRole === 'PLAYER' && (
+            <PartyView
+              campaignId={campaignId}
+              userId={userId}
+              playerCharacterSheet={playerCharacterSheet ?? null}
+              partySheets={partySheets}
+              unclaimedCharacters={unclaimedCharacters}
+            />
+          )}
         </div>
 
-        {/* Resize handle */}
-        {isChatOpen && !isChatMaximized && (
+        {/* Resize handle (DM only) */}
+        {userRole === 'DM' && isChatOpen && !isChatMaximized && (
           <div
             onMouseDown={handleResizeMouseDown}
             className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden sm:block"
           />
         )}
 
-        {/* Chat side panel */}
-        {isChatOpen && (
+        {/* Chat side panel (DM only) */}
+        {userRole === 'DM' && isChatOpen && (
           <div
             style={!isChatMaximized ? { width: chatWidth } : undefined}
             className={cn(
