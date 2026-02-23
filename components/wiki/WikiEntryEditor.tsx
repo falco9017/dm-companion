@@ -129,30 +129,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
   // Board view for characters with sheet data
   if (isCharacter && hasSheet && viewMode === 'board') {
     return (
-      <div className="flex-1 overflow-y-auto">
-        {/* View toggle bar */}
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setViewMode('board')}
-              className="gap-1"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              {t('characterSheet.boardView')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode('wiki')}
-              className="gap-1 text-muted-foreground"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              {t('characterSheet.wikiView')}
-            </Button>
-          </div>
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
         <CharacterSheetBoard
           key={entry.characterSheet!.id}
           characterSheetId={entry.characterSheet!.id}
@@ -161,6 +138,7 @@ export default function WikiEntryEditor({ campaignId, userId, entry, onImportPdf
           initialData={entry.characterSheet!.data}
           pdfBlobUrl={entry.characterSheet!.pdfBlobUrl}
           onBack={() => setViewMode('wiki')}
+          onSwitchToWiki={() => setViewMode('wiki')}
           onUnsavedChange={onUnsavedChange}
         />
       </div>

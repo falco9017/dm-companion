@@ -1,13 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { Shield, Zap, Heart, Footprints, Plus, Minus, Moon, Sun, Swords } from 'lucide-react'
+import { Shield, Zap, Heart, Footprints, Moon, Sun, Swords } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Combatant, MonsterData } from '@/types/combat'
 import type { CharacterSheetData, Abilities, SpellSlot, Spell, Spellcasting } from '@/types/character-sheet'
+import { SpellDetailDialog } from '@/components/character-sheet/SpellDetailDialog'
 
 const ABILITY_LABELS: Record<keyof Abilities, string> = {
   strength: 'STR',
@@ -60,7 +62,6 @@ function formatCr(cr: number) {
   return String(cr)
 }
 
-// Compact ability score box
 function AbilityBox({ label, score }: { label: string; score: number }) {
   const mod = Math.floor((score - 10) / 2)
   return (
@@ -72,7 +73,6 @@ function AbilityBox({ label, score }: { label: string; score: number }) {
   )
 }
 
-// HP bar
 function HpBar({ current, max, temporary }: { current: number; max: number; temporary: number }) {
   const pct = max > 0 ? Math.max(0, current) / max : 0
   return (
@@ -93,60 +93,66 @@ function HpBar({ current, max, temporary }: { current: number; max: number; temp
   )
 }
 
-// Spell slot row with +/- controls
+// Spell slot row — dot style with +/- controls
 function SpellSlotRow({ slot, onChange }: { slot: SpellSlot; onChange: (updated: SpellSlot) => void }) {
   const available = slot.total - slot.used
   return (
     <div className="flex items-center gap-2 py-1">
-      <span className="text-[10px] font-semibold uppercase text-muted-foreground w-12">Lv {slot.level}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
-        disabled={slot.used >= slot.total}
-        onClick={() => onChange({ ...slot, used: slot.used + 1 })}
-        title="Use slot"
-      >
-        <Minus className="w-2.5 h-2.5" />
-      </Button>
-      <div className="flex gap-0.5 flex-1">
-        {Array.from({ length: slot.total }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              'flex-1 h-3 rounded-sm border transition-all',
-              i < available
-                ? 'bg-primary border-primary'
-                : 'bg-transparent border-muted-foreground/30'
-            )}
-          />
-        ))}
+      <span className="text-[10px] font-semibold uppercase text-muted-foreground w-10 flex-shrink-0">
+        Lv {slot.level}
+      </span>
+      {/* Dots */}
+      <div className="flex gap-1 flex-1 flex-wrap">
+        {Array.from({ length: slot.total }).map((_, i) => {
+          const isUsed = i >= available
+          return (
+            <button
+              key={i}
+              onClick={() =>
+                isUsed
+                  ? onChange({ ...slot, used: slot.used - 1 })
+                  : onChange({ ...slot, used: slot.used + 1 })
+              }
+              className="w-3.5 h-3.5 rounded-full border-2 transition-all hover:scale-110"
+              title={isUsed ? 'Restore slot' : 'Use slot'}
+              style={{
+                borderColor: 'hsl(var(--primary))',
+                backgroundColor: isUsed ? 'transparent' : 'hsl(var(--primary))',
+                opacity: isUsed ? 0.25 : 0.9,
+              }}
+            />
+          )
+        })}
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-5 w-5 text-primary hover:text-primary hover:bg-primary/10"
-        disabled={slot.used <= 0}
-        onClick={() => onChange({ ...slot, used: slot.used - 1 })}
-        title="Restore slot"
-      >
-        <Plus className="w-2.5 h-2.5" />
-      </Button>
-      <span className="text-[10px] text-muted-foreground w-8 text-right">{available}/{slot.total}</span>
+      <span className="text-[10px] text-muted-foreground w-8 text-right flex-shrink-0">
+        {available}/{slot.total}
+      </span>
     </div>
   )
 }
 
-// Prepared spell row with Cast button
-function SpellRow({ spell, slots, onCast }: { spell: Spell; slots: SpellSlot[]; onCast: (slotLevel: number) => void }) {
-  // Find the lowest available slot at or above spell level
+// Prepared spell row — clickable for detail popup
+function SpellRow({
+  spell,
+  slots,
+  onCast,
+  onOpenDetail,
+}: {
+  spell: Spell
+  slots: SpellSlot[]
+  onCast: (slotLevel: number) => void
+  onOpenDetail: () => void
+}) {
   const availableSlot =
     spell.level === 0
       ? null
       : slots.find((s) => s.level >= spell.level && s.used < s.total) ?? null
 
   return (
-    <div className="flex items-center gap-2 py-1 border-b border-border/40 last:border-0">
+    <div
+      className="flex items-center gap-2 py-1 border-b border-border/40 last:border-0 cursor-pointer hover:bg-muted/30 rounded px-1 transition-colors"
+      onClick={onOpenDetail}
+    >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium truncate">{spell.name}</p>
         <div className="flex gap-1 mt-0.5">
@@ -174,7 +180,10 @@ function SpellRow({ spell, slots, onCast }: { spell: Spell; slots: SpellSlot[]; 
           size="sm"
           className={cn('h-6 text-[10px] px-2 gap-1 flex-shrink-0', !availableSlot && 'opacity-40')}
           disabled={!availableSlot}
-          onClick={() => availableSlot && onCast(availableSlot.level)}
+          onClick={(e) => {
+            e.stopPropagation()
+            availableSlot && onCast(availableSlot.level)
+          }}
           title={availableSlot ? `Cast using level ${availableSlot.level} slot` : 'No spell slots available'}
         >
           <Swords className="w-2.5 h-2.5" />
@@ -195,6 +204,9 @@ function CharacterStats({
   sheet: CharacterSheetData
   onUpdate: (patch: Partial<Combatant>) => void
 }) {
+  const [selectedSpell, setSelectedSpell] = useState<string | null>(null)
+  const [spellDialogOpen, setSpellDialogOpen] = useState(false)
+
   const attacks = sheet.equipment.filter((e) => e.attackBonus !== undefined || e.damage)
   const equippedNonAttack = sheet.equipment.filter((e) => e.equipped && !e.attackBonus && !e.damage)
 
@@ -236,7 +248,6 @@ function CharacterStats({
   }
 
   function doShortRest() {
-    // Short rest: restore feature uses, not spell slots (warlock players adjust manually)
     const updatedSheet: CharacterSheetData = {
       ...sheet,
       features: sheet.features.map((f) => ({
@@ -363,7 +374,7 @@ function CharacterStats({
               </div>
             </div>
 
-            {/* Spell slots */}
+            {/* Spell slots — dot style */}
             {sheet.spellcasting.spellSlots.filter((s) => s.total > 0).length > 0 && (
               <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
@@ -384,7 +395,7 @@ function CharacterStats({
               </div>
             )}
 
-            {/* Prepared spells */}
+            {/* Prepared spells — clickable */}
             {preparedSpells.length > 0 && (
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
@@ -399,6 +410,10 @@ function CharacterStats({
                         spell={spell}
                         slots={sheet.spellcasting!.spellSlots}
                         onCast={castSpell}
+                        onOpenDetail={() => {
+                          setSelectedSpell(spell.name)
+                          setSpellDialogOpen(true)
+                        }}
                       />
                     )
                   })}
@@ -462,11 +477,17 @@ function CharacterStats({
           Long Rest
         </Button>
       </div>
+
+      <SpellDetailDialog
+        spellName={selectedSpell}
+        open={spellDialogOpen}
+        onOpenChange={setSpellDialogOpen}
+      />
     </div>
   )
 }
 
-// Monster stats panel (from D&D SRD or custom)
+// Monster stats panel
 function MonsterStats({ combatant }: { combatant: Combatant }) {
   const { monsterData, wikiContent } = combatant
 
@@ -485,7 +506,6 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
 
   return (
     <div className="space-y-4">
-      {/* Type info */}
       <div>
         <p className="text-sm text-muted-foreground capitalize">
           {monsterData.size} {monsterData.type}
@@ -495,10 +515,8 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
         </p>
       </div>
 
-      {/* HP Bar */}
       <HpBar current={combatant.currentHp} max={combatant.maxHp} temporary={combatant.temporaryHp} />
 
-      {/* Core stats */}
       <div className="grid grid-cols-3 gap-1.5">
         <div className="flex flex-col items-center rounded-md border bg-card p-1.5 text-center gap-0.5">
           <Shield className="w-3 h-3 text-muted-foreground" />
@@ -517,7 +535,6 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
         </div>
       </div>
 
-      {/* Ability scores */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Abilities</p>
         <div className="grid grid-cols-6 gap-1">
@@ -527,7 +544,6 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
         </div>
       </div>
 
-      {/* Actions */}
       {monsterData.actions && monsterData.actions.length > 0 && (
         <>
           <Separator />
@@ -545,7 +561,6 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
         </>
       )}
 
-      {/* Special Abilities */}
       {monsterData.specialAbilities && monsterData.specialAbilities.length > 0 && (
         <>
           <Separator />
@@ -565,7 +580,6 @@ function MonsterStats({ combatant }: { combatant: Combatant }) {
         </>
       )}
 
-      {/* Legendary Actions */}
       {monsterData.legendaryActions && monsterData.legendaryActions.length > 0 && (
         <>
           <Separator />
@@ -615,8 +629,8 @@ export default function CombatantStatsPanel({
         </div>
       </div>
 
-      {/* Stats content */}
-      <ScrollArea className="flex-1">
+      {/* Stats content — min-h-0 ensures flex-1 can shrink and ScrollArea activates */}
+      <ScrollArea className="flex-1 min-h-0">
         <div className="px-4 py-4">
           {combatant.characterSheet ? (
             <CharacterStats combatant={combatant} sheet={combatant.characterSheet} onUpdate={onUpdate} />

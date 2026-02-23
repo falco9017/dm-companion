@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { BookOpen, X } from 'lucide-react'
 import type { Spellcasting, Spell, SpellSlot } from '@/types/character-sheet'
 import SpellPicker from './SpellPicker'
+import { SpellDetailDialog } from './SpellDetailDialog'
 
 interface SpellSectionProps {
   spellcasting: Spellcasting
@@ -19,21 +21,25 @@ function SpellSlotTracker({
   onChange: (slot: SpellSlot) => void
 }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-ink-secondary w-8">Lv {slot.level}</span>
-      <div className="flex gap-0.5">
-        {Array.from({ length: slot.total }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onChange({ ...slot, used: i < slot.used ? i : i + 1 })}
-            className="w-3.5 h-3.5 rounded-sm border transition-colors"
-            style={{
-              borderColor: 'var(--mystic-purple)',
-              backgroundColor: i < slot.used ? 'transparent' : 'var(--mystic-purple)',
-              opacity: i < slot.used ? 0.3 : 1,
-            }}
-          />
-        ))}
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-ink-secondary w-8 flex-shrink-0">Lv {slot.level}</span>
+      <div className="flex gap-1 flex-wrap">
+        {Array.from({ length: slot.total }).map((_, i) => {
+          const isUsed = i < slot.used
+          return (
+            <button
+              key={i}
+              onClick={() => onChange({ ...slot, used: isUsed ? i : i + 1 })}
+              className="w-4 h-4 rounded-full border-2 transition-all hover:scale-110"
+              title={isUsed ? 'Click to restore' : 'Click to use'}
+              style={{
+                borderColor: 'var(--mystic-purple)',
+                backgroundColor: isUsed ? 'transparent' : 'var(--mystic-purple)',
+                opacity: isUsed ? 0.25 : 0.9,
+              }}
+            />
+          )
+        })}
       </div>
       <span className="text-[10px] text-ink-secondary">
         {slot.total - slot.used}/{slot.total}
@@ -47,27 +53,32 @@ function SpellCard({
   editing,
   onTogglePrepared,
   onRemove,
+  onClick,
 }: {
   spell: Spell
   editing: boolean
   onTogglePrepared: () => void
   onRemove: () => void
+  onClick: () => void
 }) {
   return (
-    <div className={`relative p-2 dnd-frame-light parchment-inner transition-opacity ${
-      spell.prepared ? '' : 'opacity-50'
-    }`}>
+    <div
+      className={`relative p-2 dnd-frame-light parchment-inner transition-opacity cursor-pointer hover:brightness-95 active:scale-[0.98] ${
+        spell.prepared ? '' : 'opacity-50'
+      }`}
+      onClick={onClick}
+    >
       {editing && (
         <button
-          onClick={onRemove}
-          className="absolute top-0.5 right-0.5 p-0.5 rounded text-ink-secondary hover:text-crimson transition-colors"
+          onClick={(e) => { e.stopPropagation(); onRemove() }}
+          className="absolute top-0.5 right-0.5 p-0.5 rounded text-ink-secondary hover:text-crimson transition-colors z-10"
         >
           <X className="w-2.5 h-2.5" />
         </button>
       )}
       <div className="flex items-start gap-1.5">
         <button
-          onClick={onTogglePrepared}
+          onClick={(e) => { e.stopPropagation(); onTogglePrepared() }}
           className="mt-0.5 flex-shrink-0"
           title={spell.prepared ? 'Prepared' : 'Not prepared'}
         >
@@ -80,13 +91,18 @@ function SpellCard({
         <div className="min-w-0">
           <p className="text-[11px] font-semibold text-ink truncate">{spell.name}</p>
           <div className="flex items-center gap-1 mt-0.5">
+            {spell.level === 0 && (
+              <span className="text-[9px] text-ink-secondary">Cantrip</span>
+            )}
             {spell.concentration && (
               <span className="text-[9px] px-1 rounded border" style={{ borderColor: 'var(--gold)', color: 'var(--gold-dark)', backgroundColor: 'color-mix(in srgb, var(--gold) 15%, transparent)' }}>C</span>
             )}
             {spell.ritual && (
               <span className="text-[9px] px-1 rounded border" style={{ borderColor: 'var(--royal-blue)', color: 'var(--royal-blue)', backgroundColor: 'color-mix(in srgb, var(--royal-blue) 15%, transparent)' }}>R</span>
             )}
-            <span className="text-[9px] text-ink-secondary">{spell.school}</span>
+            {spell.school && (
+              <span className="text-[9px] text-ink-secondary">{spell.school}</span>
+            )}
           </div>
         </div>
       </div>
@@ -95,6 +111,9 @@ function SpellCard({
 }
 
 export default function SpellSection({ spellcasting, editing, characterClass, onChange }: SpellSectionProps) {
+  const [selectedSpell, setSelectedSpell] = useState<string | null>(null)
+  const [spellDialogOpen, setSpellDialogOpen] = useState(false)
+
   const spellsByLevel = spellcasting.spells.reduce(
     (acc, spell) => {
       const key = spell.level
@@ -124,6 +143,11 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
 
   const addSpell = (spell: Spell) => {
     onChange({ ...spellcasting, spells: [...spellcasting.spells, spell] })
+  }
+
+  const openSpellDetail = (spellName: string) => {
+    setSelectedSpell(spellName)
+    setSpellDialogOpen(true)
   }
 
   const levelLabels: Record<number, string> = {
@@ -191,10 +215,10 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
         </div>
       </div>
 
-      {/* Spell slots */}
+      {/* Spell slots — dot style */}
       {spellcasting.spellSlots.length > 0 && (
-        <div className="space-y-1">
-          <h4 className="dnd-section-title text-[10px]">Spell Slots</h4>
+        <div className="space-y-1.5 p-2 dnd-frame-light parchment-inner">
+          <h4 className="dnd-section-title text-[10px] mb-2">Spell Slots</h4>
           {spellcasting.spellSlots.map((slot, i) => (
             <SpellSlotTracker key={slot.level} slot={slot} onChange={(s) => updateSlot(i, s)} />
           ))}
@@ -221,6 +245,7 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
                       editing={editing}
                       onTogglePrepared={() => togglePrepared(globalIndex)}
                       onRemove={() => removeSpell(globalIndex)}
+                      onClick={() => openSpellDetail(spell.name)}
                     />
                   )
                 })}
@@ -232,6 +257,12 @@ export default function SpellSection({ spellcasting, editing, characterClass, on
       {editing && (
         <SpellPicker characterClass={characterClass} onAdd={addSpell} />
       )}
+
+      <SpellDetailDialog
+        spellName={selectedSpell}
+        open={spellDialogOpen}
+        onOpenChange={setSpellDialogOpen}
+      />
     </div>
   )
 }

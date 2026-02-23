@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Pencil, Save, X, Trash2, Plus, FileText } from 'lucide-react'
+import { Pencil, Save, X, Trash2, Plus, FileText, LayoutGrid, ChevronDown, ChevronRight } from 'lucide-react'
 import type { CharacterSheetData, EquipmentItem, Feature, Spellcasting, Skill, Currency } from '@/types/character-sheet'
 import { updateCharacterSheet, deleteCharacterSheet } from '@/actions/character-sheet'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Button } from '@/components/ui/button'
 import AbilityScoreCard from './AbilityScoreCard'
 import CombatStats from './CombatStats'
 import HitPointTracker from './HitPointTracker'
@@ -22,7 +23,6 @@ import { useI18n } from '@/lib/i18n-context'
 const SPECIES = [
   'Aasimar', 'Dragonborn', 'Dwarf', 'Elf', 'Gnome', 'Goliath', 'Halfling',
   'Human', 'Orc', 'Tiefling',
-  // Common legacy / supplemental
   'Half-Elf', 'Half-Orc', 'Tabaxi', 'Kenku', 'Lizardfolk', 'Tortle',
   'Air Genasi', 'Earth Genasi', 'Fire Genasi', 'Water Genasi', 'Aarakocra',
   'Firbolg', 'Githyanki', 'Githzerai', 'Harengon', 'Owlin', 'Satyr', 'Fairy',
@@ -53,7 +53,6 @@ const BACKGROUNDS = [
   'Acolyte', 'Artisan', 'Charlatan', 'Criminal', 'Entertainer', 'Farmer',
   'Folk Hero', 'Guard', 'Guide', 'Hermit', 'Merchant', 'Noble', 'Outlander',
   'Sage', 'Sailor', 'Scribe', 'Soldier', 'Wayfarer',
-  // Legacy
   'Anthropologist', 'Archaeologist', 'City Watch', 'Clan Crafter', 'Cloistered Scholar',
   'Courtier', 'Faction Agent', 'Far Traveler', 'Feylost', 'Fisher', 'Ghost of Saltmarsh',
   'Guild Artisan', 'Haunted One', 'Inheritor', 'Investigator', 'Knight', 'Knight of the Order',
@@ -67,8 +66,7 @@ const ALIGNMENTS = [
   'Lawful Evil', 'Neutral Evil', 'Chaotic Evil',
   'Unaligned',
 ]
-
-// ── Ability config ────────────────────────────────────────────────────────────
+void ALIGNMENTS
 
 const abilityConfig = [
   { key: 'strength' as const, name: 'Strength', short: 'STR' },
@@ -89,6 +87,34 @@ interface CharacterSheetBoardProps {
   pdfBlobUrl?: string | null
   onBack: () => void
   onUnsavedChange?: (isDirty: boolean) => void
+  /** If provided, shows a "Wiki View" toggle button in the header */
+  onSwitchToWiki?: () => void
+}
+
+// ── Collapsible section helper ────────────────────────────────────────────────
+
+function SectionHeader({
+  title,
+  collapsed,
+  onToggle,
+  action,
+}: {
+  title: string
+  collapsed: boolean
+  onToggle: () => void
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between dnd-header-border cursor-pointer" onClick={onToggle}>
+      <div className="flex items-center gap-1.5">
+        <button className="p-0.5 text-ink-secondary hover:text-ink transition-colors">
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+        <h3 className="dnd-section-title">{title}</h3>
+      </div>
+      {action && <div onClick={(e) => e.stopPropagation()}>{action}</div>}
+    </div>
+  )
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -100,13 +126,18 @@ export default function CharacterSheetBoard({
   pdfBlobUrl,
   onBack,
   onUnsavedChange,
+  onSwitchToWiki,
 }: CharacterSheetBoardProps) {
   const [data, setData] = useState<CharacterSheetData>(initialData)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const { t } = useI18n()
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const toggleSection = (key: string) =>
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
 
   const autoSave = useCallback(
     (newData: CharacterSheetData) => {
@@ -206,373 +237,451 @@ export default function CharacterSheetBoard({
     updateData({ features: data.features.filter((_, i) => i !== index) })
   }
 
-  // Subclass suggestions based on selected class
   const subclassSuggestions = SUBCLASSES[data.class] ?? []
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 parchment-bg">
-      <div className="max-w-5xl mx-auto">
-
-        {/* ── Identity Card ─────────────────────────────────────────────────── */}
-        <div className="mb-4 p-4 dnd-frame parchment-inner">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            {/* Character Name */}
-            <div className="flex-1 min-w-0">
-              {editing ? (
-                <input
-                  type="text"
-                  value={data.characterName}
-                  onChange={(e) => updateData({ characterName: e.target.value })}
-                  className="text-2xl font-bold text-ink bg-transparent border-b-2 border-gold/40 focus:border-gold focus:outline-none focus:ring-0 w-full"
-                  placeholder={t('characterSheet.characterNamePlaceholder')}
-                />
-              ) : (
-                <h1 className="text-2xl font-bold text-ink truncate" style={{ borderBottom: '2px solid var(--gold)', paddingBottom: '2px', display: 'inline-block' }}>
-                  {data.characterName || t('characterSheet.unnamedCharacter')}
-                </h1>
-              )}
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {editing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="p-2 rounded-lg text-ink-secondary hover:text-gold-dark hover:bg-gold/10 transition-colors"
-                    title={saving ? t('common.saving') : t('common.save')}
-                  >
-                    <Save className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => { setEditing(false); setData(initialData); onUnsavedChange?.(false) }}
-                    className="p-2 rounded-lg text-ink-secondary hover:text-ink hover:bg-parchment-dark/50 transition-colors"
-                    title={t('common.cancel')}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  {pdfBlobUrl && (
-                    <a
-                      href={pdfBlobUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-lg text-ink-secondary hover:text-ink hover:bg-parchment-dark/50 transition-colors"
-                      title="View original PDF"
-                    >
-                      <FileText className="w-4 h-4" />
-                    </a>
-                  )}
-                  <button
-                    onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
-                    className="p-2 rounded-lg text-ink-secondary hover:text-gold-dark hover:bg-gold/10 transition-colors"
-                    title={t('common.edit')}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setConfirmDeleteOpen(true)}
-                    className="p-2 rounded-lg text-ink-secondary hover:text-crimson hover:bg-crimson/10 transition-colors"
-                    title={t('common.delete')}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Identity Fields Grid */}
-          {editing ? (
-            <div className="space-y-2">
-              {/* Row 1: Race / Class / Level / Subclass */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <ComboField
-                  label={t('characterSheet.race')}
-                  value={data.race}
-                  onChange={(v) => updateData({ race: v })}
-                  options={SPECIES}
-                  listId="cs-species"
-                  placeholder={t('characterSheet.racePlaceholder')}
-                />
-                <ComboField
-                  label={t('characterSheet.class')}
-                  value={data.class}
-                  onChange={(v) => updateData({ class: v })}
-                  options={CLASSES}
-                  listId="cs-classes"
-                  placeholder={t('characterSheet.classPlaceholder')}
-                />
-                <LevelField
-                  value={data.level}
-                  onChange={(v) => updateData({ level: v })}
-                  label={t('characterSheet.level')}
-                />
-                <ComboField
-                  label={t('characterSheet.subclass')}
-                  value={data.subclass}
-                  onChange={(v) => updateData({ subclass: v })}
-                  options={subclassSuggestions}
-                  listId="cs-subclasses"
-                  placeholder={t('characterSheet.subclassPlaceholder')}
-                />
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* ── Sticky toolbar ──────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-b bg-background/90 backdrop-blur-sm px-4 py-2 flex items-center justify-between gap-2 z-10">
+        {/* View toggle */}
+        <div className="flex items-center gap-1">
+          {onSwitchToWiki && (
+            <>
+              <div className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-secondary text-secondary-foreground rounded-md">
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>{t('characterSheet.boardView')}</span>
               </div>
-            </div>
-          ) : (
-            /* View Mode */
-            <div className="space-y-1.5">
-              {/* Primary badges row */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                {data.race && (
-                  <IdentityBadge color="emerald" label={t('characterSheet.race')} value={data.race} />
-                )}
-                {data.class && (
-                  <IdentityBadge color="blue" label={t('characterSheet.class')} value={
-                    `${data.class} ${data.level}${data.subclass ? ` — ${data.subclass}` : ''}`
-                  } />
-                )}
-              </div>
-            </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onSwitchToWiki}
+                className="gap-1 text-muted-foreground h-7 text-xs"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                {t('characterSheet.wikiView')}
+              </Button>
+            </>
+          )}
+          {pdfBlobUrl && (
+            <a
+              href={pdfBlobUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              title="View original PDF"
+            >
+              <FileText className="w-3.5 h-3.5" />
+            </a>
           )}
         </div>
 
-        {/* ── Main Board Grid ────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Left Column: Ability Scores */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="p-3 dnd-frame parchment-inner">
-              <h3 className="dnd-section-title dnd-header-border text-center">
-                {t('characterSheet.abilities')}
-              </h3>
-              <div className="flex flex-row lg:flex-col items-center justify-center gap-3 flex-wrap">
-                {abilityConfig.map(({ key, name }) => (
-                  <AbilityScoreCard
-                    key={key}
-                    name={name}
-                    ability={data.abilities[key]}
-                    saveProficient={data.savingThrows[key].proficient}
-                    saveModifier={data.savingThrows[key].modifier}
-                    editing={editing}
-                    onChange={(score) => updateAbility(key, score)}
+        {/* Edit / Save / Delete */}
+        <div className="flex items-center gap-1">
+          {editing ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSave}
+                disabled={saving}
+                className="h-7 gap-1 text-xs text-gold-dark hover:text-gold hover:bg-gold/10"
+                title={saving ? t('common.saving') : t('common.save')}
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? t('common.saving') : t('common.save')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setEditing(false); setData(initialData); onUnsavedChange?.(false) }}
+                className="h-7 gap-1 text-xs"
+                title={t('common.cancel')}
+              >
+                <X className="w-3.5 h-3.5" />
+                {t('common.cancel')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setEditing(true); onUnsavedChange?.(true) }}
+                className="h-7 gap-1 text-xs"
+                title={t('common.edit')}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {t('common.edit')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setConfirmDeleteOpen(true)}
+                className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title={t('common.delete')}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Scrollable content ──────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 parchment-bg">
+        <div className="max-w-5xl mx-auto">
+
+          {/* ── Identity Card ──────────────────────────────────────────────── */}
+          <div className="mb-4 p-4 dnd-frame parchment-inner">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex-1 min-w-0">
+                {editing ? (
+                  <input
+                    type="text"
+                    value={data.characterName}
+                    onChange={(e) => updateData({ characterName: e.target.value })}
+                    className="text-2xl font-bold text-ink bg-transparent border-b-2 border-gold/40 focus:border-gold focus:outline-none focus:ring-0 w-full"
+                    placeholder={t('characterSheet.characterNamePlaceholder')}
                   />
-                ))}
+                ) : (
+                  <h1 className="text-2xl font-bold text-ink truncate" style={{ borderBottom: '2px solid var(--gold)', paddingBottom: '2px', display: 'inline-block' }}>
+                    {data.characterName || t('characterSheet.unnamedCharacter')}
+                  </h1>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Center Column: Combat + Skills (expanded without personality column) */}
-          <div className="lg:col-span-10 space-y-4">
-            {/* Combat Stats */}
-            <div className="p-4 dnd-frame parchment-inner">
-              <CombatStats
-                armorClass={data.armorClass}
-                initiative={data.initiative}
-                speed={data.speed}
-                proficiencyBonus={data.proficiencyBonus}
-                editing={editing}
-                onChange={(field, value) => updateData({ [field]: value })}
-              />
-              <div className="mt-3">
-                <HitPointTracker
-                  current={data.hitPoints.current}
-                  maximum={data.hitPoints.maximum}
-                  temporary={data.hitPoints.temporary}
-                  editing={editing}
-                  onChange={(hp) => updateData({ hitPoints: hp })}
-                />
+            {editing ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <ComboField
+                    label={t('characterSheet.race')}
+                    value={data.race}
+                    onChange={(v) => updateData({ race: v })}
+                    options={SPECIES}
+                    listId="cs-species"
+                    placeholder={t('characterSheet.racePlaceholder')}
+                  />
+                  <ComboField
+                    label={t('characterSheet.class')}
+                    value={data.class}
+                    onChange={(v) => updateData({ class: v })}
+                    options={CLASSES}
+                    listId="cs-classes"
+                    placeholder={t('characterSheet.classPlaceholder')}
+                  />
+                  <LevelField
+                    value={data.level}
+                    onChange={(v) => updateData({ level: v })}
+                    label={t('characterSheet.level')}
+                  />
+                  <ComboField
+                    label={t('characterSheet.subclass')}
+                    value={data.subclass}
+                    onChange={(v) => updateData({ subclass: v })}
+                    options={subclassSuggestions}
+                    listId="cs-subclasses"
+                    placeholder={t('characterSheet.subclassPlaceholder')}
+                  />
+                </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <DeathSaveTracker
-                  successes={data.deathSaves.successes}
-                  failures={data.deathSaves.failures}
-                  onChange={(saves) => updateData({ deathSaves: saves })}
-                />
-                <div className="flex items-center gap-2 p-2 dnd-frame-light parchment-inner">
-                  <span className="dnd-section-title text-[10px]">
-                    {t('characterSheet.hitDice')}
-                  </span>
-                  {editing ? (
-                    <>
-                      <input
-                        type="text"
-                        value={data.hitDice.remaining}
-                        onChange={(e) => updateData({ hitDice: { ...data.hitDice, remaining: e.target.value } })}
-                        className="w-12 text-xs text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
-                      />
-                      <span className="text-[10px] text-ink-secondary">/</span>
-                      <input
-                        type="text"
-                        value={data.hitDice.total}
-                        onChange={(e) => updateData({ hitDice: { ...data.hitDice, total: e.target.value } })}
-                        className="w-12 text-xs text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
-                      />
-                    </>
-                  ) : (
-                    <span className="text-xs text-ink">
-                      {data.hitDice.remaining} / {data.hitDice.total}
-                    </span>
+            ) : (
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {data.race && (
+                    <IdentityBadge color="emerald" label={t('characterSheet.race')} value={data.race} />
+                  )}
+                  {data.class && (
+                    <IdentityBadge color="blue" label={t('characterSheet.class')} value={
+                      `${data.class} ${data.level}${data.subclass ? ` — ${data.subclass}` : ''}`
+                    } />
                   )}
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* ── Main Board Grid ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Left Column: Ability Scores */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="p-3 dnd-frame parchment-inner">
+                <SectionHeader
+                  title={t('characterSheet.abilities')}
+                  collapsed={!!collapsed['abilities']}
+                  onToggle={() => toggleSection('abilities')}
+                />
+                {!collapsed['abilities'] && (
+                  <div className="flex flex-row lg:flex-col items-center justify-center gap-3 flex-wrap mt-2">
+                    {abilityConfig.map(({ key, name }) => (
+                      <AbilityScoreCard
+                        key={key}
+                        name={name}
+                        ability={data.abilities[key]}
+                        saveProficient={data.savingThrows[key].proficient}
+                        saveModifier={data.savingThrows[key].modifier}
+                        editing={editing}
+                        onChange={(score) => updateAbility(key, score)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Skills */}
-            <div className="p-4 dnd-frame parchment-inner">
-              <SkillsPanel
-                skills={data.skills}
-                editing={editing}
-                onChange={(skills: Skill[]) => updateData({ skills })}
-              />
+            {/* Center Column */}
+            <div className="lg:col-span-10 space-y-4">
+              {/* Combat Stats */}
+              <div className="p-4 dnd-frame parchment-inner">
+                <SectionHeader
+                  title={t('characterSheet.combat')}
+                  collapsed={!!collapsed['combat']}
+                  onToggle={() => toggleSection('combat')}
+                />
+                {!collapsed['combat'] && (
+                  <div className="mt-2">
+                    <CombatStats
+                      armorClass={data.armorClass}
+                      initiative={data.initiative}
+                      speed={data.speed}
+                      proficiencyBonus={data.proficiencyBonus}
+                      editing={editing}
+                      onChange={(field, value) => updateData({ [field]: value })}
+                    />
+                    <div className="mt-3">
+                      <HitPointTracker
+                        current={data.hitPoints.current}
+                        maximum={data.hitPoints.maximum}
+                        temporary={data.hitPoints.temporary}
+                        editing={editing}
+                        onChange={(hp) => updateData({ hitPoints: hp })}
+                      />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      <DeathSaveTracker
+                        successes={data.deathSaves.successes}
+                        failures={data.deathSaves.failures}
+                        onChange={(saves) => updateData({ deathSaves: saves })}
+                      />
+                      <div className="flex items-center gap-2 p-2 dnd-frame-light parchment-inner">
+                        <span className="dnd-section-title text-[10px]">
+                          {t('characterSheet.hitDice')}
+                        </span>
+                        {editing ? (
+                          <>
+                            <input
+                              type="text"
+                              value={data.hitDice.remaining}
+                              onChange={(e) => updateData({ hitDice: { ...data.hitDice, remaining: e.target.value } })}
+                              className="w-12 text-xs text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
+                            />
+                            <span className="text-[10px] text-ink-secondary">/</span>
+                            <input
+                              type="text"
+                              value={data.hitDice.total}
+                              onChange={(e) => updateData({ hitDice: { ...data.hitDice, total: e.target.value } })}
+                              className="w-12 text-xs text-center bg-transparent border-b border-gold/40 focus:border-gold focus:outline-none text-ink"
+                            />
+                          </>
+                        ) : (
+                          <span className="text-xs text-ink">
+                            {data.hitDice.remaining} / {data.hitDice.total}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Skills */}
+              <div className="p-4 dnd-frame parchment-inner">
+                <SectionHeader
+                  title={t('characterSheet.skills')}
+                  collapsed={!!collapsed['skills']}
+                  onToggle={() => toggleSection('skills')}
+                />
+                {!collapsed['skills'] && (
+                  <div className="mt-2">
+                    <SkillsPanel
+                      skills={data.skills}
+                      editing={editing}
+                      onChange={(skills: Skill[]) => updateData({ skills })}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* ── Equipment ─────────────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 dnd-frame parchment-inner">
-          <div className="flex items-center justify-between dnd-header-border">
-            <h3 className="dnd-section-title">
-              {t('characterSheet.equipment')}
-            </h3>
-            <button
-              onClick={addEquipment}
-              className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addItem')}
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-            {data.equipment.map((item, i) => (
-              <EquipmentCard
-                key={i}
-                item={item}
-                editing={editing}
-                onUpdate={(updated) => updateEquipment(i, updated)}
-                onRemove={() => removeEquipment(i)}
-              />
-            ))}
-            {data.equipment.length === 0 && (
-              <p className="text-xs text-ink-secondary col-span-full text-center py-4">
-                {t('characterSheet.noEquipment')}
-              </p>
-            )}
-          </div>
-          <div className="dnd-divider"></div>
-          <div className="mt-3">
-            <CurrencyTracker
-              currency={data.currency}
-              onChange={(currency: Currency) => updateData({ currency })}
-            />
-          </div>
-        </div>
-
-        {/* ── Features & Traits ─────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 dnd-frame parchment-inner">
-          <div className="flex items-center justify-between dnd-header-border">
-            <h3 className="dnd-section-title">
-              {t('characterSheet.features')}
-            </h3>
-            {editing && (
-              <button
-                onClick={addFeature}
-                className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addFeature')}
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {data.features.map((feature, i) => (
-              <FeatureCard
-                key={i}
-                feature={feature}
-                editing={editing}
-                onUpdate={(updated) => updateFeature(i, updated)}
-                onRemove={() => removeFeature(i)}
-              />
-            ))}
-            {data.features.length === 0 && (
-              <p className="text-xs text-ink-secondary col-span-full text-center py-4">
-                {t('characterSheet.noFeatures')}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ── Spellcasting ──────────────────────────────────────────────────── */}
-        {(data.spellcasting || editing) && (
+          {/* ── Equipment ──────────────────────────────────────────────────── */}
           <div className="mt-4 p-4 dnd-frame parchment-inner">
-            {data.spellcasting ? (
-              <SpellSection
-                spellcasting={data.spellcasting}
-                editing={editing}
-                characterClass={data.class}
-                onChange={(spellcasting: Spellcasting) => updateData({ spellcasting })}
-              />
-            ) : editing ? (
-              <button
-                onClick={() =>
-                  updateData({
-                    spellcasting: {
-                      ability: 'WIS',
-                      saveDC: 10,
-                      attackBonus: 2,
-                      spellSlots: [],
-                      spells: [],
-                    },
-                  })
-                }
-                className="flex items-center gap-2 text-sm text-gold-dark hover:text-gold transition-colors mx-auto py-4"
-              >
-                <Plus className="w-4 h-4" /> {t('characterSheet.addSpellcasting')}
-              </button>
-            ) : null}
+            <SectionHeader
+              title={t('characterSheet.equipment')}
+              collapsed={!!collapsed['equipment']}
+              onToggle={() => toggleSection('equipment')}
+              action={
+                <button
+                  onClick={addEquipment}
+                  className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addItem')}
+                </button>
+              }
+            />
+            {!collapsed['equipment'] && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
+                  {data.equipment.map((item, i) => (
+                    <EquipmentCard
+                      key={i}
+                      item={item}
+                      editing={editing}
+                      onUpdate={(updated) => updateEquipment(i, updated)}
+                      onRemove={() => removeEquipment(i)}
+                    />
+                  ))}
+                  {data.equipment.length === 0 && (
+                    <p className="text-xs text-ink-secondary col-span-full text-center py-4">
+                      {t('characterSheet.noEquipment')}
+                    </p>
+                  )}
+                </div>
+                <div className="dnd-divider"></div>
+                <div className="mt-3">
+                  <CurrencyTracker
+                    currency={data.currency}
+                    onChange={(currency: Currency) => updateData({ currency })}
+                  />
+                </div>
+              </>
+            )}
           </div>
-        )}
 
-        {/* ── Notes & Background ────────────────────────────────────────────── */}
-        <div className="mt-4 p-4 dnd-frame parchment-inner">
-          <h3 className="dnd-section-title dnd-header-border">
-            {t('characterSheet.notesAndBackground')}
-          </h3>
-          <div className="space-y-3">
-            <div className="p-2 dnd-frame-light parchment-inner border-l-2 border-l-gold">
-              <label className="block dnd-section-title text-[10px] mb-1">
-                {t('characterSheet.background')}
-              </label>
-              <input
-                list="cs-backgrounds"
-                value={data.background}
-                onChange={(e) => updateData({ background: e.target.value })}
-                className="w-full text-sm text-ink bg-transparent border-none focus:outline-none"
-                placeholder={t('characterSheet.backgroundPlaceholder')}
-              />
-              <datalist id="cs-backgrounds">
-                {BACKGROUNDS.map((o) => (
-                  <option key={o} value={o} />
+          {/* ── Features & Traits ──────────────────────────────────────────── */}
+          <div className="mt-4 p-4 dnd-frame parchment-inner">
+            <SectionHeader
+              title={t('characterSheet.features')}
+              collapsed={!!collapsed['features']}
+              onToggle={() => toggleSection('features')}
+              action={
+                editing ? (
+                  <button
+                    onClick={addFeature}
+                    className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addFeature')}
+                  </button>
+                ) : undefined
+              }
+            />
+            {!collapsed['features'] && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                {data.features.map((feature, i) => (
+                  <FeatureCard
+                    key={i}
+                    feature={feature}
+                    editing={editing}
+                    onUpdate={(updated) => updateFeature(i, updated)}
+                    onRemove={() => removeFeature(i)}
+                  />
                 ))}
-              </datalist>
-            </div>
-
-            {/* General Notes */}
-            <div>
-              <p className="dnd-section-title text-[10px] mb-1">
-                {t('characterSheet.notes')}
-              </p>
-              <textarea
-                value={data.notes}
-                onChange={(e) => updateData({ notes: e.target.value })}
-                rows={4}
-                className="w-full text-sm text-ink-secondary bg-transparent border border-gold/30 rounded-lg p-3 focus:border-gold focus:outline-none resize-y"
-                placeholder={t('characterSheet.notesPlaceholder')}
-              />
-            </div>
+                {data.features.length === 0 && (
+                  <p className="text-xs text-ink-secondary col-span-full text-center py-4">
+                    {t('characterSheet.noFeatures')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-        </div>
 
+          {/* ── Spellcasting ─────────────────────────────────────────────── */}
+          {(data.spellcasting || editing) && (
+            <div className="mt-4 p-4 dnd-frame parchment-inner">
+              {data.spellcasting ? (
+                <>
+                  <SectionHeader
+                    title="Spellcasting"
+                    collapsed={!!collapsed['spells']}
+                    onToggle={() => toggleSection('spells')}
+                  />
+                  {!collapsed['spells'] && (
+                    <div className="mt-2">
+                      <SpellSection
+                        spellcasting={data.spellcasting}
+                        editing={editing}
+                        characterClass={data.class}
+                        onChange={(spellcasting: Spellcasting) => updateData({ spellcasting })}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : editing ? (
+                <button
+                  onClick={() =>
+                    updateData({
+                      spellcasting: {
+                        ability: 'WIS',
+                        saveDC: 10,
+                        attackBonus: 2,
+                        spellSlots: [],
+                        spells: [],
+                      },
+                    })
+                  }
+                  className="flex items-center gap-2 text-sm text-gold-dark hover:text-gold transition-colors mx-auto py-4"
+                >
+                  <Plus className="w-4 h-4" /> {t('characterSheet.addSpellcasting')}
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {/* ── Notes & Background ──────────────────────────────────────── */}
+          <div className="mt-4 p-4 dnd-frame parchment-inner">
+            <SectionHeader
+              title={t('characterSheet.notesAndBackground')}
+              collapsed={!!collapsed['notes']}
+              onToggle={() => toggleSection('notes')}
+            />
+            {!collapsed['notes'] && (
+              <div className="space-y-3 mt-2">
+                <div className="p-2 dnd-frame-light parchment-inner border-l-2 border-l-gold">
+                  <label className="block dnd-section-title text-[10px] mb-1">
+                    {t('characterSheet.background')}
+                  </label>
+                  <input
+                    list="cs-backgrounds"
+                    value={data.background}
+                    onChange={(e) => updateData({ background: e.target.value })}
+                    className="w-full text-sm text-ink bg-transparent border-none focus:outline-none"
+                    placeholder={t('characterSheet.backgroundPlaceholder')}
+                  />
+                  <datalist id="cs-backgrounds">
+                    {BACKGROUNDS.map((o) => (
+                      <option key={o} value={o} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <p className="dnd-section-title text-[10px] mb-1">
+                    {t('characterSheet.notes')}
+                  </p>
+                  <textarea
+                    value={data.notes}
+                    onChange={(e) => updateData({ notes: e.target.value })}
+                    rows={4}
+                    className="w-full text-sm text-ink-secondary bg-transparent border border-gold/30 rounded-lg p-3 focus:border-gold focus:outline-none resize-y"
+                    placeholder={t('characterSheet.notesPlaceholder')}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
+
       <ConfirmDialog
         open={confirmDeleteOpen}
         onOpenChange={setConfirmDeleteOpen}
@@ -589,37 +698,6 @@ export default function CharacterSheetBoard({
 
 // ── Helper Components ─────────────────────────────────────────────────────────
 
-/** Labeled text input for identity fields */
-function IdentityField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  type?: string
-}) {
-  return (
-    <div>
-      <label className="block dnd-section-title text-[10px] mb-0.5">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full text-sm text-ink bg-parchment-dark/30 border border-gold/30 rounded-lg px-2 py-1.5 focus:border-gold focus:outline-none"
-      />
-    </div>
-  )
-}
-
-/** Combobox input: datalist suggestions + free text override */
 function ComboField({
   label,
   value,
@@ -637,9 +715,7 @@ function ComboField({
 }) {
   return (
     <div>
-      <label className="block dnd-section-title text-[10px] mb-0.5">
-        {label}
-      </label>
+      <label className="block dnd-section-title text-[10px] mb-0.5">{label}</label>
       <input
         list={listId}
         value={value}
@@ -656,7 +732,6 @@ function ComboField({
   )
 }
 
-/** Level selector 1–20 with datalist */
 function LevelField({
   label,
   value,
@@ -668,9 +743,7 @@ function LevelField({
 }) {
   return (
     <div>
-      <label className="block dnd-section-title text-[10px] mb-0.5">
-        {label}
-      </label>
+      <label className="block dnd-section-title text-[10px] mb-0.5">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value))}
@@ -684,7 +757,6 @@ function LevelField({
   )
 }
 
-/** View-mode identity badge */
 function IdentityBadge({
   color,
   label,
@@ -694,38 +766,11 @@ function IdentityBadge({
   label: string
   value: string
 }) {
-  void color // all badges use the same D&D parchment style
+  void color
   return (
     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-parchment-dark/50 text-ink border border-gold/30">
       <span className="opacity-70 text-[10px] text-gold-dark">{label}</span>
       {value}
     </span>
-  )
-}
-
-/** Single personality/background field in the notes section */
-function PersonalityField({
-  label,
-  color,
-  value,
-  onChange,
-}: {
-  label: string
-  color: string
-  value: string
-  onChange: (v: string) => void
-}) {
-  if (!value && !onChange) return null
-  return (
-    <div className={`p-2 dnd-frame-light parchment-inner border-l-2 ${color}`}>
-      <p className="dnd-section-title text-[10px] mb-1">{label}</p>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={2}
-        className="w-full text-xs text-ink-secondary bg-transparent border-none focus:outline-none resize-none"
-        placeholder={`${label}...`}
-      />
-    </div>
   )
 }
