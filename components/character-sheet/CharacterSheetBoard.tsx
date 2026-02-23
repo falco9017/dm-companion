@@ -13,7 +13,7 @@ import HitPointTracker from './HitPointTracker'
 import DeathSaveTracker from './DeathSaveTracker'
 import SkillsPanel from './SkillsPanel'
 import EquipmentCard from './EquipmentCard'
-import FeatureCard from './FeatureCard'
+import FeaturesGroupCard from './FeatureCard'
 import SpellSection from './SpellSection'
 import CurrencyTracker from './CurrencyTracker'
 import { useI18n } from '@/lib/i18n-context'
@@ -218,11 +218,11 @@ export default function CharacterSheetBoard({
     updateData({ equipment: data.equipment.filter((_, i) => i !== index) })
   }
 
-  const addFeature = () => {
+  const addFeature = (source: 'Class' | 'Race' | 'Background') => {
     updateData({
       features: [
         ...data.features,
-        { name: 'New Feature', description: '', source: 'Class' },
+        { name: 'New Feature', description: '', source },
       ],
     })
   }
@@ -564,33 +564,26 @@ export default function CharacterSheetBoard({
               title={t('characterSheet.features')}
               collapsed={!!collapsed['features']}
               onToggle={() => toggleSection('features')}
-              action={
-                editing ? (
-                  <button
-                    onClick={addFeature}
-                    className="flex items-center gap-1 text-xs text-gold-dark hover:text-gold transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> {t('characterSheet.addFeature')}
-                  </button>
-                ) : undefined
-              }
             />
             {!collapsed['features'] && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                {data.features.map((feature, i) => (
-                  <FeatureCard
-                    key={i}
-                    feature={feature}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                {(['Class', 'Race', 'Background'] as const).map((src) => (
+                  <FeaturesGroupCard
+                    key={src}
+                    source={src}
+                    features={data.features
+                      .map((f, i) => ({ feature: f, index: i }))
+                      .filter(({ feature }) =>
+                        src === 'Class'
+                          ? feature.source === 'Class' || feature.source === 'Feat'
+                          : feature.source === src
+                      )}
                     editing={editing}
-                    onUpdate={(updated) => updateFeature(i, updated)}
-                    onRemove={() => removeFeature(i)}
+                    onUpdate={updateFeature}
+                    onRemove={removeFeature}
+                    onAdd={() => addFeature(src)}
                   />
                 ))}
-                {data.features.length === 0 && (
-                  <p className="text-xs text-ink-secondary col-span-full text-center py-4">
-                    {t('characterSheet.noFeatures')}
-                  </p>
-                )}
               </div>
             )}
           </div>
