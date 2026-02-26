@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, Sparkles } from 'lucide-react'
 import { useI18n } from '@/lib/i18n-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -103,9 +103,12 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground mt-8">
-            <p className="text-base mb-2">{t('chat.emptyTitle')}</p>
-            <p className="text-sm">
+          <div className="text-center text-muted-foreground mt-10 px-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <p className="font-serif text-base font-medium text-foreground mb-1">{t('chat.emptyTitle')}</p>
+            <p className="text-xs leading-relaxed">
               {t('chat.emptySubtitle')}
             </p>
           </div>
@@ -134,7 +137,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-3 border-t border-border">
+      <form onSubmit={handleSubmit} className="p-3 border-t border-border bg-card/50">
         <div className="flex gap-2">
           <Input
             type="text"
@@ -142,6 +145,7 @@ export default function ChatInterface({ campaignId, initialHistory = [] }: ChatI
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
             placeholder={t('chat.placeholder')}
+            className="rounded-xl"
           />
           <Button
             type="submit"

@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Settings, AlertTriangle, ArrowLeft, MessageSquare, Maximize2, Minimize2, X, Share2, Users } from 'lucide-react'
+import { Settings, AlertTriangle, ArrowLeft, Maximize2, Minimize2, X, Share2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
@@ -220,7 +220,7 @@ export default function WikiPageLayout({
       )}
 
       {/* Tab bar */}
-      <div className="flex-shrink-0 border-b px-4 flex items-center gap-3">
+      <div className="flex-shrink-0 border-b bg-card px-4 flex items-center gap-3">
         <div className="flex items-center gap-2 mr-2 py-2">
           <Link
             href="/campaigns"
@@ -228,7 +228,7 @@ export default function WikiPageLayout({
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <h2 className="text-sm font-bold truncate max-w-[140px] sm:max-w-[200px]">
+          <h2 className="text-sm font-medium truncate max-w-[140px] sm:max-w-[200px] text-foreground">
             {campaign.name}
           </h2>
         </div>
@@ -256,10 +256,10 @@ export default function WikiPageLayout({
                   <Button
                     variant={isChatOpen ? 'secondary' : 'ghost'}
                     size="icon"
-                    className="h-8 w-8 flex-shrink-0"
+                    className={`h-8 w-8 flex-shrink-0 ${isChatOpen ? 'text-primary' : ''}`}
                     onClick={toggleChat}
                   >
-                    <MessageSquare className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -372,8 +372,11 @@ export default function WikiPageLayout({
             )}
           >
             {/* Panel header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-border flex-shrink-0">
-              <span className="text-sm font-semibold">{t('chat.title')}</span>
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-sm font-serif font-medium text-primary tracking-wide">{t('chat.title')}</span>
+              </div>
               <div className="flex items-center gap-0.5">
                 <Button
                   variant="ghost"

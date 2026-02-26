@@ -72,7 +72,7 @@ export default function SignUpForm() {
                 <Scroll className="w-6 h-6 text-primary" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">Create Account</h1>
-              <p className="text-muted-foreground">Sign up to get started with DM Companion</p>
+              <p className="text-muted-foreground">Sign up to get started with mystic.quest</p>
             </div>
 
             {success ? (

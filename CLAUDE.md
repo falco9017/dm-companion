@@ -14,6 +14,8 @@ npx prisma db push   # Push schema changes to database
 
 Deployed on Vercel at https://dm-companion-iota.vercel.app. Pushing to `main` triggers auto-deploy.
 
+**Workflow**: After completing a new feature, always commit and push to `main` (`git push origin main`) to trigger a Vercel deployment.
+
 **Important**: After changing `prisma/schema.prisma`, always run `npx prisma db push` to sync the remote database. The Vercel build only runs `prisma generate`, not `db push`.
 
 ## Architecture

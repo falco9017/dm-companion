@@ -46,7 +46,7 @@ export default async function CampaignsPage() {
       )}
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">{t(locale, 'campaigns.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-medium">{t(locale, 'campaigns.title')}</h1>
         {atCampaignLimit ? (
           <Button asChild variant="outline">
             <Link href="/pricing">

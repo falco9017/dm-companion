@@ -10,7 +10,7 @@ function getResend(): Resend {
 }
 
 function getFromEmail(): string {
-  return process.env.RESEND_FROM_EMAIL || 'DM Companion <onboarding@resend.dev>'
+  return process.env.RESEND_FROM_EMAIL || 'mystic.quest <onboarding@resend.dev>'
 }
 
 export async function sendVerificationEmail(email: string, token: string, baseUrl: string) {
@@ -19,10 +19,10 @@ export async function sendVerificationEmail(email: string, token: string, baseUr
   await getResend().emails.send({
     from: getFromEmail(),
     to: email,
-    subject: 'Verify your email — DM Companion',
+    subject: 'Verify your email — mystic.quest',
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #12142A; color: #F1F5F9; border-radius: 12px;">
-        <h1 style="color: #A855F7; margin-bottom: 8px;">DM Companion</h1>
+        <h1 style="color: #A855F7; margin-bottom: 8px;">mystic.quest</h1>
         <p>Welcome! Click the button below to verify your email address.</p>
         <a href="${verifyUrl}" style="display: inline-block; margin: 24px 0; padding: 12px 32px; background: #7C3AED; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
           Verify Email
@@ -40,10 +40,10 @@ export async function sendPasswordResetEmail(email: string, token: string, baseU
   await getResend().emails.send({
     from: getFromEmail(),
     to: email,
-    subject: 'Reset your password — DM Companion',
+    subject: 'Reset your password — mystic.quest',
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #12142A; color: #F1F5F9; border-radius: 12px;">
-        <h1 style="color: #A855F7; margin-bottom: 8px;">DM Companion</h1>
+        <h1 style="color: #A855F7; margin-bottom: 8px;">mystic.quest</h1>
         <p>You requested a password reset. Click the button below to choose a new password.</p>
         <a href="${resetUrl}" style="display: inline-block; margin: 24px 0; padding: 12px 32px; background: #7C3AED; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
           Reset Password
@@ -66,10 +66,10 @@ export async function sendCampaignInviteEmail(
   await getResend().emails.send({
     from: getFromEmail(),
     to: email,
-    subject: `You've been invited to "${campaignName}" — DM Companion`,
+    subject: `You've been invited to "${campaignName}" — mystic.quest`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #12142A; color: #F1F5F9; border-radius: 12px;">
-        <h1 style="color: #A855F7; margin-bottom: 8px;">DM Companion</h1>
+        <h1 style="color: #A855F7; margin-bottom: 8px;">mystic.quest</h1>
         <p><strong>${dmName}</strong> has invited you to join the campaign <strong>"${campaignName}"</strong> as a player.</p>
         <a href="${signInUrl}" style="display: inline-block; margin: 24px 0; padding: 12px 32px; background: #7C3AED; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
           Sign In to Join

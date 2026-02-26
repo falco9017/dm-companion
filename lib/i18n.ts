@@ -70,7 +70,7 @@ const en = {
   'common.createEntry': 'Create Entry',
 
   // Chat
-  'chat.title': 'DM Companion',
+  'chat.title': 'Mystic AI',
   'chat.placeholder': 'Ask about your campaign or generate content...',
   'chat.emptyTitle': 'Your DM assistant is ready!',
   'chat.emptySubtitle': 'Ask about your campaign, or generate NPCs, locations, encounters, and more.',
@@ -1610,7 +1610,7 @@ const es: Record<string, string> = {
   'common.createEntry': 'Crear Entrada',
 
   // Chat
-  'chat.title': 'DM Companion',
+  'chat.title': 'Mystic AI',
   'chat.placeholder': 'Pregunta sobre tu campaña o genera contenido...',
   'chat.emptyTitle': '¡Tu asistente DM está listo!',
   'chat.emptySubtitle': 'Pregunta sobre tu campaña, o genera PNJs, lugares, encuentros y más.',
