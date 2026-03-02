@@ -45,10 +45,10 @@ export default function DashboardView({
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
       <header className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-medium text-foreground">
+        <h1 className="text-2xl md:text-4xl font-semibold text-foreground">
           Welcome back, DM.
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm md:text-base">
           {campaign.description || `Your adventure in ${campaign.name} awaits. What would you like to do today?`}
         </p>
       </header>
@@ -62,7 +62,7 @@ export default function DashboardView({
           <div className="p-3 bg-red-100 dark:bg-red-900/50 rounded-xl text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
             <Play className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Start Live Session</h3>
+          <h3 className="font-semibold text-lg text-foreground mb-1">Start Live Session</h3>
           <p className="text-sm text-muted-foreground">Open the combat tracker and party overview.</p>
         </button>
 
@@ -73,7 +73,7 @@ export default function DashboardView({
           <div className="p-3 bg-background rounded-xl text-primary mb-4 group-hover:scale-110 transition-transform">
             <Upload className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Upload Audio</h3>
+          <h3 className="font-semibold text-lg text-foreground mb-1">Upload Audio</h3>
           <p className="text-sm text-muted-foreground">Transcribe and auto-generate wiki updates.</p>
         </button>
 
@@ -84,7 +84,7 @@ export default function DashboardView({
           <div className="p-3 bg-background rounded-xl text-primary mb-4 group-hover:scale-110 transition-transform">
             <BookOpen className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Campaign Wiki</h3>
+          <h3 className="font-semibold text-lg text-foreground mb-1">Campaign Wiki</h3>
           <p className="text-sm text-muted-foreground">Browse characters, locations, and lore.</p>
         </button>
       </div>
@@ -93,7 +93,7 @@ export default function DashboardView({
         {/* Recent Activity */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl text-foreground">Recent Sessions</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-foreground">Recent Sessions</h2>
             <button
               onClick={() => onNavigate('sessions')}
               className="text-sm text-primary hover:underline"
@@ -135,7 +135,7 @@ export default function DashboardView({
 
         {/* Party Snapshot */}
         <div className="space-y-4">
-          <h2 className="text-2xl text-foreground">Party Snapshot</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground">Party Snapshot</h2>
           <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
             {partySheets.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground">

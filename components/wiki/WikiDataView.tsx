@@ -1,13 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { WikiEntryType } from '@prisma/client'
 import {
   User, MapPin, Swords, Gem, Drama, Castle,
-  BookOpen, Target, FileText, ChevronRight, ChevronDown,
-  Plus, RefreshCw, ArrowLeft,
+  BookOpen, Target, FileText, Search, Plus, RefreshCw, ArrowLeft,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import WikiEntryEditor from './WikiEntryEditor'
 import CreateEntryDialog from './CreateEntryDialog'
 import UpdateWikiDialog from './UpdateWikiDialog'
@@ -17,21 +15,24 @@ import { Button } from '@/components/ui/button'
 import type { CharacterSheetData } from '@/types/character-sheet'
 
 const typeIcons: Record<WikiEntryType, React.ReactNode> = {
-  SESSION_RECAP: <FileText className="w-3.5 h-3.5" />,
-  CHARACTER: <User className="w-3.5 h-3.5" />,
-  LOCATION: <MapPin className="w-3.5 h-3.5" />,
-  EVENT: <Swords className="w-3.5 h-3.5" />,
-  ITEM: <Gem className="w-3.5 h-3.5" />,
-  NPC: <Drama className="w-3.5 h-3.5" />,
-  FACTION: <Castle className="w-3.5 h-3.5" />,
-  LORE: <BookOpen className="w-3.5 h-3.5" />,
-  QUEST: <Target className="w-3.5 h-3.5" />,
-  OTHER: <FileText className="w-3.5 h-3.5" />,
+  SESSION_RECAP: <FileText className="w-4 h-4" />,
+  CHARACTER: <User className="w-4 h-4" />,
+  LOCATION: <MapPin className="w-4 h-4" />,
+  EVENT: <Swords className="w-4 h-4" />,
+  ITEM: <Gem className="w-4 h-4" />,
+  NPC: <Drama className="w-4 h-4" />,
+  FACTION: <Castle className="w-4 h-4" />,
+  LORE: <BookOpen className="w-4 h-4" />,
+  QUEST: <Target className="w-4 h-4" />,
+  OTHER: <FileText className="w-4 h-4" />,
 }
 
-const wikiTypeOrder: WikiEntryType[] = [
-  'CHARACTER', 'NPC', 'LOCATION', 'FACTION', 'QUEST',
-  'EVENT', 'ITEM', 'LORE', 'OTHER',
+const filterCategories: Array<{ id: string; label: string; types: WikiEntryType[]; icon?: React.ReactNode }> = [
+  { id: 'all', label: 'All Entries', types: [] },
+  { id: 'characters', label: 'Characters', types: ['CHARACTER', 'NPC'], icon: <User className="w-4 h-4" /> },
+  { id: 'locations', label: 'Locations', types: ['LOCATION'], icon: <MapPin className="w-4 h-4" /> },
+  { id: 'lore', label: 'Lore & Items', types: ['LORE', 'ITEM', 'OTHER'], icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'factions', label: 'Factions & Quests', types: ['FACTION', 'QUEST', 'EVENT'], icon: <Castle className="w-4 h-4" /> },
 ]
 
 interface WikiTreeEntry {
@@ -84,165 +85,182 @@ export default function WikiDataView({
   const [createOpen, setCreateOpen] = useState(false)
   const [updateWikiOpen, setUpdateWikiOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
-  const [mobileShowDetail, setMobileShowDetail] = useState(!!activeEntry)
-  const [sidebarWidth, setSidebarWidth] = useState(280)
-  const [isDesktop, setIsDesktop] = useState(true)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  const handleSidebarResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = sidebarWidth
-    const handleMouseMove = (e: MouseEvent) => {
-      setSidebarWidth(Math.max(180, Math.min(480, startWidth + (e.clientX - startX))))
-    }
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }, [sidebarWidth])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeFilter, setActiveFilter] = useState('all')
 
   const wikiEntries = entries.filter((e) => e.type !== 'SESSION_RECAP')
 
-  const grouped = new Map<WikiEntryType, WikiTreeEntry[]>()
-  for (const entry of wikiEntries) {
-    const list = grouped.get(entry.type) || []
-    list.push(entry)
-    grouped.set(entry.type, list)
-  }
+  const filteredEntries = useMemo(() => {
+    let filtered = wikiEntries
 
-  const toggleGroup = (key: string) => {
-    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
+    // Apply category filter
+    if (activeFilter !== 'all') {
+      const category = filterCategories.find((c) => c.id === activeFilter)
+      if (category && category.types.length > 0) {
+        filtered = filtered.filter((e) => category.types.includes(e.type))
+      }
+    }
+
+    // Apply search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter((e) => e.title.toLowerCase().includes(q))
+    }
+
+    return filtered
+  }, [wikiEntries, activeFilter, searchQuery])
 
   const handleSelectEntry = useCallback((id: string) => {
     onNavigate(`/campaigns/${campaignId}?view=wiki&entry=${id}`)
-    setMobileShowDetail(true)
   }, [campaignId, onNavigate])
 
-  const handleMobileBack = useCallback(() => {
-    setMobileShowDetail(false)
-  }, [])
+  const handleBack = useCallback(() => {
+    onNavigate(`/campaigns/${campaignId}?view=wiki`)
+  }, [campaignId, onNavigate])
 
+  // If an entry is selected, show the editor full-width
+  if (activeEntry) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="border-b border-border px-4 py-3 flex items-center gap-3 flex-shrink-0 bg-card">
+          <Button variant="ghost" size="sm" onClick={handleBack}>
+            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            Campaign Wiki
+          </Button>
+        </div>
+        <WikiEntryEditor
+          campaignId={campaignId}
+          userId={userId}
+          entry={activeEntry}
+          onImportPdf={() => setPdfImportOpen(true)}
+          onUnsavedChange={onUnsavedChange}
+          isReadOnly={isLocked}
+        />
+        <CharacterPdfUploadDialog
+          campaignId={campaignId}
+          userId={userId}
+          wikiEntryId={activeEntry.id}
+          wikiEntryTitle={activeEntry.title}
+          isOpen={pdfImportOpen}
+          onClose={() => setPdfImportOpen(false)}
+        />
+      </div>
+    )
+  }
+
+  // Card grid view
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* List panel */}
-      <div
-        style={isDesktop ? { width: sidebarWidth } : undefined}
-        className={cn(
-          'flex-shrink-0 border-r bg-card flex flex-col overflow-hidden',
-          mobileShowDetail ? 'hidden md:flex' : 'flex w-full md:w-auto'
-        )}
-      >
-        {/* Actions */}
-        {!isLocked && (
-          <div className="flex flex-col gap-1.5 p-2 border-b">
-            <Button size="sm" onClick={() => setCreateOpen(true)} className="w-full">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              {t('sidebar.newWikiPage')}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setUpdateWikiOpen(true)} className="w-full">
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              {t('sidebar.update')}
-            </Button>
+    <div className="flex-1 overflow-y-auto">
+      <div className="p-4 md:p-8 max-w-6xl mx-auto h-full flex flex-col">
+        {/* Header */}
+        <header className="mb-6 md:mb-8 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-semibold text-foreground mb-1 md:mb-2">
+                Campaign Wiki
+              </h1>
+              <p className="text-muted-foreground text-sm md:text-base">
+                Auto-generated from your session transcripts. Browse and edit your campaign data.
+              </p>
+            </div>
+            {!isLocked && (
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setUpdateWikiOpen(true)}
+                  className="rounded-xl"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {t('sidebar.update')}
+                </Button>
+                <Button
+                  onClick={() => setCreateOpen(true)}
+                  className="rounded-xl"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('sidebar.newWikiPage')}
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </header>
 
-        {/* Entries list */}
-        <nav className="flex-1 overflow-y-auto p-2">
-          {wikiEntries.length === 0 ? (
-            <div className="text-center py-8 px-4">
-              <BookOpen className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+        {/* Search and Filter Bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6 md:mb-8 flex-shrink-0">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search the wiki..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+            {filterCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveFilter(cat.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border whitespace-nowrap transition-colors text-sm ${
+                  activeFilter === cat.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-muted-foreground border-border hover:border-primary hover:text-foreground'
+                }`}
+              >
+                {cat.icon}
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid */}
+        {wikiEntries.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-16">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
               <p className="text-sm font-medium mb-1">{t('empty.wiki')}</p>
               <p className="text-xs text-muted-foreground">{t('empty.wikiHint')}</p>
             </div>
-          ) : (
-            wikiTypeOrder
-              .filter((type) => grouped.has(type))
-              .map((type) => {
-                const items = grouped.get(type)!
-                const isCollapsed = collapsed[type]
-
-                return (
-                  <div key={type} className="mb-1">
-                    <button
-                      onClick={() => toggleGroup(type)}
-                      className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors"
-                    >
-                      {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                      {typeIcons[type]}
-                      <span>{t(`wiki.type.${type}`)}</span>
-                      <span className="text-muted-foreground ml-auto text-[10px]">{items.length}</span>
-                    </button>
-
-                    {!isCollapsed && (
-                      <div className="ml-5">
-                        {items.map((entry) => (
-                          <button
-                            key={entry.id}
-                            onClick={() => handleSelectEntry(entry.id)}
-                            className={`w-full text-left px-3 py-1.5 text-sm rounded-lg truncate transition-all ${
-                              entry.id === activeEntry?.id
-                                ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                            }`}
-                          >
-                            {entry.title}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })
-          )}
-        </nav>
-      </div>
-
-      {/* Resize handle */}
-      <div
-        onMouseDown={handleSidebarResizeMouseDown}
-        className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden md:block"
-      />
-
-      {/* Detail panel */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${!mobileShowDetail ? 'hidden md:flex' : 'flex'}`}>
-        {/* Mobile back button */}
-        {mobileShowDetail && (
-          <div className="md:hidden border-b px-3 py-2">
-            <Button variant="ghost" size="sm" onClick={handleMobileBack}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              {t('tabs.campaignData')}
-            </Button>
           </div>
-        )}
-
-        {activeEntry ? (
-          <WikiEntryEditor
-            campaignId={campaignId}
-            userId={userId}
-            entry={activeEntry}
-            onImportPdf={() => setPdfImportOpen(true)}
-            onUnsavedChange={onUnsavedChange}
-            isReadOnly={isLocked}
-          />
-        ) : (
-          <div className="flex-1 flex items-center justify-center px-4">
-            <div className="text-center">
-              <BookOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm">
-                {wikiEntries.length === 0 ? t('empty.wiki') : t('empty.selectEntry')}
-              </p>
+        ) : filteredEntries.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-16">
+              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+              <p className="text-sm font-medium mb-1">No entries found</p>
+              <p className="text-xs text-muted-foreground">Try adjusting your search or filters.</p>
             </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-y-auto pb-8">
+            {filteredEntries.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => handleSelectEntry(entry.id)}
+                className="bg-card border border-border rounded-2xl p-5 hover:border-primary transition-all cursor-pointer group flex flex-col text-left"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                    {entry.title}
+                  </h3>
+                  <span className="text-xs px-2 py-1 bg-accent text-muted-foreground rounded-md flex-shrink-0 ml-2">
+                    {t(`wiki.type.${entry.type}`)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                  {typeIcons[entry.type]}
+                  <span className="text-xs">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-auto">
+                  <span className="text-xs px-2 py-1 bg-background border border-border text-muted-foreground rounded-full">
+                    {entry.type.replace('_', ' ').toLowerCase()}
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -258,14 +276,6 @@ export default function WikiDataView({
         campaignId={campaignId}
         isOpen={updateWikiOpen}
         onClose={() => setUpdateWikiOpen(false)}
-      />
-      <CharacterPdfUploadDialog
-        campaignId={campaignId}
-        userId={userId}
-        wikiEntryId={activeEntry?.id || ''}
-        wikiEntryTitle={activeEntry?.title || ''}
-        isOpen={pdfImportOpen}
-        onClose={() => setPdfImportOpen(false)}
       />
     </div>
   )

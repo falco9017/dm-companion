@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { AlertTriangle, Sparkles, X, Menu } from 'lucide-react'
+import { AlertTriangle, Sparkles, X, Menu, User, Shield, Heart, Upload, Plus, FileText } from 'lucide-react'
 import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
@@ -364,7 +364,7 @@ export default function WikiPageLayout({
   )
 }
 
-// Simple DM party view showing character cards
+// Mythic-style DM party view with large character cards
 function DmPartyView({
   partySheets,
   onNavigate,
@@ -375,26 +375,53 @@ function DmPartyView({
   campaignId: string
 }) {
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-3xl md:text-4xl font-medium text-foreground">
-          Party & Characters
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          View and manage your campaign&apos;s characters.
-        </p>
+    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 className="text-2xl md:text-4xl font-semibold text-foreground mb-1 md:mb-2">
+            Party &amp; Characters
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Manage player character sheets and permissions.
+          </p>
+        </div>
+        <div className="flex gap-3 flex-shrink-0">
+          <button
+            onClick={() =>
+              onNavigate(`/campaigns/${campaignId}?view=wiki`)
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-foreground font-medium rounded-xl hover:border-primary transition-colors text-sm"
+          >
+            <Upload className="w-4 h-4 text-primary" />
+            Import PDF
+          </button>
+          <button
+            onClick={() =>
+              onNavigate(`/campaigns/${campaignId}?view=wiki`)
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-xl hover:brightness-110 transition-all text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            New Character
+          </button>
+        </div>
       </header>
 
       {partySheets.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <p>No character sheets created yet. Create a CHARACTER wiki entry and add a sheet.</p>
+        <div className="text-center py-16">
+          <User className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+          <p className="text-foreground font-medium mb-1">No character sheets yet</p>
+          <p className="text-sm text-muted-foreground">
+            Create a CHARACTER wiki entry and add a sheet to get started.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {partySheets.map((sheet) => {
             const data = sheet.data
-            const charClass = data?.class
-            const charLevel = data?.level
+            const charClass = data?.class || 'Unknown'
+            const charRace = data?.race || ''
+            const charLevel = data?.level || '?'
             return (
               <button
                 key={sheet.id}
@@ -403,32 +430,40 @@ function DmPartyView({
                     `/campaigns/${campaignId}?view=wiki&entry=${sheet.wikiEntryId}`
                   )
                 }
-                className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-primary transition-all text-left group"
+                className="bg-card border border-border rounded-2xl p-6 flex gap-6 hover:border-primary transition-colors cursor-pointer group text-left"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
-                  <span className="text-lg font-semibold">
-                    {sheet.wikiEntry.title[0]}
-                  </span>
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl bg-background border border-border flex items-center justify-center flex-shrink-0">
+                  <User className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                    {sheet.wikiEntry.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {charClass ? `Level ${charLevel} ${charClass}` : 'Unknown class'}
-                    {sheet.assignedPlayer
-                      ? ` · ${sheet.assignedPlayer.name || sheet.assignedPlayer.email}`
-                      : ''}
-                  </p>
-                </div>
-                <div className="flex gap-3 text-sm flex-shrink-0">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <span className="font-mono">AC {data?.armorClass ?? '?'}</span>
+                  <div className="flex justify-between items-start mb-1">
+                    <h2 className="text-xl md:text-2xl font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      {sheet.wikiEntry.title}
+                    </h2>
+                    {sheet.assignedPlayer && (
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                        Played by {sheet.assignedPlayer.name || sheet.assignedPlayer.email}
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                    <span className="font-mono">
-                      {data?.hitPoints?.current ?? '?'}/{data?.hitPoints?.maximum ?? '?'}
-                    </span>
+                  <p className="text-sm text-primary mb-4">
+                    Level {charLevel} {charRace} {charClass}
+                  </p>
+
+                  <div className="flex gap-4">
+                    <div className="bg-background border border-border rounded-lg px-3 py-1.5 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-mono text-foreground text-sm">{data?.armorClass ?? '?'}</span>
+                    </div>
+                    <div className="bg-background border border-border rounded-lg px-3 py-1.5 flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-mono text-foreground text-sm">
+                        {data?.hitPoints?.current ?? '?'}/{data?.hitPoints?.maximum ?? '?'}
+                      </span>
+                    </div>
+                    <div className="ml-auto flex items-center text-sm text-muted-foreground hover:text-foreground">
+                      <FileText className="w-4 h-4 mr-1" /> Sheet
+                    </div>
                   </div>
                 </div>
               </button>

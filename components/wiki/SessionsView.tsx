@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { WikiEntryType } from '@prisma/client'
-import { ScrollText, Upload, Plus, ArrowLeft } from 'lucide-react'
+import { ScrollText, Upload, Plus, ArrowLeft, Clock, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import WikiEntryEditor from './WikiEntryEditor'
 import AudioUploadDialog from './AudioUploadDialog'
@@ -56,6 +56,14 @@ function formatDate(date: Date, format: string): string {
   }
 }
 
+function formatDateLong(date: Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 interface SessionsViewProps {
   campaignId: string
   userId: string
@@ -83,30 +91,6 @@ export default function SessionsView({
   const [uploadOpen, setUploadOpen] = useState(false)
   const [createSessionOpen, setCreateSessionOpen] = useState(false)
   const [mobileShowDetail, setMobileShowDetail] = useState(!!activeEntry)
-  const [sidebarWidth, setSidebarWidth] = useState(280)
-  const [isDesktop, setIsDesktop] = useState(true)
-
-  useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  const handleSidebarResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = sidebarWidth
-    const handleMouseMove = (e: MouseEvent) => {
-      setSidebarWidth(Math.max(180, Math.min(480, startWidth + (e.clientX - startX))))
-    }
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }, [sidebarWidth])
 
   const sessions = entries
     .filter((e) => e.type === 'SESSION_RECAP')
@@ -122,103 +106,129 @@ export default function SessionsView({
   }, [])
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* List panel */}
-      <div
-        style={isDesktop ? { width: sidebarWidth } : undefined}
-        className={cn(
-          'flex-shrink-0 border-r bg-card flex flex-col overflow-hidden',
-          mobileShowDetail ? 'hidden md:flex' : 'flex w-full md:w-auto'
-        )}
-      >
+    <div className="flex-1 overflow-y-auto">
+      <div className="p-4 md:p-8 max-w-6xl mx-auto flex flex-col h-full min-h-0">
         {/* Header */}
-        <div className="p-4 border-b border-border">
-          <h2 className="font-medium text-foreground text-sm">Past Sessions</h2>
-        </div>
-
-        {/* Actions */}
-        {!isLocked && !isReadOnly && (
-          <div className="flex flex-col gap-1.5 p-2 border-b">
-            <Button size="sm" onClick={() => setCreateSessionOpen(true)} className="w-full">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              {t('sidebar.newSession')}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setUploadOpen(true)} className="w-full">
-              <Upload className="w-3.5 h-3.5 mr-1.5" />
-              {t('sidebar.uploadAudio')}
-            </Button>
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 flex-shrink-0">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-semibold text-foreground mb-1 md:mb-2">
+              Sessions &amp; Audio
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Upload session recordings to generate transcripts, summaries, and wiki updates.
+            </p>
           </div>
-        )}
-
-        {/* Sessions list */}
-        <nav className="flex-1 overflow-y-auto">
-          {sessions.length === 0 ? (
-            <div className="text-center py-8 px-4">
-              <ScrollText className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
-              <p className="text-sm font-medium mb-1">{t('empty.sessions')}</p>
-              <p className="text-xs text-muted-foreground">{t('empty.sessionsHint')}</p>
-            </div>
-          ) : (
-            sessions.map((entry) => (
-              <button
-                key={entry.id}
-                onClick={() => handleSelectEntry(entry.id)}
-                className={cn(
-                  'w-full text-left p-3 border-b border-border transition-colors',
-                  entry.id === activeEntry?.id
-                    ? 'bg-accent border-l-2 border-l-primary'
-                    : 'hover:bg-accent'
-                )}
+          {!isLocked && !isReadOnly && (
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => setCreateSessionOpen(true)}
+                className="rounded-xl"
               >
-                <div className="flex justify-between items-start mb-0.5">
-                  <span className="text-sm font-medium text-foreground truncate">{entry.title}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt, dateFormat)}</span>
-              </button>
-            ))
+                <Plus className="w-4 h-4 mr-2" />
+                {t('sidebar.newSession')}
+              </Button>
+              <Button
+                onClick={() => setUploadOpen(true)}
+                className="rounded-xl"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {t('sidebar.uploadAudio')}
+              </Button>
+            </div>
           )}
-        </nav>
-      </div>
+        </header>
 
-      {/* Resize handle */}
-      <div
-        onMouseDown={handleSidebarResizeMouseDown}
-        className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden md:block"
-      />
-
-      {/* Detail panel */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${!mobileShowDetail ? 'hidden md:flex' : 'flex'}`}>
-        {/* Mobile back button */}
-        {mobileShowDetail && (
-          <div className="md:hidden border-b px-3 py-2">
-            <Button variant="ghost" size="sm" onClick={handleMobileBack}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              {t('tabs.sessions')}
-            </Button>
-          </div>
-        )}
-
-        {activeEntry ? (
-          <WikiEntryEditor
-            campaignId={campaignId}
-            userId={userId}
-            entry={activeEntry}
-            onUnsavedChange={onUnsavedChange}
-            isReadOnly={isLocked || isReadOnly}
-          />
-        ) : (
-          <div className="flex-1 flex items-center justify-center px-4">
-            <div className="text-center">
-              <ScrollText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm">
-                {sessions.length === 0 ? t('empty.sessions') : t('empty.selectSession')}
-              </p>
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 flex-1 min-h-0">
+          {/* Left: Session List */}
+          <div
+            className={cn(
+              'lg:col-span-1 border border-border bg-card rounded-2xl overflow-hidden flex flex-col',
+              mobileShowDetail ? 'hidden lg:flex' : 'flex'
+            )}
+          >
+            <div className="p-4 border-b border-border bg-card">
+              <h2 className="font-medium text-foreground text-sm">Past Sessions</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {sessions.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <ScrollText className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                  <p className="text-sm font-medium mb-1">{t('empty.sessions')}</p>
+                  <p className="text-xs text-muted-foreground">{t('empty.sessionsHint')}</p>
+                </div>
+              ) : (
+                sessions.map((entry, i) => (
+                  <button
+                    key={entry.id}
+                    onClick={() => handleSelectEntry(entry.id)}
+                    className={cn(
+                      'w-full text-left p-4 border-b border-border cursor-pointer transition-colors',
+                      entry.id === activeEntry?.id
+                        ? 'bg-accent border-l-2 border-l-primary'
+                        : 'hover:bg-accent'
+                    )}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-medium text-foreground text-sm truncate pr-2">
+                        {entry.title}
+                      </h3>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(entry.createdAt, dateFormat)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                        <FileText className="w-3 h-3" /> Processed
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
-        )}
+
+          {/* Right: Session Detail */}
+          <div
+            className={cn(
+              'lg:col-span-2 border border-border bg-card rounded-2xl flex flex-col overflow-hidden',
+              !mobileShowDetail ? 'hidden lg:flex' : 'flex'
+            )}
+          >
+            {/* Mobile back button */}
+            {mobileShowDetail && (
+              <div className="lg:hidden border-b border-border px-3 py-2">
+                <Button variant="ghost" size="sm" onClick={handleMobileBack}>
+                  <ArrowLeft className="w-4 h-4 mr-1.5" />
+                  {t('tabs.sessions')}
+                </Button>
+              </div>
+            )}
+
+            {activeEntry ? (
+              <WikiEntryEditor
+                campaignId={campaignId}
+                userId={userId}
+                entry={activeEntry}
+                onUnsavedChange={onUnsavedChange}
+                isReadOnly={isLocked || isReadOnly}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center px-4">
+                <div className="text-center">
+                  <ScrollText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm">
+                    {sessions.length === 0 ? t('empty.sessions') : t('empty.selectSession')}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Dialogs — only for editable mode */}
+      {/* Dialogs */}
       {!isReadOnly && (
         <>
           <AudioUploadDialog
