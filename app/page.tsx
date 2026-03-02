@@ -91,7 +91,7 @@ export default async function Home() {
             <h3 className="font-serif text-2xl font-medium mb-1">Adventurer</h3>
             <p className="text-muted-foreground text-sm mb-6">For solo GMs getting started</p>
             <div className="mb-8">
-              <span className="text-4xl font-bold">Free</span>
+              <span className="text-4xl font-medium font-serif">Free</span>
             </div>
             <ul className="space-y-3 mb-8">
               <PricingFeature text="1 campaign" />
@@ -113,7 +113,7 @@ export default async function Home() {
             <h3 className="font-serif text-2xl font-medium mb-1">Legend</h3>
             <p className="text-muted-foreground text-sm mb-6">For serious campaign managers</p>
             <div className="mb-8">
-              <span className="text-4xl font-bold">$6.99</span>
+              <span className="text-4xl font-medium font-serif">$6.99</span>
               <span className="text-muted-foreground text-sm ml-1">/ month</span>
             </div>
             <ul className="space-y-3 mb-8">
