@@ -133,7 +133,7 @@ export default function AddCombatantDialog({
   const [monsterHp, setMonsterHp] = useState('')
   const [monsterAc, setMonsterAc] = useState('')
   const [monsterInitMod, setMonsterInitMod] = useState('0')
-  const [monsterInitiative, setMonsterInitiative] = useState('')
+  const [, setMonsterInitiative] = useState('')
   const [monsterCount, setMonsterCount] = useState('1')
   const [dndMonsterDetail, setDndMonsterDetail] = useState<DndMonsterDetail | null>(null)
   const hasFetchedList = useRef(false)

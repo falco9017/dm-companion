@@ -125,7 +125,7 @@ export default function WikiDataView({
   }
 
   const handleSelectEntry = useCallback((id: string) => {
-    onNavigate(`/campaigns/${campaignId}?tab=wiki&entry=${id}`)
+    onNavigate(`/campaigns/${campaignId}?view=wiki&entry=${id}`)
     setMobileShowDetail(true)
   }, [campaignId, onNavigate])
 

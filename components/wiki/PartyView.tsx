@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import CharacterSheetBoard from '@/components/character-sheet/CharacterSheetBoard'
 import PartyMemberCard from './PartyMemberCard'
 import CharacterClaimDialog from './CharacterClaimDialog'
@@ -47,7 +46,6 @@ export default function PartyView({
   unclaimedCharacters,
 }: PartyViewProps) {
   const { t } = useI18n()
-  const router = useRouter()
 
   const handleBack = useCallback(() => {
     // no-op — we don't navigate away from party tab

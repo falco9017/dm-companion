@@ -70,7 +70,7 @@ const en = {
   'common.createEntry': 'Create Entry',
 
   // Chat
-  'chat.title': 'Mystic AI',
+  'chat.title': 'Mystic Oracle',
   'chat.placeholder': 'Ask about your campaign or generate content...',
   'chat.emptyTitle': 'Your DM assistant is ready!',
   'chat.emptySubtitle': 'Ask about your campaign, or generate NPCs, locations, encounters, and more.',
@@ -455,7 +455,7 @@ const it: Record<string, string> = {
   'common.createEntry': 'Crea Voce',
 
   // Chat
-  'chat.title': 'Assistente DM',
+  'chat.title': 'Mystic Oracle',
   'chat.placeholder': 'Chiedi della campagna o genera contenuti...',
   'chat.emptyTitle': 'Il tuo assistente DM è pronto!',
   'chat.emptySubtitle': 'Chiedi della campagna, o genera PNG, luoghi, incontri e altro.',
@@ -840,7 +840,7 @@ const fr: Record<string, string> = {
   'common.createEntry': 'Créer une Entrée',
 
   // Chat
-  'chat.title': 'Compagnon MJ',
+  'chat.title': 'Mystic Oracle',
   'chat.placeholder': 'Posez des questions sur votre campagne ou générez du contenu...',
   'chat.emptyTitle': 'Votre assistant MJ est prêt !',
   'chat.emptySubtitle': 'Posez des questions sur votre campagne, ou générez des PNJ, des lieux, des rencontres, et plus encore.',
@@ -1225,7 +1225,7 @@ const de: Record<string, string> = {
   'common.createEntry': 'Eintrag erstellen',
 
   // Chat
-  'chat.title': 'DM-Begleiter',
+  'chat.title': 'Mystic Oracle',
   'chat.placeholder': 'Fragen Sie nach Ihrer Kampagne oder generieren Sie Inhalte...',
   'chat.emptyTitle': 'Ihr DM-Assistent ist bereit!',
   'chat.emptySubtitle': 'Fragen Sie nach Ihrer Kampagne oder generieren Sie NSCs, Orte, Begegnungen und mehr.',
@@ -1610,7 +1610,7 @@ const es: Record<string, string> = {
   'common.createEntry': 'Crear Entrada',
 
   // Chat
-  'chat.title': 'Mystic AI',
+  'chat.title': 'Mystic Oracle',
   'chat.placeholder': 'Pregunta sobre tu campaña o genera contenido...',
   'chat.emptyTitle': '¡Tu asistente DM está listo!',
   'chat.emptySubtitle': 'Pregunta sobre tu campaña, o genera PNJs, lugares, encuentros y más.',

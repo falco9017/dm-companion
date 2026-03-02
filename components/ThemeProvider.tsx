@@ -15,16 +15,21 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-  const [mounted, setMounted] = useState(false)
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark'
+  return (localStorage.getItem('theme') as Theme) || 'dark'
+}
 
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+
+  // Apply theme to DOM on mount
   useEffect(() => {
-    const stored = localStorage.getItem('theme') as Theme | null
-    const initial = stored || 'dark'
-    setTheme(initial)
-    document.documentElement.classList.toggle('dark', initial === 'dark')
-    document.cookie = `theme=${initial};path=/;max-age=31536000`
+    const stored = (localStorage.getItem('theme') as Theme) || 'dark'
+    setTheme(stored)
+    document.documentElement.classList.toggle('dark', stored === 'dark')
+    document.cookie = `theme=${stored};path=/;max-age=31536000`
     setMounted(true)
   }, [])
 

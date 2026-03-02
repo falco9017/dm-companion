@@ -3,19 +3,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WikiEntryType } from '@prisma/client'
-import { Settings, AlertTriangle, ArrowLeft, Maximize2, Minimize2, X, Share2, Sparkles } from 'lucide-react'
+import { AlertTriangle, Sparkles, X, Menu } from 'lucide-react'
 import Link from 'next/link'
 import SessionsView from './SessionsView'
 import WikiDataView from './WikiDataView'
 import ChatView from './ChatView'
 import CombatTracker from '@/components/combat/CombatTracker'
 import PartyView from './PartyView'
-import InviteCodePanel from './InviteCodePanel'
+import DashboardView from '@/components/campaign/DashboardView'
+import CampaignSidebar, { type ViewState } from '@/components/campaign/CampaignSidebar'
 import { useI18n } from '@/lib/i18n-context'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import {
   AlertDialog,
@@ -89,6 +86,7 @@ interface WikiPageLayoutProps {
     language: string
     inviteCode?: string | null
   }
+  campaigns?: { id: string; name: string }[]
   wikiTree: WikiTreeEntry[]
   activeEntry: ActiveEntry | null
   dateFormat: string
@@ -103,6 +101,7 @@ export default function WikiPageLayout({
   userId,
   userRole,
   campaign,
+  campaigns = [],
   wikiTree,
   activeEntry,
   dateFormat,
@@ -113,37 +112,31 @@ export default function WikiPageLayout({
 }: WikiPageLayoutProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const rawTab = searchParams.get('tab') || (userRole === 'PLAYER' ? 'sessions' : 'sessions')
-  const currentTab = rawTab === 'chat' ? 'sessions' : rawTab
-  const [pendingTab, setPendingTab] = useState<string | null>(null)
+  const rawView = searchParams.get('view') as ViewState | null
+  const defaultView = userRole === 'PLAYER' ? 'sessions' : 'dashboard'
+  const currentView: ViewState = rawView || defaultView
+  const [pendingView, setPendingView] = useState<ViewState | null>(null)
   const [pendingNav, setPendingNav] = useState<string | null>(null)
   const isDirtyRef = useRef(false)
   const { t } = useI18n()
 
-  // Chat side panel state (DM only)
+  // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // AI Chat panel state
   const [isChatOpen, setIsChatOpen] = useState(false)
-  const [chatWidth, setChatWidth] = useState(360)
-  const [isChatMaximized, setIsChatMaximized] = useState(false)
 
   const handleUnsavedChange = useCallback((isDirty: boolean) => {
     isDirtyRef.current = isDirty
   }, [])
 
-  const handleTabChange = useCallback((newTab: string) => {
+  const handleViewChange = useCallback((newView: ViewState) => {
     if (isDirtyRef.current) {
-      setPendingTab(newTab)
+      setPendingView(newView)
     } else {
-      router.push(`/campaigns/${campaignId}?tab=${newTab}`)
+      router.push(`/campaigns/${campaignId}?view=${newView}`)
     }
   }, [router, campaignId])
-
-  const handleNavigate = useCallback((href: string) => {
-    if (isDirtyRef.current) {
-      setPendingNav(href)
-    } else {
-      router.push(href)
-    }
-  }, [router])
 
   // Warn on browser close/refresh while dirty
   useEffect(() => {
@@ -158,256 +151,199 @@ export default function WikiPageLayout({
 
   const confirmNavigation = useCallback(() => {
     isDirtyRef.current = false
-    if (pendingTab) {
-      const tab = pendingTab
-      setPendingTab(null)
-      router.push(`/campaigns/${campaignId}?tab=${tab}`)
+    if (pendingView) {
+      const view = pendingView
+      setPendingView(null)
+      router.push(`/campaigns/${campaignId}?view=${view}`)
     } else if (pendingNav) {
       const href = pendingNav
       setPendingNav(null)
       router.push(href)
     }
-  }, [pendingTab, pendingNav, router, campaignId])
+  }, [pendingView, pendingNav, router, campaignId])
 
   const cancelNavigation = useCallback(() => {
-    setPendingTab(null)
+    setPendingView(null)
     setPendingNav(null)
   }, [])
 
-  // Resize handler for the chat panel
-  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = chatWidth
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const delta = startX - e.clientX
-      setChatWidth(Math.max(260, Math.min(700, startWidth + delta)))
+  // Navigate helper that also integrates with entry param
+  const handleEntryNavigate = useCallback((href: string) => {
+    if (isDirtyRef.current) {
+      setPendingNav(href)
+    } else {
+      router.push(href)
     }
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }, [chatWidth])
-
-  const toggleChat = useCallback(() => {
-    setIsChatOpen((prev) => {
-      if (prev) setIsChatMaximized(false)
-      return !prev
-    })
-  }, [])
+  }, [router])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Locked plan banner (DM only) */}
-      {isLocked && userRole === 'DM' && (
-        <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/30">
-          <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
-          <p className="flex-1 text-xs sm:text-sm text-orange-700 dark:text-orange-200/90">
-            {t('limits.campaignReadOnly')}
-          </p>
-          <Link
-            href="/campaigns"
-            className="flex-shrink-0 text-xs px-3 py-1 rounded-lg bg-orange-500/20 text-orange-600 dark:text-orange-300 border border-orange-500/30 hover:bg-orange-500/30 transition-colors whitespace-nowrap"
-          >
-            {t('sidebar.allCampaigns')}
-          </Link>
-        </div>
-      )}
+    <div className="flex fixed inset-0 bg-background text-foreground overflow-hidden z-30">
+      {/* Sidebar */}
+      <CampaignSidebar
+        currentView={currentView}
+        onNavigate={handleViewChange}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        campaign={campaign}
+        campaigns={campaigns}
+        campaignId={campaignId}
+        userRole={userRole}
+      />
 
-      {/* Tab bar */}
-      <div className="flex-shrink-0 border-b bg-card px-4 flex items-center gap-3">
-        <div className="flex items-center gap-2 mr-2 py-2">
-          <Link
-            href="/campaigns"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+      {/* Main content */}
+      <main className="flex-1 relative flex flex-col overflow-hidden">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h2 className="text-sm font-medium truncate max-w-[140px] sm:max-w-[200px] text-foreground">
-            {campaign.name}
-          </h2>
+            <Menu className="w-6 h-6" />
+          </button>
+          <h1 className="font-serif text-xl font-semibold text-primary tracking-wide">
+            MYSTIC QUEST
+          </h1>
+          <div className="w-10" />
         </div>
 
-        <Tabs value={currentTab} onValueChange={handleTabChange} className="flex-1 flex-col-reverse min-w-0">
-          <TabsList variant="line" className="h-10">
-            <TabsTrigger value="sessions">{t('tabs.sessions')}</TabsTrigger>
-            {userRole === 'PLAYER' ? (
-              <TabsTrigger value="party">{t('tabs.party')}</TabsTrigger>
-            ) : (
-              <>
-                <TabsTrigger value="wiki">{t('tabs.campaignData')}</TabsTrigger>
-                <TabsTrigger value="combat">{t('tabs.combat')}</TabsTrigger>
-              </>
-            )}
-          </TabsList>
-        </Tabs>
-
-        {/* DM-only: Chat toggle + Invite code + Settings */}
-        {userRole === 'DM' && (
-          <>
-            {!isLocked && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={isChatOpen ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className={`h-8 w-8 flex-shrink-0 ${isChatOpen ? 'text-primary' : ''}`}
-                    onClick={toggleChat}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isChatOpen ? t('chat.closePanel') : t('chat.openPanel')}
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <InviteCodePanel
-                  campaignId={campaignId}
-                  userId={userId}
-                  initialCode={campaign.inviteCode}
-                />
-              </PopoverContent>
-            </Popover>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0"
-                  asChild
-                >
-                  <Link href={`/campaigns/${campaignId}/settings`}>
-                    <Settings className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t('sidebar.campaignSettings')}</TooltipContent>
-            </Tooltip>
-          </>
-        )}
-      </div>
-
-      {/* Tab content + chat side panel */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main content — hidden when chat is maximized */}
-        <div className={cn(
-          'flex-1 flex overflow-hidden min-w-0',
-          isChatOpen && isChatMaximized ? 'hidden' : ''
-        )}>
-          {currentTab === 'sessions' && (
-            <SessionsView
-              campaignId={campaignId}
-              userId={userId}
-              entries={wikiTree}
-              activeEntry={activeEntry}
-              dateFormat={dateFormat}
-              isLocked={isLocked}
-              isReadOnly={userRole === 'PLAYER'}
-              onUnsavedChange={handleUnsavedChange}
-              onNavigate={handleNavigate}
-            />
-          )}
-
-          {currentTab === 'wiki' && userRole === 'DM' && (
-            <WikiDataView
-              campaignId={campaignId}
-              userId={userId}
-              entries={wikiTree}
-              activeEntry={activeEntry}
-              isLocked={isLocked}
-              onUnsavedChange={handleUnsavedChange}
-              onNavigate={handleNavigate}
-            />
-          )}
-
-          {currentTab === 'combat' && userRole === 'DM' && (
-            <CombatTracker
-              campaignId={campaignId}
-              userId={userId}
-              wikiEntries={wikiTree}
-            />
-          )}
-
-          {currentTab === 'party' && userRole === 'PLAYER' && (
-            <PartyView
-              campaignId={campaignId}
-              userId={userId}
-              playerCharacterSheet={playerCharacterSheet ?? null}
-              partySheets={partySheets}
-              unclaimedCharacters={unclaimedCharacters}
-            />
-          )}
-        </div>
-
-        {/* Resize handle (DM only) */}
-        {userRole === 'DM' && isChatOpen && !isChatMaximized && (
-          <div
-            onMouseDown={handleResizeMouseDown}
-            className="w-1 flex-shrink-0 bg-border hover:bg-primary/50 cursor-col-resize transition-colors select-none hidden sm:block"
-          />
-        )}
-
-        {/* Chat side panel (DM only) */}
-        {userRole === 'DM' && isChatOpen && (
-          <div
-            style={!isChatMaximized ? { width: chatWidth } : undefined}
-            className={cn(
-              'flex flex-col border-l border-border overflow-hidden flex-shrink-0',
-              isChatMaximized ? 'flex-1' : 'hidden sm:flex'
-            )}
-          >
-            {/* Panel header */}
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-sm font-serif font-medium text-primary tracking-wide">{t('chat.title')}</span>
-              </div>
-              <div className="flex items-center gap-0.5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setIsChatMaximized((v) => !v)}
-                  title={isChatMaximized ? t('chat.restorePanel') : t('chat.maximizePanel')}
-                >
-                  {isChatMaximized
-                    ? <Minimize2 className="w-3.5 h-3.5" />
-                    : <Maximize2 className="w-3.5 h-3.5" />
-                  }
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => { setIsChatOpen(false); setIsChatMaximized(false) }}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            <ChatView campaignId={campaignId} />
+        {/* Locked plan banner (DM only) */}
+        {isLocked && userRole === 'DM' && (
+          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/30">
+            <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <p className="flex-1 text-xs sm:text-sm text-orange-700 dark:text-orange-200/90">
+              {t('limits.campaignReadOnly')}
+            </p>
+            <Link
+              href="/campaigns"
+              className="flex-shrink-0 text-xs px-3 py-1 rounded-lg bg-orange-500/20 text-orange-600 dark:text-orange-300 border border-orange-500/30 hover:bg-orange-500/30 transition-colors whitespace-nowrap"
+            >
+              {t('sidebar.allCampaigns')}
+            </Link>
           </div>
         )}
-      </div>
+
+        {/* View content */}
+        <div className="flex-1 overflow-hidden flex">
+          <div className="flex-1 overflow-hidden flex">
+            {currentView === 'dashboard' && userRole === 'DM' && (
+              <div className="flex-1 overflow-y-auto">
+                <DashboardView
+                  campaign={campaign}
+                  wikiTree={wikiTree}
+                  partySheets={partySheets}
+                  onNavigate={handleViewChange}
+                />
+              </div>
+            )}
+
+            {currentView === 'sessions' && (
+              <SessionsView
+                campaignId={campaignId}
+                userId={userId}
+                entries={wikiTree}
+                activeEntry={activeEntry}
+                dateFormat={dateFormat}
+                isLocked={isLocked}
+                isReadOnly={userRole === 'PLAYER'}
+                onUnsavedChange={handleUnsavedChange}
+                onNavigate={handleEntryNavigate}
+              />
+            )}
+
+            {currentView === 'wiki' && userRole === 'DM' && (
+              <WikiDataView
+                campaignId={campaignId}
+                userId={userId}
+                entries={wikiTree}
+                activeEntry={activeEntry}
+                isLocked={isLocked}
+                onUnsavedChange={handleUnsavedChange}
+                onNavigate={handleEntryNavigate}
+              />
+            )}
+
+            {currentView === 'live' && userRole === 'DM' && (
+              <CombatTracker
+                campaignId={campaignId}
+                userId={userId}
+                wikiEntries={wikiTree}
+              />
+            )}
+
+            {currentView === 'party' && (
+              <div className="flex-1 overflow-hidden flex">
+                {userRole === 'PLAYER' ? (
+                  <PartyView
+                    campaignId={campaignId}
+                    userId={userId}
+                    playerCharacterSheet={playerCharacterSheet ?? null}
+                    partySheets={partySheets}
+                    unclaimedCharacters={unclaimedCharacters}
+                  />
+                ) : (
+                  <div className="flex-1 overflow-y-auto">
+                    <DmPartyView
+                      partySheets={partySheets}
+                      onNavigate={handleEntryNavigate}
+                      campaignId={campaignId}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Fallback for players trying dashboard */}
+            {currentView === 'dashboard' && userRole === 'PLAYER' && (
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-8 text-center text-muted-foreground">
+                  <p>Redirecting to sessions...</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Floating AI Chat Button */}
+        {userRole === 'DM' && !isLocked && !isChatOpen && (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 p-4 bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(184,134,11,0.3)] dark:shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:scale-105 hover:brightness-110 transition-all z-40 flex items-center gap-2 font-medium"
+          >
+            <Sparkles className="w-5 h-5" />
+            <span className="hidden md:inline">Ask Oracle</span>
+          </button>
+        )}
+
+        {/* AI Chat Slide-in Panel */}
+        {userRole === 'DM' && (
+          <div
+            className={cn(
+              'fixed top-0 right-0 w-full sm:w-96 h-screen bg-card/95 backdrop-blur-xl border-l border-border shadow-2xl flex flex-col z-50 transition-transform duration-300',
+              isChatOpen ? 'translate-x-0' : 'translate-x-full'
+            )}
+          >
+            {/* Chat Header */}
+            <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2 text-primary">
+                <Sparkles className="w-5 h-5" />
+                <h2 className="font-serif text-lg font-semibold">{t('chat.title')}</h2>
+              </div>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Chat Content */}
+            {isChatOpen && <ChatView campaignId={campaignId} />}
+          </div>
+        )}
+      </main>
 
       {/* Unsaved changes confirmation */}
-      <AlertDialog open={!!pendingTab || !!pendingNav} onOpenChange={(open) => !open && cancelNavigation()}>
+      <AlertDialog open={!!pendingView || !!pendingNav} onOpenChange={(open) => !open && cancelNavigation()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('unsaved.title')}</AlertDialogTitle>
@@ -424,6 +360,82 @@ export default function WikiPageLayout({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  )
+}
+
+// Simple DM party view showing character cards
+function DmPartyView({
+  partySheets,
+  onNavigate,
+  campaignId,
+}: {
+  partySheets: PartySheet[]
+  onNavigate: (href: string) => void
+  campaignId: string
+}) {
+  return (
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
+      <header>
+        <h1 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+          Party & Characters
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          View and manage your campaign&apos;s characters.
+        </p>
+      </header>
+
+      {partySheets.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <p>No character sheets created yet. Create a CHARACTER wiki entry and add a sheet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {partySheets.map((sheet) => {
+            const data = sheet.data
+            const charClass = data?.class
+            const charLevel = data?.level
+            return (
+              <button
+                key={sheet.id}
+                onClick={() =>
+                  onNavigate(
+                    `/campaigns/${campaignId}?view=wiki&entry=${sheet.wikiEntryId}`
+                  )
+                }
+                className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-primary transition-all text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                  <span className="font-serif text-lg font-semibold">
+                    {sheet.wikiEntry.title[0]}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                    {sheet.wikiEntry.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {charClass ? `Level ${charLevel} ${charClass}` : 'Unknown class'}
+                    {sheet.assignedPlayer
+                      ? ` · ${sheet.assignedPlayer.name || sheet.assignedPlayer.email}`
+                      : ''}
+                  </p>
+                </div>
+                <div className="flex gap-3 text-sm flex-shrink-0">
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <span className="font-mono">AC {data?.armorClass ?? '?'}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <span className="font-mono">
+                      {data?.hitPoints?.current ?? '?'}/{data?.hitPoints?.maximum ?? '?'}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

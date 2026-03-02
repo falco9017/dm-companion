@@ -46,7 +46,7 @@ export default async function CampaignsPage() {
       )}
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-medium">{t(locale, 'campaigns.title')}</h1>
+        <h1 className="font-serif text-2xl sm:text-3xl font-medium">{t(locale, 'campaigns.title')}</h1>
         {atCampaignLimit ? (
           <Button asChild variant="outline">
             <Link href="/pricing">
@@ -102,14 +102,14 @@ export default async function CampaignsPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-xl font-bold">{t(locale, 'campaigns.joined')}</h2>
+            <h2 className="font-serif text-xl font-medium">{t(locale, 'campaigns.joined')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {sharedCampaigns.map((campaign) => {
               const dmName = campaign.owner.name || campaign.owner.email
               return (
                 <Link key={campaign.id} href={`/campaigns/${campaign.id}`}>
-                  <Card className="hover:-translate-y-0.5 hover:shadow-lg transition-all group">
+                  <Card className="hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/50 transition-all group rounded-2xl">
                     <CardContent className="p-5 sm:p-6">
                       <h2 className="text-lg sm:text-xl font-bold group-hover:text-primary transition-colors mb-1">
                         {campaign.name}

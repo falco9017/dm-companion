@@ -33,7 +33,7 @@ export default function AudioUploader({ campaignId, onClose }: AudioUploaderProp
   const [stage, setStage] = useState<UploadStage>('idle')
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [summary, setSummary] = useState<string | null>(null)
+  const [, setSummary] = useState<string | null>(null)
   const [recapText, setRecapText] = useState<string>('')
   const [recapEntryId, setRecapEntryId] = useState<string | null>(null)
   const [sessionDate, setSessionDate] = useState<string>('')

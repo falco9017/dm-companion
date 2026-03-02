@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
-import { Mic, BookOpen, Sparkles, Check, X, Crown, Swords } from 'lucide-react'
+import { Mic, BookOpen, Sparkles, Check, X, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default async function Home() {
@@ -14,7 +14,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 border-b border-border">
-        <span className="font-serif text-2xl font-medium text-primary tracking-wide">mystic.quest</span>
+        <span className="font-serif text-2xl font-medium text-primary tracking-wide">Mystic Quest</span>
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
             <Link href="/signin">Sign In</Link>
@@ -137,7 +137,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
         <p>
-          <span className="font-serif text-foreground font-medium">mystic.quest</span>
+          <span className="font-serif text-foreground font-medium">Mystic Quest</span>
           {' '}· Built for Dungeon Masters & Players
         </p>
       </footer>

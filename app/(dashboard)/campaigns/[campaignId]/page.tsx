@@ -6,6 +6,7 @@ import { getEffectiveTier, getLimits } from '@/lib/subscription'
 import { getPlayerCharacterSheet } from '@/lib/permissions'
 import { getCampaignCharacterSheets } from '@/actions/character-sheet'
 import { getUnclaimedCharacters } from '@/actions/campaign-members'
+import { getSharedCampaigns } from '@/actions/campaign-members'
 import { notFound } from 'next/navigation'
 import WikiPageLayout from '@/components/wiki/WikiPageLayout'
 
@@ -14,10 +15,10 @@ export default async function CampaignPage({
   searchParams,
 }: {
   params: Promise<{ campaignId: string }>
-  searchParams: Promise<{ entry?: string; tab?: string }>
+  searchParams: Promise<{ entry?: string; view?: string; tab?: string }>
 }) {
   const { campaignId } = await params
-  const { entry: entryParam, tab } = await searchParams
+  const { entry: entryParam, view, tab } = await searchParams
   const session = await auth()
   const userId = session!.user.id
 
@@ -32,11 +33,15 @@ export default async function CampaignPage({
 
   const userRole: 'DM' | 'PLAYER' = campaign.ownerId === userId ? 'DM' : 'PLAYER'
 
+  // Resolve active view — support legacy ?tab= param for backwards compat
+  const activeView = view || tab || undefined
+
   if (userRole === 'DM') {
-    const [wikiTree, tier, allCampaigns] = await Promise.all([
+    const [wikiTree, tier, allCampaigns, dmPartySheets] = await Promise.all([
       getWikiTree(campaignId, userId),
       getEffectiveTier(userId),
       getCampaigns(userId),
+      getCampaignCharacterSheets(campaignId, userId),
     ])
 
     const limits = getLimits(tier)
@@ -46,10 +51,10 @@ export default async function CampaignPage({
     let activeEntryId = entryParam
 
     if (!activeEntryId && wikiTree.length > 0) {
-      if (tab === 'wiki') {
+      if (activeView === 'wiki') {
         const wikiEntry = wikiTree.find((e) => e.type !== 'SESSION_RECAP')
         activeEntryId = wikiEntry?.id
-      } else {
+      } else if (activeView === 'sessions') {
         const sessionRecap = wikiTree.find((e) => e.type === 'SESSION_RECAP')
         activeEntryId = sessionRecap?.id
       }
@@ -74,6 +79,7 @@ export default async function CampaignPage({
           language: campaign.language,
           inviteCode: campaign.inviteCode,
         }}
+        campaigns={allCampaigns.map((c) => ({ id: c.id, name: c.name }))}
         wikiTree={wikiTree}
         isLocked={isLocked}
         activeEntry={
@@ -104,16 +110,26 @@ export default async function CampaignPage({
             : null
         }
         dateFormat={profile.dateFormat}
+        partySheets={dmPartySheets.map((s) => ({
+          id: s.id,
+          wikiEntryId: s.wikiEntryId,
+          data: s.data as unknown as import('@/types/character-sheet').CharacterSheetData,
+          pdfBlobUrl: s.pdfBlobUrl,
+          wikiEntry: s.wikiEntry,
+          assignedPlayer: s.assignedPlayer,
+          assignedPlayerId: s.assignedPlayerId,
+        }))}
       />
     )
   }
 
   // PLAYER view
-  const [sessionTree, playerCharacterSheet, partySheets, unclaimedChars] = await Promise.all([
+  const [sessionTree, playerCharacterSheet, partySheets, unclaimedChars, sharedCampaigns] = await Promise.all([
     getPlayerWikiTree(campaignId, userId),
     getPlayerCharacterSheet(campaignId, userId),
     getCampaignCharacterSheets(campaignId, userId),
     getUnclaimedCharacters(campaignId, userId),
+    getSharedCampaigns(userId),
   ])
 
   let activeEntry = null
@@ -149,6 +165,7 @@ export default async function CampaignPage({
         language: campaign.language,
         inviteCode: null,
       }}
+      campaigns={sharedCampaigns.map((c) => ({ id: c.id, name: c.name }))}
       wikiTree={sessionTree}
       isLocked={false}
       activeEntry={

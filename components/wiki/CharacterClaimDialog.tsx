@@ -3,10 +3,9 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserPlus, FileText, Plus } from 'lucide-react'
-import { createPlayerCharacter, claimCharacter, getUnclaimedCharacters } from '@/actions/campaign-members'
+import { createPlayerCharacter, claimCharacter } from '@/actions/campaign-members'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useI18n } from '@/lib/i18n-context'
 

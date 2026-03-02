@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { joinCampaignByCode } from '@/actions/campaigns'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,14 +10,13 @@ import { BookOpen, Users } from 'lucide-react'
 
 interface Props {
   code: string
-  campaignId: string
   campaignName: string
   dmName: string | null
   userId: string
   userName: string
 }
 
-export default function JoinCampaignClient({ code, campaignId, campaignName, dmName, userId, userName }: Props) {
+export default function JoinCampaignClient({ code, campaignName, dmName, userId, userName }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,9 +73,9 @@ export default function JoinCampaignClient({ code, campaignId, campaignName, dmN
             </Button>
 
             <div className="text-center">
-              <a href="/campaigns" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/campaigns" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Go to my campaigns instead
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>

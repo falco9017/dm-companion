@@ -39,6 +39,16 @@
   --sidebar-border: oklch(0.9 0.005 80);
   --sidebar-ring: oklch(0.56 0.12 82);
 
+  /* Mythic theme variables */
+  --bg-color: #f5f5f0;
+  --surface-color: #ffffff;
+  --surface-hover-color: #f0f0eb;
+  --border-color: #e5e5e0;
+  --primary-color: #b8860b;
+  --primary-hover-color: #d4af37;
+  --text-main-color: #1a1a1a;
+  --text-muted-color: #666666;
+
   /* Legacy aliases */
   --surface: oklch(0.95 0.004 80);
   --surface-elevated: oklch(1 0 0);
@@ -100,6 +110,16 @@
   --sidebar-border: oklch(0.22 0 0);
   --sidebar-ring: oklch(0.73 0.15 85);
 
+  /* Mythic theme variables - dark */
+  --bg-color: #0a0a0a;
+  --surface-color: #141414;
+  --surface-hover-color: #1f1f1f;
+  --border-color: #2a2a2a;
+  --primary-color: #D4AF37;
+  --primary-hover-color: #F3E5AB;
+  --text-main-color: #f5f5f5;
+  --text-muted-color: #a3a3a3;
+
   /* Legacy aliases - dark */
   --surface: oklch(0.12 0 0);
   --surface-elevated: oklch(0.16 0 0);
@@ -130,6 +150,10 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover-color);
+  --color-text-main: var(--text-main-color);
+  --color-mythic-text-muted: var(--text-muted-color);
+  --color-primary-hover: var(--primary-hover-color);
   --color-border-theme: var(--border);
   --color-accent-purple: var(--accent-purple);
   --color-accent-purple-light: var(--accent-purple-light);
@@ -194,6 +218,7 @@
 
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6, .font-serif {

@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import JoinCampaignClient from './JoinCampaignClient'
 
 export default async function JoinCampaignPage({
@@ -37,9 +38,9 @@ export default async function JoinCampaignPage({
         <div className="max-w-md w-full text-center space-y-4">
           <h1 className="text-2xl font-bold">Invalid Invite</h1>
           <p className="text-muted-foreground">This invite link is invalid or has expired.</p>
-          <a href="/campaigns" className="text-primary hover:underline">
+          <Link href="/campaigns" className="text-primary hover:underline">
             Go to your campaigns
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -55,7 +56,6 @@ export default async function JoinCampaignPage({
   return (
     <JoinCampaignClient
       code={code}
-      campaignId={campaign.id}
       campaignName={campaign.name}
       dmName={dmName}
       userId={userId}

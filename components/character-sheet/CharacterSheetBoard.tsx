@@ -49,17 +49,6 @@ const SUBCLASSES: Record<string, string[]> = {
   Wizard: ['Abjurer', 'Diviner', 'Evoker', 'Illusionist', 'Bladesinger', 'Chronurgy Magic', 'Conjurer', 'Enchanter', 'Graviturgy Magic', 'Necromancer', 'Transmuter', 'War Magic'],
 }
 
-const BACKGROUNDS = [
-  'Acolyte', 'Artisan', 'Charlatan', 'Criminal', 'Entertainer', 'Farmer',
-  'Folk Hero', 'Guard', 'Guide', 'Hermit', 'Merchant', 'Noble', 'Outlander',
-  'Sage', 'Sailor', 'Scribe', 'Soldier', 'Wayfarer',
-  'Anthropologist', 'Archaeologist', 'City Watch', 'Clan Crafter', 'Cloistered Scholar',
-  'Courtier', 'Faction Agent', 'Far Traveler', 'Feylost', 'Fisher', 'Ghost of Saltmarsh',
-  'Guild Artisan', 'Haunted One', 'Inheritor', 'Investigator', 'Knight', 'Knight of the Order',
-  'Marine', 'Pirate', 'Rune Carver', 'Shipwright', 'Smuggler', 'Spy', 'Urban Bounty Hunter',
-  'Uthgardt Tribe Member', 'Wildspacer', 'Witchlight Hand',
-]
-
 const ALIGNMENTS = [
   'Lawful Good', 'Neutral Good', 'Chaotic Good',
   'Lawful Neutral', 'True Neutral', 'Chaotic Neutral',

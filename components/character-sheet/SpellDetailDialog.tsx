@@ -51,15 +51,17 @@ export function SpellDetailDialog({
     setLoading(true)
     setError(null)
     setData(null)
+    let cancelled = false
     const slug = spellToSlug(spellName)
     fetch(`https://www.dnd5eapi.co/api/spells/${slug}`)
       .then((res) => {
         if (!res.ok) throw new Error('Spell not found in the SRD database.')
         return res.json()
       })
-      .then((json: DndApiSpell) => setData(json))
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false))
+      .then((json: DndApiSpell) => { if (!cancelled) setData(json) })
+      .catch((err: Error) => { if (!cancelled) setError(err.message) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [open, spellName])
 
   const levelLabel = data

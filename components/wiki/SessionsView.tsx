@@ -113,7 +113,7 @@ export default function SessionsView({
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const handleSelectEntry = useCallback((id: string) => {
-    onNavigate(`/campaigns/${campaignId}?tab=sessions&entry=${id}`)
+    onNavigate(`/campaigns/${campaignId}?view=sessions&entry=${id}`)
     setMobileShowDetail(true)
   }, [campaignId, onNavigate])
 
@@ -131,6 +131,11 @@ export default function SessionsView({
           mobileShowDetail ? 'hidden md:flex' : 'flex w-full md:w-auto'
         )}
       >
+        {/* Header */}
+        <div className="p-4 border-b border-border">
+          <h2 className="font-medium text-foreground text-sm">Past Sessions</h2>
+        </div>
+
         {/* Actions */}
         {!isLocked && !isReadOnly && (
           <div className="flex flex-col gap-1.5 p-2 border-b">
@@ -146,7 +151,7 @@ export default function SessionsView({
         )}
 
         {/* Sessions list */}
-        <nav className="flex-1 overflow-y-auto p-2">
+        <nav className="flex-1 overflow-y-auto">
           {sessions.length === 0 ? (
             <div className="text-center py-8 px-4">
               <ScrollText className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
@@ -158,14 +163,17 @@ export default function SessionsView({
               <button
                 key={entry.id}
                 onClick={() => handleSelectEntry(entry.id)}
-                className={`w-full text-left px-3 py-2 text-sm rounded-lg truncate transition-all mb-0.5 ${
+                className={cn(
+                  'w-full text-left p-3 border-b border-border transition-colors',
                   entry.id === activeEntry?.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                }`}
+                    ? 'bg-accent border-l-2 border-l-primary'
+                    : 'hover:bg-accent'
+                )}
               >
+                <div className="flex justify-between items-start mb-0.5">
+                  <span className="text-sm font-medium text-foreground truncate">{entry.title}</span>
+                </div>
                 <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt, dateFormat)}</span>
-                <span className="ml-1.5">{entry.title}</span>
               </button>
             ))
           )}

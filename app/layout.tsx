@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "mystic.quest",
+  title: "Mystic Quest",
   description: "Your ultimate AI-powered campaign management tool for Dungeon Masters and players",
 };
 

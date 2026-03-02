@@ -222,7 +222,7 @@ function InitiativeCell({
   )
 }
 
-export default function CombatTracker({ campaignId: _campaignId, userId, wikiEntries }: CombatTrackerProps) {
+export default function CombatTracker({ userId, wikiEntries }: CombatTrackerProps) {
   const [combatants, setCombatants] = useState<Combatant[]>([])
   const [isLoadingParty, setIsLoadingParty] = useState(false)
   const [round, setRound] = useState(1)

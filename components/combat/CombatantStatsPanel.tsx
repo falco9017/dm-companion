@@ -182,7 +182,7 @@ function SpellRow({
           disabled={!availableSlot}
           onClick={(e) => {
             e.stopPropagation()
-            availableSlot && onCast(availableSlot.level)
+            if (availableSlot) onCast(availableSlot.level)
           }}
           title={availableSlot ? `Cast using level ${availableSlot.level} slot` : 'No spell slots available'}
         >
@@ -402,7 +402,7 @@ function CharacterStats({
                   Prepared Spells
                 </p>
                 <div className="rounded-md border bg-card px-2">
-                  {preparedSpells.map((spell, i) => {
+                  {preparedSpells.map((spell) => {
                     const globalIndex = sheet.spellcasting!.spells.indexOf(spell)
                     return (
                       <SpellRow
