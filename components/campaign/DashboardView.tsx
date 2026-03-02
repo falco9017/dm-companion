@@ -62,7 +62,7 @@ export default function DashboardView({
           <div className="p-3 bg-red-100 dark:bg-red-900/50 rounded-xl text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
             <Play className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Start Live Session</h3>
+          <h3 className="font-serif font-medium text-lg text-foreground mb-1">Start Live Session</h3>
           <p className="text-sm text-muted-foreground">Open the combat tracker and party overview.</p>
         </button>
 
@@ -73,7 +73,7 @@ export default function DashboardView({
           <div className="p-3 bg-background rounded-xl text-primary mb-4 group-hover:scale-110 transition-transform">
             <Upload className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Upload Audio</h3>
+          <h3 className="font-serif font-medium text-lg text-foreground mb-1">Upload Audio</h3>
           <p className="text-sm text-muted-foreground">Transcribe and auto-generate wiki updates.</p>
         </button>
 
@@ -84,7 +84,7 @@ export default function DashboardView({
           <div className="p-3 bg-background rounded-xl text-primary mb-4 group-hover:scale-110 transition-transform">
             <BookOpen className="w-6 h-6" />
           </div>
-          <h3 className="font-medium text-lg text-foreground mb-1">Campaign Wiki</h3>
+          <h3 className="font-serif font-medium text-lg text-foreground mb-1">Campaign Wiki</h3>
           <p className="text-sm text-muted-foreground">Browse characters, locations, and lore.</p>
         </button>
       </div>
