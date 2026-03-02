@@ -1,0 +1,5 @@
+{
+  "name": "Mythic",
+  "description": "Premium AI-powered D&D campaign manager for Dungeon Masters and players.",
+  "requestFramePermissions": ["microphone"]
+}

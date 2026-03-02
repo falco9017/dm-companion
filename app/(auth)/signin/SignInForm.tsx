@@ -66,7 +66,7 @@ export default function SignInForm() {
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Scroll className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold font-serif tracking-wide gradient-text mb-2">mystic.quest</h1>
+              <h1 className="text-3xl sm:text-4xl font-medium font-serif tracking-wide gradient-text mb-2">mystic.quest</h1>
               <p className="text-muted-foreground">Sign in to manage your campaigns</p>
             </div>
 

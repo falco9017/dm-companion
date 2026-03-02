@@ -50,7 +50,7 @@ export default function ForgotPasswordForm() {
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Scroll className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">Forgot Password</h1>
+              <h1 className="text-3xl sm:text-4xl font-medium font-serif gradient-text mb-2">Forgot Password</h1>
               <p className="text-muted-foreground">Enter your email and we&apos;ll send you a reset link</p>
             </div>
 

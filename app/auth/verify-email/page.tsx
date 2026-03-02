@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Mail className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">Check Your Email</h1>
+              <h1 className="text-3xl sm:text-4xl font-medium font-serif gradient-text mb-2">Check Your Email</h1>
               <p className="text-muted-foreground">
                 We&apos;ve sent a verification link to your email address. Click the link to verify your account.
               </p>

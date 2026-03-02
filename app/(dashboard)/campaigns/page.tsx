@@ -111,7 +111,7 @@ export default async function CampaignsPage() {
                 <Link key={campaign.id} href={`/campaigns/${campaign.id}`}>
                   <Card className="hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/50 transition-all group rounded-2xl">
                     <CardContent className="p-5 sm:p-6">
-                      <h2 className="text-lg sm:text-xl font-bold group-hover:text-primary transition-colors mb-1">
+                      <h2 className="text-lg sm:text-xl font-medium font-serif group-hover:text-primary transition-colors mb-1">
                         {campaign.name}
                       </h2>
                       {campaign.description && (
