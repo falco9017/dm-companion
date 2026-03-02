@@ -173,12 +173,12 @@ export default function CampaignSettings({ campaignId, userId, campaign }: Campa
             <ArrowLeft className="w-4 h-4" />
             {t('settings.backToCampaign')}
           </Link>
-          <h1 className="text-2xl font-medium font-serif">{t('settings.title')}</h1>
+          <h1 className="text-2xl font-medium">{t('settings.title')}</h1>
         </div>
 
         {/* General section */}
         <section className="space-y-4">
-          <h2 className="text-lg font-medium font-serif">{t('settings.general')}</h2>
+          <h2 className="text-lg font-medium">{t('settings.general')}</h2>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="settings-name">{t('settings.name')}</Label>
@@ -226,7 +226,7 @@ export default function CampaignSettings({ campaignId, userId, campaign }: Campa
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Mic className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-medium font-serif">{t('voiceProfiles.title')}</h2>
+            <h2 className="text-lg font-medium">{t('voiceProfiles.title')}</h2>
           </div>
           <p className="text-sm text-muted-foreground">{t('voiceProfiles.description')}</p>
 

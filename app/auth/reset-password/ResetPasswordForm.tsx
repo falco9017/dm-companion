@@ -88,7 +88,7 @@ export default function ResetPasswordForm() {
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <Lock className="w-6 h-6 text-emerald-500" />
                 </div>
-                <h1 className="text-2xl font-medium font-serif gradient-text mb-2">Password Reset</h1>
+                <h1 className="text-2xl font-medium gradient-text mb-2">Password Reset</h1>
               </div>
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm mb-4">
                 Your password has been reset successfully.
@@ -112,7 +112,7 @@ export default function ResetPasswordForm() {
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Scroll className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-medium font-serif gradient-text mb-2">Reset Password</h1>
+              <h1 className="text-3xl sm:text-4xl font-medium gradient-text mb-2">Reset Password</h1>
               <p className="text-muted-foreground">Choose a new password for your account</p>
             </div>
 

@@ -40,7 +40,7 @@ export default async function NewCampaignPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <h1 className="text-2xl sm:text-3xl font-medium font-serif mb-6">{t(locale, 'campaigns.new.title')}</h1>
+      <h1 className="text-2xl sm:text-3xl font-medium mb-6">{t(locale, 'campaigns.new.title')}</h1>
 
       <Card>
         <CardContent className="p-6 sm:p-8">

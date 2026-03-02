@@ -61,9 +61,9 @@ export default function PricingCards({ userId, currentTier }: PricingCardsProps)
         {/* Basic card */}
         <Card className={!isPro ? 'border-primary/50' : ''}>
           <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-            <h3 className="text-xl font-medium font-serif mb-1">{t('pricing.basicName')}</h3>
+            <h3 className="text-xl font-medium mb-1">{t('pricing.basicName')}</h3>
             <div className="mb-6">
-              <span className="text-3xl font-medium font-serif">{t('pricing.basicPrice')}</span>
+              <span className="text-3xl font-medium">{t('pricing.basicPrice')}</span>
             </div>
 
             <ul className="space-y-3 mb-8">
@@ -96,9 +96,9 @@ export default function PricingCards({ userId, currentTier }: PricingCardsProps)
         {/* Pro card */}
         <Card className={`border-2 ${isPro ? 'border-yellow-400/50' : 'border-primary'}`}>
           <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-            <h3 className="text-xl font-medium font-serif mb-1">{t('pricing.proName')}</h3>
+            <h3 className="text-xl font-medium mb-1">{t('pricing.proName')}</h3>
             <div className="mb-6">
-              <span className="text-3xl font-medium font-serif">
+              <span className="text-3xl font-medium">
                 {annual ? t('pricing.proAnnual') : t('pricing.proMonthly')}
               </span>
               <span className="text-muted-foreground text-sm ml-1">

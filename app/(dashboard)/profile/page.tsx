@@ -37,7 +37,7 @@ export default async function ProfilePage() {
       )}
       <div>
         <BackButton />
-        <h1 className="text-2xl sm:text-3xl font-medium font-serif">{t(locale, 'profile.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-medium">{t(locale, 'profile.title')}</h1>
       </div>
 
       {/* Profile header card */}

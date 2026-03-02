@@ -200,7 +200,7 @@ export default function WikiPageLayout({
           >
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="font-serif text-xl font-semibold text-primary tracking-wide">
+          <h1 className="text-xl font-semibold text-primary tracking-wide">
             MYSTIC QUEST
           </h1>
           <div className="w-10" />
@@ -326,7 +326,7 @@ export default function WikiPageLayout({
             <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2 text-primary">
                 <Sparkles className="w-5 h-5" />
-                <h2 className="font-serif text-lg font-semibold">{t('chat.title')}</h2>
+                <h2 className="text-lg font-semibold">{t('chat.title')}</h2>
               </div>
               <button
                 onClick={() => setIsChatOpen(false)}
@@ -377,7 +377,7 @@ function DmPartyView({
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
       <header>
-        <h1 className="font-serif text-3xl md:text-4xl font-medium text-foreground">
+        <h1 className="text-3xl md:text-4xl font-medium text-foreground">
           Party & Characters
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -406,7 +406,7 @@ function DmPartyView({
                 className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-primary transition-all text-left group"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
-                  <span className="font-serif text-lg font-semibold">
+                  <span className="text-lg font-semibold">
                     {sheet.wikiEntry.title[0]}
                   </span>
                 </div>

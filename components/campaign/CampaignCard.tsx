@@ -23,7 +23,7 @@ export default function CampaignCard({ campaign, isLocked }: CampaignCardProps) 
         isLocked && 'opacity-75'
       )}>
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h2 className="font-serif text-lg sm:text-xl font-medium group-hover:text-primary transition-colors">
+          <h2 className="text-lg sm:text-xl font-medium group-hover:text-primary transition-colors">
             {campaign.name}
           </h2>
           {isLocked && (

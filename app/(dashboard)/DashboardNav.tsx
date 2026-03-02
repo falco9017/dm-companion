@@ -30,7 +30,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
               </div>
-              <span className="font-serif text-lg font-medium tracking-wide text-primary">Mystic Quest</span>
+              <span className="text-lg font-medium tracking-wide text-primary">Mystic Quest</span>
             </Link>
           </div>
 

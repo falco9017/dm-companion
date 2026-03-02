@@ -14,7 +14,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 border-b border-border">
-        <span className="font-serif text-2xl font-medium text-primary tracking-wide">Mystic Quest</span>
+        <span className="text-2xl font-medium text-primary tracking-wide">Mystic Quest</span>
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
             <Link href="/signin">Sign In</Link>
@@ -32,7 +32,7 @@ export default async function Home() {
           AI-powered campaign management
         </div>
 
-        <h1 className="font-serif text-5xl md:text-7xl font-medium mb-6 leading-tight max-w-3xl">
+        <h1 className="text-5xl md:text-7xl font-medium mb-6 leading-tight max-w-3xl">
           Your Campaign,{' '}
           <span className="gradient-text">Brought to Life</span>
         </h1>
@@ -56,7 +56,7 @@ export default async function Home() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
               <Mic className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-serif text-lg font-medium mb-2">Session Audio</h3>
+            <h3 className="text-lg font-medium mb-2">Session Audio</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">Upload recordings and get instant transcriptions and AI summaries.</p>
           </div>
 
@@ -64,7 +64,7 @@ export default async function Home() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
               <BookOpen className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-serif text-lg font-medium mb-2">Campaign Wiki</h3>
+            <h3 className="text-lg font-medium mb-2">Campaign Wiki</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">Characters, locations, and lore auto-generated and kept in sync.</p>
           </div>
 
@@ -72,7 +72,7 @@ export default async function Home() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-serif text-lg font-medium mb-2">Mystic AI</h3>
+            <h3 className="text-lg font-medium mb-2">Mystic AI</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">Ask anything about your campaign or get AI-generated content on demand.</p>
           </div>
         </div>
@@ -81,17 +81,17 @@ export default async function Home() {
       {/* Pricing */}
       <section id="pricing" className="max-w-4xl mx-auto px-6 py-20">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-4xl font-medium mb-3">Choose Your Plan</h2>
+          <h2 className="text-4xl font-medium mb-3">Choose Your Plan</h2>
           <p className="text-muted-foreground">Start free and upgrade when you need more power.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {/* Basic */}
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h3 className="font-serif text-2xl font-medium mb-1">Adventurer</h3>
+            <h3 className="text-2xl font-medium mb-1">Adventurer</h3>
             <p className="text-muted-foreground text-sm mb-6">For solo GMs getting started</p>
             <div className="mb-8">
-              <span className="text-4xl font-medium font-serif">Free</span>
+              <span className="text-4xl font-medium">Free</span>
             </div>
             <ul className="space-y-3 mb-8">
               <PricingFeature text="1 campaign" />
@@ -110,10 +110,10 @@ export default async function Home() {
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
             </div>
-            <h3 className="font-serif text-2xl font-medium mb-1">Legend</h3>
+            <h3 className="text-2xl font-medium mb-1">Legend</h3>
             <p className="text-muted-foreground text-sm mb-6">For serious campaign managers</p>
             <div className="mb-8">
-              <span className="text-4xl font-medium font-serif">$6.99</span>
+              <span className="text-4xl font-medium">$6.99</span>
               <span className="text-muted-foreground text-sm ml-1">/ month</span>
             </div>
             <ul className="space-y-3 mb-8">
@@ -137,7 +137,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
         <p>
-          <span className="font-serif text-foreground font-medium">Mystic Quest</span>
+          <span className="text-foreground font-medium">Mystic Quest</span>
           {' '}· Built for Dungeon Masters & Players
         </p>
       </footer>

@@ -73,7 +73,7 @@ export default function CampaignSidebar({
             <X className="w-5 h-5" />
           </button>
           <Link href="/campaigns">
-            <h1 className="font-serif text-2xl font-semibold text-primary tracking-wide mb-6">
+            <h1 className="text-2xl font-semibold text-primary tracking-wide mb-6">
               MYSTIC QUEST
             </h1>
           </Link>

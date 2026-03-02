@@ -45,7 +45,7 @@ export default function JoinCampaignClient({ code, campaignName, dmName, userId,
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-medium font-serif">Campaign Invite</h1>
+          <h1 className="text-2xl font-medium">Campaign Invite</h1>
         </div>
 
         <Card>
